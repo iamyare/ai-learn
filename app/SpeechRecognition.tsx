@@ -5,7 +5,7 @@ interface DialogEntry {
   text: string;
 }
 
-const SpeechRecognition: React.FC = () => {
+const useSpeechRecognition = () => {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [history, setHistory] = useState<DialogEntry[]>([]);
@@ -115,7 +115,7 @@ const SpeechRecognition: React.FC = () => {
       recognition.stop();
       setIsListening(false);
     };
-}, [isListening, addToHistory, stopListening]);
+  }, [isListening, addToHistory, stopListening]);
 
   useEffect(() => {
     return () => {
@@ -125,7 +125,11 @@ const SpeechRecognition: React.FC = () => {
     };
   }, []);
 
+  return { isListening, transcript, history, startListening, stopListening };
+};
 
+const SpeechRecognition: React.FC = () => {
+  const { isListening, transcript, history, startListening, stopListening } = useSpeechRecognition();
 
   return (
     <div className="p-4">
