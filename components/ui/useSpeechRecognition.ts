@@ -14,7 +14,7 @@ interface DialogEntry {
     const timeoutRef = useRef<NodeJS.Timeout | null>(null)
   
     const formatTimestamp = (date: Date): string => {
-      return date.toISOString().slice(11, 23)
+      return date.toISOString()
     }
   
     const stopListening = useCallback(() => {

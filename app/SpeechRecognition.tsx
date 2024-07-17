@@ -1,38 +1,48 @@
-import CoursorText from '@/components/ui/coursor-text'
-import { useSpeechRecognition } from '@/components/ui/useSpeechRecognition'
+'use client'
 
-const SpeechRecognition: React.FC = () => {
+import { Button } from "@/components/ui/button"
+import CoursorText from "@/components/ui/coursor-text"
+import { useSpeechRecognition } from "@/components/ui/useSpeechRecognition"
+import { cn } from "@/lib/utils"
+import { Mic, Play, SkipBack, SkipForward } from "lucide-react"
+
+interface SpeechRecognitionProps {
+  classNameContainer?: string
+  classNameHeader?: string
+  classNameTranscript?: string
+}
+
+export default function SpeechRecognition({classNameContainer, classNameHeader, classNameTranscript}: SpeechRecognitionProps) {
   const { isListening, transcript, history, startListening, stopListening } = useSpeechRecognition()
-
   return (
-    <div className='p-4'>
-      <h1 className='text-2xl font-bold mb-4'>Reconocimiento de Voz</h1>
-      <div className='flex space-x-2 mb-4'>
-        <button
-          className={`px-4 py-2 rounded ${
-            isListening
-              ? 'bg-red-500 hover:bg-red-600'
-              : 'bg-green-500 hover:bg-green-600'
-          } text-white`}
-          onClick={isListening ? stopListening : startListening}
-        >
-          {isListening ? 'Detener' : 'Iniciar'} Reconocimiento
-        </button>
-      </div>
-      <div className='mt-4'>
-        <h2 className='text-xl font-semibold'>Transcripción en tiempo real:</h2>
-        <p className='mt-2 p-2 bg-gray-100 rounded'>{transcript}</p>
-      </div>
-      <div className='mt-4'>
-        <h2 className='text-xl font-semibold'>Historial:</h2>
-        <div className='mt-2 p-2 flex flex-col gap-2  rounded whitespace-pre-wrap bg-black'>
-          {history.length !== 0 ? (
+    <section className={cn(" h-full w-full", classNameContainer)}>
+      <header className={cn(" flex justify-center py-2 w-full", classNameHeader)}>
+      <Button size={'icon'} variant={'ghost'}>
+          <SkipBack className=" size-4" />
+        </Button>
+        <Button size={'icon'} variant={'ghost'}>
+          <Play className=" size-4" />
+        </Button>
+        <Button size={'icon'} variant={'ghost'} onClick={isListening ? stopListening : startListening}>
+          {
+            isListening ? (
+              <Mic className=" size-4 text-red-500" />
+            ):(
+              <Mic className=" size-4" />
+            )
+          }
+        </Button>
+        <Button size={'icon'} variant={'ghost'}>
+          <SkipForward className=" size-4" />
+        </Button>
+      </header>
+      <aside className={cn(" w-full h-full px-4  overflow-y-auto ", classNameTranscript)}>
+      {history.length !== 0 ? (
             <>
               {history.map((entry, index) => (
-                <p key={index} className='text-background'>
+                <p key={index} className='flex flex-col'>
                   <span className=' ml-2 text-muted-foreground text-sm'>
-                    {entry.timestamp}
-                    {'\n'}
+                    {entry.timestamp} - Pagina 2
                   </span>
                   {entry.text}
                   {
@@ -56,10 +66,7 @@ const SpeechRecognition: React.FC = () => {
               </span>
             )
           )}
-        </div>
-      </div>
-    </div>
+      </aside>
+    </section>
   )
 }
-
-export default SpeechRecognition
