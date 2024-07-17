@@ -95,7 +95,7 @@ const useSpeechRecognition = () => {
       console.error('Speech recognition error', event.error);
       if (isListening) {
         recognition.stop();
-        setTimeout(() => recognition.start(), 1000);
+        setTimeout(() => recognition.start(), 1000); // Reiniciar después de 1 segundo
       }
     };
 
@@ -141,12 +141,14 @@ const SpeechRecognition: React.FC = () => {
       </div>
       <div className="mt-4">
         <h2 className="text-xl font-semibold">Historial:</h2>
-        <pre className="mt-2 p-2 bg-gray-100 rounded whitespace-pre-wrap">
+        <div className="mt-2 p-2 flex flex-col gap-2  rounded whitespace-pre-wrap">
           {history.map((entry, index) => (
-            <React.Fragment key={index}>
-              [{entry.timestamp}] {entry.text}
-              {index < history.length - 1 ? '\n' : ''}
-            </React.Fragment>
+            <p key={index}>
+                <span className=' ml-2 text-muted-foreground text-sm'>{entry.timestamp}{'\n'}</span>
+              {entry.text}
+              {/* {index < history.length - 1 ? '\n' : ''} */}
+            </p>
+
           ))}
           {
             isListening ? (
@@ -157,7 +159,7 @@ const SpeechRecognition: React.FC = () => {
                 </p>
             ): null
           }
-        </pre>
+        </div>
       </div>
     </div>
   );
