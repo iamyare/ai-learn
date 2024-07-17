@@ -11,7 +11,6 @@ const useSpeechRecognition = () => {
   const [history, setHistory] = useState<DialogEntry[]>([]);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const silenceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const formatTimestamp = (date: Date): string => {
     return date.toISOString().slice(11, 23);
@@ -24,7 +23,6 @@ const useSpeechRecognition = () => {
       recognitionRef.current = null;
     }
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    if (silenceTimeoutRef.current) clearTimeout(silenceTimeoutRef.current);
   }, []);
 
   const addToHistory = useCallback((text: string) => {
@@ -34,18 +32,12 @@ const useSpeechRecognition = () => {
         if (lastEntry && lastEntry.text === text.trim()) {
           return prevHistory; // No añadir si es exactamente igual a la última entrada
         }
-        if (lastEntry && text.trim().startsWith(lastEntry.text)) {
-          // Si la nueva entrada comienza con la anterior, reemplazar la anterior
-          return [
-            ...prevHistory.slice(0, -1),
-            { timestamp: formatTimestamp(new Date()), text: text.trim() }
-          ];
-        }
         return [
           ...prevHistory,
           { timestamp: formatTimestamp(new Date()), text: text.trim() }
         ];
       });
+      setTranscript('');
     }
   }, []);
 
@@ -58,43 +50,44 @@ const useSpeechRecognition = () => {
     recognition.interimResults = true;
     recognition.lang = 'es-ES';
 
-    let finalTranscript = '';
+    let currentTranscript = '';
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       let interimTranscript = '';
+      let finalTranscript = '';
+
       for (let i = event.resultIndex; i < event.results.length; ++i) {
+        const transcript = event.results[i][0].transcript;
         if (event.results[i].isFinal) {
-          finalTranscript += event.results[i][0].transcript;
+          finalTranscript += transcript;
         } else {
-          interimTranscript += event.results[i][0].transcript;
+          interimTranscript += transcript;
         }
       }
-
-      setTranscript(finalTranscript + interimTranscript);
 
       if (finalTranscript !== '') {
-        addToHistory(finalTranscript);
-        finalTranscript = '';
-      } else if (interimTranscript !== '') {
-        if (timeoutRef.current) clearTimeout(timeoutRef.current);
-        timeoutRef.current = setTimeout(() => {
-          addToHistory(interimTranscript);
-        }, 1000);
+        currentTranscript += finalTranscript;
+        setTranscript(currentTranscript);
+        addToHistory(currentTranscript);
+        currentTranscript = '';
+      } else {
+        setTranscript(currentTranscript + interimTranscript);
       }
 
-      // Reiniciar el temporizador de silencio
-      if (silenceTimeoutRef.current) clearTimeout(silenceTimeoutRef.current);
-      silenceTimeoutRef.current = setTimeout(() => {
-        if (isListening) {
-          stopListening();
-          setIsListening(false);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => {
+        if (currentTranscript !== '') {
+          addToHistory(currentTranscript);
+          currentTranscript = '';
         }
-      }, 5000); // Detener después de 5 segundos de silencio
+      }, 1000);
     };
 
     recognition.onend = () => {
       if (isListening) {
         recognition.start();
+      } else {
+        setTranscript('');
       }
     };
 
@@ -111,7 +104,6 @@ const useSpeechRecognition = () => {
 
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      if (silenceTimeoutRef.current) clearTimeout(silenceTimeoutRef.current);
       recognition.stop();
       setIsListening(false);
     };
@@ -120,7 +112,6 @@ const useSpeechRecognition = () => {
   useEffect(() => {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      if (silenceTimeoutRef.current) clearTimeout(silenceTimeoutRef.current);
       if (recognitionRef.current) recognitionRef.current.stop();
     };
   }, []);
@@ -152,8 +143,20 @@ const SpeechRecognition: React.FC = () => {
         <h2 className="text-xl font-semibold">Historial:</h2>
         <pre className="mt-2 p-2 bg-gray-100 rounded whitespace-pre-wrap">
           {history.map((entry, index) => (
-            `[${entry.timestamp}] ${entry.text}${index < history.length - 1 ? '\n' : ''}`
-          )).join('')}
+            <React.Fragment key={index}>
+              [{entry.timestamp}] {entry.text}
+              {index < history.length - 1 ? '\n' : ''}
+            </React.Fragment>
+          ))}
+          {
+            isListening ? (
+                <p>
+                    {transcript}
+                    {' '}
+                    <span>...</span>
+                </p>
+            ): null
+          }
         </pre>
       </div>
     </div>
