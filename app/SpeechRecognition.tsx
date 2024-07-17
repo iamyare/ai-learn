@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import CoursorText from "@/components/ui/coursor-text"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { useSpeechRecognition } from "@/components/ui/useSpeechRecognition"
 import { cn } from "@/lib/utils"
 import { Mic, Play, SkipBack, SkipForward } from "lucide-react"
@@ -15,7 +16,7 @@ interface SpeechRecognitionProps {
 export default function SpeechRecognition({classNameContainer, classNameHeader, classNameTranscript}: SpeechRecognitionProps) {
   const { isListening, transcript, history, startListening, stopListening } = useSpeechRecognition()
   return (
-    <section className={cn(" h-full w-full", classNameContainer)}>
+    <section className={cn(" flex flex-col h-full w-full", classNameContainer)}>
       <header className={cn(" flex justify-center py-2 w-full", classNameHeader)}>
       <Button size={'icon'} variant={'ghost'}>
           <SkipBack className=" size-4" />
@@ -36,7 +37,7 @@ export default function SpeechRecognition({classNameContainer, classNameHeader, 
           <SkipForward className=" size-4" />
         </Button>
       </header>
-      <aside className={cn(" w-full h-full px-4  overflow-y-auto ", classNameTranscript)}>
+      <ScrollArea className={cn(" w-full h-full px-4 overflow-scroll ", classNameTranscript)}>
       {history.length !== 0 ? (
             <>
               {history.map((entry, index) => (
@@ -66,7 +67,7 @@ export default function SpeechRecognition({classNameContainer, classNameHeader, 
               </span>
             )
           )}
-      </aside>
+      </ScrollArea>
     </section>
   )
 }

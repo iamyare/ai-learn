@@ -11,7 +11,7 @@ export const useSpeechRecognition = () => {
   const [transcript, setTranscript] = useState('')
   const [history, setHistory] = useState<DialogEntry[]>([])
   const recognitionRef = useRef<SpeechRecognition | null>(null)
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const currentTranscriptRef = useRef('')
 
   const formatTimestamp = (date: Date): string => {
     return date.toISOString()
@@ -23,20 +23,20 @@ export const useSpeechRecognition = () => {
       recognitionRef.current.stop()
       recognitionRef.current = null
     }
-    if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    setTranscript('')
+    currentTranscriptRef.current = ''
   }, [])
 
   const addToHistory = useCallback((text: string) => {
-    const trimmedText = text.trim()
-    if (trimmedText !== '') {
+    if (text.trim() !== '') {
       setHistory((prevHistory) => {
         const lastEntry = prevHistory[prevHistory.length - 1]
-        if (lastEntry && lastEntry.text === trimmedText) {
+        if (lastEntry && lastEntry.text === text.trim()) {
           return prevHistory // No añadir si es exactamente igual a la última entrada
         }
         return [
           ...prevHistory,
-          { timestamp: formatTimestamp(new Date()), text: trimmedText }
+          { timestamp: formatTimestamp(new Date()), text: text.trim() }
         ]
       })
       setTranscript('')
@@ -44,8 +44,6 @@ export const useSpeechRecognition = () => {
   }, [])
 
   const startListening = useCallback(() => {
-    if (isListening) return; // Evitar iniciar múltiples instancias
-
     setIsListening(true)
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition
@@ -54,8 +52,6 @@ export const useSpeechRecognition = () => {
     recognition.continuous = true
     recognition.interimResults = true
     recognition.lang = 'es-ES'
-
-    let currentTranscript = ''
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       let interimTranscript = ''
@@ -71,45 +67,45 @@ export const useSpeechRecognition = () => {
       }
 
       if (finalTranscript !== '') {
-        currentTranscript += finalTranscript
-        setTranscript(currentTranscript)
-        addToHistory(currentTranscript)
-        currentTranscript = ''
+        currentTranscriptRef.current += finalTranscript
+        setTranscript(currentTranscriptRef.current)
+        addToHistory(currentTranscriptRef.current)
+        currentTranscriptRef.current = ''
       } else {
-        setTranscript(currentTranscript + interimTranscript)
+        setTranscript(currentTranscriptRef.current + interimTranscript)
       }
-
-      if (timeoutRef.current) clearTimeout(timeoutRef.current)
-      timeoutRef.current = setTimeout(() => {
-        if (currentTranscript !== '') {
-          addToHistory(currentTranscript)
-          currentTranscript = ''
-        }
-      }, 1000)
     }
 
     recognition.onend = () => {
       if (isListening) {
+        // Reiniciar inmediatamente si aún se supone que estamos escuchando
         recognition.start()
-      } else {
-        setTranscript('')
       }
     }
 
     recognition.onerror = (event) => {
       console.error('Speech recognition error', event.error)
-      stopListening()
-      setTimeout(() => startListening(), 1000) // Reiniciar después de 1 segundo
+      if (isListening) {
+        // Reiniciar inmediatamente en caso de error
+        recognition.stop()
+        recognition.start()
+      }
     }
 
     recognition.start()
     recognitionRef.current = recognition
-  }, [isListening, addToHistory, stopListening])
+
+    return () => {
+      recognition.stop()
+      setIsListening(false)
+    }
+  }, [isListening, addToHistory])
 
   useEffect(() => {
     return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current)
-      if (recognitionRef.current) recognitionRef.current.stop()
+      if (recognitionRef.current) {
+        recognitionRef.current.stop()
+      }
     }
   }, [])
 
