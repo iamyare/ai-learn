@@ -1,9 +1,11 @@
 'use client'
 import React from 'react';
 import { Worker } from '@react-pdf-viewer/core';
+import { toolbarPlugin } from '@react-pdf-viewer/toolbar';
 
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/page-navigation/lib/styles/index.css';
+import '@react-pdf-viewer/toolbar/lib/styles/index.css';
 import usePDFViewer from './usePDFViewer'; // Adjust the import path as needed
 import Toolbar from './viewer/toolbar';
 
@@ -16,22 +18,10 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ fileUrl }) => {
         workerSrc,
         DynamicViewer,
         pageNavigationPluginInstance,
-        GoToFirstPage,
-        GoToLastPage,
-        GoToNextPage,
-        GoToPreviousPage,
-        NumberOfPages,
-        CurrentPageInput,
     } = usePDFViewer(fileUrl);
 
-    const toolbarButtonProps = {
-        GoToFirstPage,
-        GoToLastPage,
-        GoToNextPage,
-        GoToPreviousPage,
-        NumberOfPages,
-        CurrentPageInput,
-    };
+    const toolbarPluginInstance = toolbarPlugin();
+    const { Toolbar: ToolbarSlot } = toolbarPluginInstance;
 
     if (!workerSrc) {
         return <div>Loading...</div>;
@@ -39,11 +29,20 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ fileUrl }) => {
 
     return (
         <Worker workerUrl={workerSrc}>
-            <div className="relative flex flex-col h-full bg-transparent ">
+            <div className="relative flex flex-col h-full bg-transparent">
                 <div className="flex-grow overflow-hidden">
-                    <DynamicViewer fileUrl={fileUrl} plugins={[pageNavigationPluginInstance]} />
+                    <DynamicViewer 
+                        fileUrl={fileUrl} 
+                        plugins={[pageNavigationPluginInstance, toolbarPluginInstance]} 
+                    />
                 </div>
-                <Toolbar toolbarButtonProps={toolbarButtonProps} className='absolute top-2 left-1/2 -translate-x-1/2 ' />
+
+                    <ToolbarSlot>
+                        {(props) => (
+                            <Toolbar toolbarSlot={props} className='absolute bottom-2 left-1/2 -translate-x-1/2 z-10'   />
+                        )}
+                    </ToolbarSlot>
+
             </div>
         </Worker>
     );
