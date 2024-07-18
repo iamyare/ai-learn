@@ -39,7 +39,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ fileUrl }) => {
 
                     <ToolbarSlot>
                         {(props) => (
-                            <Toolbar toolbarSlot={props} className='absolute bottom-2 left-1/2 -translate-x-1/2 z-10'   />
+                            <Toolbar toolbarSlot={props} className=''   />
                         )}
                     </ToolbarSlot>
 
