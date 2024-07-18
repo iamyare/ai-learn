@@ -14,6 +14,8 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { aiStream } from '@/lib/ai'
+import { MarkdownRenderer } from './ui/markdown-reader'
+
 
 const formSchema = z.object({
   message: z.string().min(1, 'Message cannot be empty')
@@ -108,13 +110,17 @@ export default function Chat() {
       >
         <div className='space-y-4 py-4'>
           {messages.map((message, index) => (
-            <div key={index} className={`p-3 rounded-lg ${message.isUser ? 'bg-primary text-primary-foreground ml-auto' : 'bg-muted'}`}>
+            <div key={index} className={`p-3 rounded-lg ${message.isUser ? 'bg-primary text-primary-foreground ml-auto' : 'bg-muted/10'}`}>
               <span className='block text-xs mb-1'>
                 {new Date(message.timestamp).toLocaleTimeString()}
               </span>
-              <p className='text-sm'>
-                {message.content}
-              </p>
+              <div className='text-sm'>
+                {message.isUser ? (
+                  <p>{message.content}</p>
+                ) : (
+                  <MarkdownRenderer content={message.content} />
+                )}
+              </div>
             </div>
           ))}
           <div ref={messagesEndRef} />
