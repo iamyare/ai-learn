@@ -9,6 +9,7 @@ import {
   ResizablePanelGroup
 } from '@/components/ui/resizable'
 import { SpeechRecognitionProvider } from '@/context/useSpeechRecognitionContext'
+import Viewer from '@/components/ui/viewer'
 
 export default function Home() {
   return (
@@ -20,9 +21,8 @@ export default function Home() {
           <ResizablePanel defaultSize={70}>
             <ResizablePanelGroup direction='vertical'>
               <ResizablePanel defaultSize={60} minSize={30}>
-                <div className='flex h-full items-center justify-center p-6'>
-                  hola
-                </div>
+
+                  <Viewer fileUrl='/somefile.pdf'/>
               </ResizablePanel>
               <ResizableHandle />
               <ResizablePanel defaultSize={40}>

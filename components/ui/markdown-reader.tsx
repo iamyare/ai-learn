@@ -1,6 +1,4 @@
-
-import ReactMarkdown from 'react-markdown'
-import { ReactMarkdownOptions } from 'react-markdown/lib/react-markdown'
+import ReactMarkdown, { Components } from 'react-markdown'
 
 import { H1, H2, H3 } from '@/components/ui/markdown/markdown-heading-components'
 import { Paragraph, Strong, Emphasis } from '@/components/ui/markdown/markdown-text-components'
@@ -10,7 +8,7 @@ import { Blockquote } from '@/components/ui/markdown/markdown-blockquote-compone
 import { Code } from '@/components/ui/markdown/markdown-code-component'
 
 export const MarkdownRenderer = ({ content }: { content: string }) => {
-  const components: ReactMarkdownOptions['components'] = {
+  const components: Components = {
     h1: H1,
     h2: H2,
     h3: H3,

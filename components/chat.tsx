@@ -1,6 +1,12 @@
 'use client'
 
-import React, { useRef, useEffect, useTransition, useState } from 'react'
+import React, {
+  useRef,
+  useEffect,
+  useTransition,
+  useState,
+  useCallback
+} from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import {
@@ -14,16 +20,12 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { aiStream } from '@/lib/ai'
-import { MarkdownRenderer } from './ui/markdown-reader'
 import { useSpeechRecognitionContext } from '@/context/useSpeechRecognitionContext'
 import BubbleChat from './ui/bubble-chat'
-
 
 const formSchema = z.object({
   message: z.string().min(1, 'Message cannot be empty')
 })
-
-
 
 export default function Chat() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -32,7 +34,7 @@ export default function Chat() {
   const [messages, setMessages] = useState<MessageType[]>([])
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true)
 
-  const {history } = useSpeechRecognitionContext()
+  const { history } = useSpeechRecognitionContext()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -41,11 +43,11 @@ export default function Chat() {
     }
   })
 
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     if (shouldAutoScroll && messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
     }
-  }
+  }, [shouldAutoScroll, messagesEndRef])
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     const userMessage: MessageType = {
@@ -53,14 +55,14 @@ export default function Chat() {
       isUser: true,
       timestamp: new Date().toISOString()
     }
-    setMessages(prevMessages => [...prevMessages, userMessage])
+    setMessages((prevMessages) => [...prevMessages, userMessage])
     setShouldAutoScroll(true)
 
     //mostrar todo el historial de transcripciones
     const transcript = history.map((entry) => entry.text).join(' ')
 
-    startTransition(async() => {
-      const {textStream} = await aiStream({
+    startTransition(async () => {
+      const { textStream } = await aiStream({
         prompt: values.message,
         transcription: transcript
       })
@@ -70,7 +72,7 @@ export default function Chat() {
       let aiResponse = ''
       for await (const text of textStream) {
         aiResponse += text
-        setMessages(prevMessages => {
+        setMessages((prevMessages) => {
           const updatedMessages = [...prevMessages]
           const lastMessage = updatedMessages[updatedMessages.length - 1]
           if (!lastMessage.isUser) {
@@ -92,7 +94,7 @@ export default function Chat() {
 
   useEffect(() => {
     scrollToBottom()
-  }, [messages])
+  }, [messages, scrollToBottom])
 
   const handleScroll = () => {
     if (chatContainerRef.current) {
@@ -107,8 +109,8 @@ export default function Chat() {
       <header className='flex-none w-full py-2 px-4 bg-background'>
         <h1 className='text-lg font-semibold'>Chat</h1>
       </header>
-      
-      <div 
+
+      <div
         className='flex-grow overflow-y-auto px-4'
         ref={chatContainerRef}
         onScroll={handleScroll}
@@ -123,7 +125,10 @@ export default function Chat() {
 
       <footer className='flex-none w-full p-4 bg-background'>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className='flex space-x-2'>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className='flex space-x-2'
+          >
             <FormField
               control={form.control}
               name='message'
@@ -136,7 +141,9 @@ export default function Chat() {
                 </FormItem>
               )}
             />
-            <Button type='submit' disabled={isPending}>Enviar</Button>
+            <Button type='submit' disabled={isPending}>
+              Enviar
+            </Button>
           </form>
         </Form>
       </footer>
