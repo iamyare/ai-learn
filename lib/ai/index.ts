@@ -6,6 +6,8 @@ const google = createGoogleGenerativeAI({
 import { streamText } from 'ai'
 
 export async function aiStream({ prompt, transcription }: { prompt: string, transcription: string }) {
+
+  console.log('prompt', prompt, 'transcription', transcription)
   const { textStream } = await streamText({
     model: google('models/gemini-1.5-flash-latest'),
     prompt: `${prompt} \n\n${transcription}`

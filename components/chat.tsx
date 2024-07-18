@@ -15,24 +15,24 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { aiStream } from '@/lib/ai'
 import { MarkdownRenderer } from './ui/markdown-reader'
+import { useSpeechRecognitionContext } from '@/context/useSpeechRecognitionContext'
+import BubbleChat from './ui/bubble-chat'
 
 
 const formSchema = z.object({
   message: z.string().min(1, 'Message cannot be empty')
 })
 
-type Message = {
-  content: string
-  isUser: boolean
-  timestamp: string
-}
+
 
 export default function Chat() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const [isPending, startTransition] = useTransition()
-  const [messages, setMessages] = useState<Message[]>([])
+  const [messages, setMessages] = useState<MessageType[]>([])
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true)
+
+  const {history } = useSpeechRecognitionContext()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -48,7 +48,7 @@ export default function Chat() {
   }
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    const userMessage: Message = {
+    const userMessage: MessageType = {
       content: values.message,
       isUser: true,
       timestamp: new Date().toISOString()
@@ -56,11 +56,16 @@ export default function Chat() {
     setMessages(prevMessages => [...prevMessages, userMessage])
     setShouldAutoScroll(true)
 
+    //mostrar todo el historial de transcripciones
+    const transcript = history.map((entry) => entry.text).join(' ')
+
     startTransition(async() => {
       const {textStream} = await aiStream({
-        prompt: 'Quiero que realices un resumen sobre el siguiente texto:',
-        transcription: values.message
+        prompt: values.message,
+        transcription: transcript
       })
+
+      form.reset()
 
       let aiResponse = ''
       for await (const text of textStream) {
@@ -110,18 +115,7 @@ export default function Chat() {
       >
         <div className='space-y-4 py-4'>
           {messages.map((message, index) => (
-            <div key={index} className={`p-3 rounded-lg ${message.isUser ? 'bg-primary text-primary-foreground ml-auto' : 'bg-muted/10'}`}>
-              <span className='block text-xs mb-1'>
-                {new Date(message.timestamp).toLocaleTimeString()}
-              </span>
-              <div className='text-sm'>
-                {message.isUser ? (
-                  <p>{message.content}</p>
-                ) : (
-                  <MarkdownRenderer content={message.content} />
-                )}
-              </div>
-            </div>
+            <BubbleChat key={index} message={message} />
           ))}
           <div ref={messagesEndRef} />
         </div>

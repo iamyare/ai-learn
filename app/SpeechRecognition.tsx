@@ -3,7 +3,8 @@
 import { Button } from "@/components/ui/button"
 import CoursorText from "@/components/ui/coursor-text"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { useSpeechRecognition } from "@/components/ui/useSpeechRecognition"
+import { useSpeechRecognitionContext } from "@/context/useSpeechRecognitionContext"
+// import { useSpeechRecognition } from "@/components/ui/useSpeechRecognition"
 import { cn } from "@/lib/utils"
 import { Mic, Play, SkipBack, SkipForward } from "lucide-react"
 
@@ -14,7 +15,7 @@ interface SpeechRecognitionProps {
 }
 
 export default function SpeechRecognition({classNameContainer, classNameHeader, classNameTranscript}: SpeechRecognitionProps) {
-  const { isListening, transcript, history, startListening, stopListening } = useSpeechRecognition()
+  const { isListening, transcript, history, startListening, stopListening } = useSpeechRecognitionContext()
   return (
     <section className={cn(" flex flex-col h-full w-full", classNameContainer)}>
       <header className={cn(" flex justify-center py-2 w-full", classNameHeader)}>
