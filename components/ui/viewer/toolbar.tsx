@@ -3,6 +3,7 @@
 import { RenderGoToPageProps } from '@react-pdf-viewer/page-navigation';
 import { Button } from '@/components/ui/button';
 import { ChevronFirst, ChevronLast, ChevronLeft, ChevronRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface ToolbarProps {
     toolbarButtonProps: {
@@ -13,13 +14,14 @@ interface ToolbarProps {
         NumberOfPages: any;
         CurrentPageInput: any;
     }
+    className?: string;
 }
 
-export default function Toolbar({ toolbarButtonProps }: ToolbarProps) {
+export default function Toolbar({ toolbarButtonProps, className }: ToolbarProps) {
     const { GoToFirstPage, GoToLastPage, GoToNextPage, GoToPreviousPage, NumberOfPages, CurrentPageInput } = toolbarButtonProps;
 
   return (
-    <div className=" absolute top-2 left-1/2 -translate-x-1/2 flex gap-2 w-fit bg-muted/90 border backdrop-blur-sm mx-auto rounded-full items-center justify-center px-4 py-2 ">
+    <div className={cn("flex gap-2 w-fit bg-muted/90 border backdrop-blur-sm mx-auto rounded-full items-center justify-center px-4 py-2 ", className)}>
 
           <GoToFirstPage>
               {(props: RenderGoToPageProps) => (
