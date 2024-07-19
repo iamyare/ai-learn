@@ -23,7 +23,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useSpeechRecognitionContext } from '@/context/useSpeechRecognitionContext'
 import BubbleChat from './ui/bubble-chat'
 import { usePDFText } from '@/context/usePDFTextExtractionContext'
-import { aiStream } from '@/lib/ai'
+import { aiStream, generateImportantEvents } from '@/lib/ai'
+import { readStreamableValue } from 'ai/rsc'
 
 const formSchema = z.object({
   message: z.string().min(1, 'El mensaje no puede estar vacío')
@@ -33,6 +34,8 @@ export default function Chat() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const [isPending, startTransition] = useTransition()
+  const [events, setEvents] = useState<ImportantEventType[] | null>(null)
+  const [aiResponse, setAiResponse] = useTransition()
   const [messages, setMessages] = useState<MessageType[]>([])
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true)
 
@@ -95,6 +98,26 @@ export default function Chat() {
     })
   }
 
+  function importantEvents() {
+    setAiResponse(async() => {
+      const { object } = await generateImportantEvents({
+        prompt: "Lista de cosas importantes para la próxima semana",
+        transcription: "Transcripción de la clase...",
+        textPdf: "Contenido del PDF de la clase..."
+      });
+
+      for await (const partialObject of readStreamableValue(object)) {
+        if (partialObject) {
+          setEvents(
+            partialObject.importantEvents
+          );
+        }
+      }
+    })
+
+
+  }
+
   useEffect(() => {
     scrollToBottom()
   }, [messages, scrollToBottom])
@@ -130,8 +153,24 @@ export default function Chat() {
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className='flex space-x-2'
+            className='flex flex-col gap-2'
           >
+            <div className=' flex gap-2'>
+            <Button type='button' size={'sm'} variant={'outline'} onClick={importantEvents}>Hola</Button>
+           {
+            events && (
+              <div>
+                <h2>Eventos importantes</h2>
+                <ul>
+                  {events.map((event, index) => (
+                    <li key={index}>{event.title}</li>
+                  ))}
+                </ul>
+              </div>
+            )
+           }
+            </div>
+            <div className=' flex space-x-2'>
             <FormField
               control={form.control}
               name='message'
@@ -147,6 +186,7 @@ export default function Chat() {
             <Button type='submit' disabled={isPending}>
               Enviar
             </Button>
+            </div>
           </form>
         </Form>
       </footer>

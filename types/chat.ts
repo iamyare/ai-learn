@@ -4,3 +4,10 @@ type MessageType = {
     isUser: boolean
     timestamp: string
   }
+
+  type ImportantEventType = {
+    title: string
+    description: string
+    date: string
+    priority: string
+  }

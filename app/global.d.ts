@@ -22,4 +22,6 @@ declare global {
     isUser: boolean
     timestamp: string
   }
+
+
 }
