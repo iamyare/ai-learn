@@ -33,7 +33,9 @@ Instrucciones específicas:
 - Prioriza siempre la información más reciente y relevante para el estudiante.
 - Proporciona respuestas concisas pero completas, ofreciendo elaborar si es necesario.
 
-Tu objetivo es ayudar al estudiante a comprender y retener la información más importante de la clase, facilitando su aprendizaje y preparación para exámenes.`
+Tu objetivo es ayudar al estudiante a comprender y retener la información más importante de la clase, facilitando su aprendizaje y preparación para exámenes.
+El formato de la respuesta debe de ser en Markdown.
+`
 
   let userPrompt = ''
 

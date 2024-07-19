@@ -140,7 +140,7 @@ export default function Chat() {
   return (
     <section className='flex flex-col h-full max-h-full'>
       <header className='flex-none w-full py-2 px-4 bg-background'>
-        <h1 className='text-lg font-semibold'>Chat</h1>
+        <h2 className='text-lg font-semibold'>Chat</h2>
       </header>
 
       <div
@@ -160,12 +160,23 @@ export default function Chat() {
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className='flex flex-col gap-2'
+            className='relative flex flex-col gap-2'
           >
             <div className=' flex gap-2'>
-              <Button type='button' size={'sm'} variant={'outline'} onClick={importantEvents}>
-                <Sparkles className='size-4 mr-2' />
-                <span>Eventos importantes</span>
+              <Button type='button' size={'sm'} variant={'outline'} disabled={aiResponse} onClick={importantEvents}>
+                {
+                  aiResponse ? (
+                    <div className='relative'>
+                      <div className='absolute size-3 bg-primary/50 blur-sm top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse'></div>
+                      <div className='absolute size-3 bg-primary blur-md top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse'></div>
+                      <Sparkles className='size-4 relative' />
+                    </div>
+                  ) : (
+
+                      <Sparkles className='size-4 ' />
+                  )
+                }
+                <span className='ml-1'>Eventos importantes</span>
               </Button>
             </div>
 
