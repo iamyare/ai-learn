@@ -79,14 +79,23 @@ export default function Chat() {
     };
     setMessages((prevMessages) => [...prevMessages, userMessage])
     setShouldAutoScroll(true)
+    form.reset()
 
     const transcript = history.map((entry) => entry.text).join(' ')
+
+    const messageHistory: { role: 'user' | 'assistant'; content: string }[] = messages
+    .filter((msg): msg is MessageType => 'content' in msg)
+    .map(msg => ({
+      role: msg.isUser ? 'user' : 'assistant',
+      content: msg.content
+    }));
 
     startTransition(async () => {
       const { textStream } = await aiStream({
         prompt: values.message,
         transcription: transcript,
-        textPdf: text
+        textPdf: text,
+        messageHistory: messageHistory
       })
 
       let aiResponse = ''
@@ -109,7 +118,7 @@ export default function Chat() {
         })
       }
 
-      form.reset()
+
     })
   }
 
