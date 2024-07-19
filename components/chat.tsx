@@ -26,7 +26,6 @@ import { usePDFText } from '@/context/usePDFTextExtractionContext'
 import { aiStream } from '@/lib/ai'
 import { readStreamableValue } from 'ai/rsc'
 import { Sparkles } from 'lucide-react'
-import { formatDate } from '@/lib/utils'
 import { generateImportantEvents } from '@/lib/ai/ai-extra'
 
 const formSchema = z.object({
@@ -37,9 +36,9 @@ export default function Chat() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const [isPending, startTransition] = useTransition()
-  const [events, setEvents] = useState<ImportantEventType[] | null>(null)
+  // const [events, setEvents] = useState<ImportantEventType[] | EventMessageType>(null)
   const [aiResponse, setAiResponse] = useTransition()
-  const [messages, setMessages] = useState<MessageType[]>([])
+  const [messages, setMessages] = useState<(ChatMessageType[])>([])
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true)
 
   const { text } = usePDFText()
@@ -59,16 +58,28 @@ export default function Chat() {
     }
   }, [shouldAutoScroll, messagesEndRef])
 
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages, scrollToBottom])
+
+  const handleScroll = () => {
+    if (chatContainerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current
+      const isScrolledToBottom = scrollTop + clientHeight >= scrollHeight - 10
+      setShouldAutoScroll(isScrolledToBottom)
+    }
+  }
+
+
   function onSubmit(values: z.infer<typeof formSchema>) {
     const userMessage: MessageType = {
       content: values.message,
       isUser: true,
       timestamp: new Date().toISOString()
-    }
+    };
     setMessages((prevMessages) => [...prevMessages, userMessage])
     setShouldAutoScroll(true)
 
-    //mostrar todo el historial de transcripciones
     const transcript = history.map((entry) => entry.text).join(' ')
 
     startTransition(async () => {
@@ -84,7 +95,7 @@ export default function Chat() {
         setMessages((prevMessages) => {
           const updatedMessages = [...prevMessages]
           const lastMessage = updatedMessages[updatedMessages.length - 1]
-          if (!lastMessage.isUser) {
+          if (!lastMessage.isUser && 'content' in lastMessage) {
             lastMessage.content = aiResponse
           } else {
             updatedMessages.push({
@@ -113,27 +124,18 @@ export default function Chat() {
 
       for await (const partialObject of readStreamableValue(object)) {
         if (partialObject) {
-          setEvents(
-            partialObject.importantEvents
-          );
+          const eventMessage: EventMessageType = {
+            events: partialObject.importantEvents,
+            isUser: false,
+            timestamp: new Date().toISOString()
+          };
+          setMessages((prevMessages) => [...prevMessages, eventMessage]);
+          // setEvents(partialObject.importantEvents);
         }
       }
     })
-
-
   }
 
-  useEffect(() => {
-    scrollToBottom()
-  }, [messages, scrollToBottom])
-
-  const handleScroll = () => {
-    if (chatContainerRef.current) {
-      const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current
-      const isScrolledToBottom = scrollTop + clientHeight >= scrollHeight - 10
-      setShouldAutoScroll(isScrolledToBottom)
-    }
-  }
 
   return (
     <section className='flex flex-col h-full max-h-full'>
@@ -142,7 +144,7 @@ export default function Chat() {
       </header>
 
       <div
-        className='flex-grow overflow-y-auto px-4'
+        className='flex-grow overflow-y-auto  px-4'
         ref={chatContainerRef}
         onScroll={handleScroll}
       >
@@ -150,37 +152,6 @@ export default function Chat() {
           {messages.map((message, index) => (
             <BubbleChat key={index} message={message} />
           ))}
-          {
-            events && (
-              <div className=' flex flex-col gap-2'>
-                <h2 className=' text-lg font-semibold '>Eventos importantes</h2>
-                <ul className=' grid gap-2'>
-                  {events.map((event, index) => (
-                    <li key={index} className=' flex flex-col bg-muted/10 border p-2 rounded-lg shadow-md'>
-                      <div className=' flex justify-between items-center'>
-                      <h3 className=' font-medium  text-foreground'>{event.title}</h3>
-                      <span className=' rounded-full px-2 py-1 bg-muted'>
-                        {event.priority}
-                      </span>
-                      </div>
-                      <p className=' text-muted-foreground text-sm '>{event.description}</p>
-                      <hr className='my-2' />
-                        {/* Separar la fecha y la hora */}
-                    <div className=' flex justify-between'>
-                      <span className=' text-sm text-muted-foreground'>Fecha: {
-                         event.date
-                        }</span>
-                      <span className=' text-muted-foreground'>Hora: {
-                          //dar formato solo a la hora
-                          formatDate(event.date, 'time')
-                        }</span>
-                    </div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )
-          }
           <div ref={messagesEndRef} />
         </div>
       </div>
