@@ -37,7 +37,7 @@ export async function generateImportantEvents({
       - Consejos prácticos del docente
       - Temas clave o conceptos importantes mencionados
   
-      Si no hay transcripción ni PDF disponibles, genera eventos genéricos relacionados con una clase universitaria típica.
+      Si no hay transcripción ni PDF disponibles, se genera un evento diciendo "No hay eventos importantes".
       `;
   
     let userPrompt = prompt + '\n\n';

@@ -32,10 +32,10 @@ const MessageContent: React.FC<{ content: string }> = React.memo(({ content }) =
       <Button
         size="icon"
         variant="outline"
-        className="absolute bottom-0 translate-y-1/2 right-5 py-1 px-2 transition-transform active:scale-95"
+        className="absolute bottom-0 translate-y-1/2 right-5 size-fit p-2.5 transition-transform active:scale-95"
         onClick={handleCopy}
       >
-        {isCopied ? <Check className="size-4" /> : <Copy className="size-4" />}
+        {isCopied ? <Check className="size-3" /> : <Copy className="size-3" />}
       </Button>
     </>
   );
