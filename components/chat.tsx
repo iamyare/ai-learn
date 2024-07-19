@@ -97,6 +97,7 @@ export default function Chat() {
           const lastMessage = updatedMessages[updatedMessages.length - 1]
           if (!lastMessage.isUser && 'content' in lastMessage) {
             lastMessage.content = aiResponse
+            setShouldAutoScroll(true)
           } else {
             updatedMessages.push({
               content: aiResponse,
@@ -133,6 +134,7 @@ export default function Chat() {
           // setEvents(partialObject.importantEvents);
         }
       }
+      setShouldAutoScroll(true)
     })
   }
 
@@ -144,11 +146,11 @@ export default function Chat() {
       </header>
 
       <div
-        className='flex-grow overflow-y-auto  px-4'
+        className='flex-grow overflow-y-auto pb-16   px-4'
         ref={chatContainerRef}
         onScroll={handleScroll}
       >
-        <div className='space-y-4 py-4'>
+        <div className='space-y-4'>
           {messages.map((message, index) => (
             <BubbleChat key={index} message={message} />
           ))}
@@ -156,12 +158,13 @@ export default function Chat() {
         </div>
       </div>
 
-      <footer className='flex-none w-full p-4 bg-background'>
+      <footer className=' w-full p-4 '>
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className='relative flex flex-col gap-2'
+            className='  relative h-full w-full flex flex-col gap-2'
           >
+            <div className=' absolute flex flex-col gap-2  w-full bottom-0 left-0'>
             <div className=' flex gap-2'>
               <Button type='button' size={'sm'} variant={'outline'} disabled={aiResponse} onClick={importantEvents}>
                 {
@@ -196,6 +199,7 @@ export default function Chat() {
             <Button type='submit' disabled={isPending}>
               Enviar
             </Button>
+            </div>
             </div>
           </form>
         </Form>
