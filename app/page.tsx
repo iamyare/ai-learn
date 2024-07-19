@@ -10,10 +10,13 @@ import {
 } from '@/components/ui/resizable'
 import { SpeechRecognitionProvider } from '@/context/useSpeechRecognitionContext'
 import Viewer from '@/components/ui/viewer'
+import { PDFTextProvider } from '@/context/usePDFTextExtractionContext'
 
 export default function Home() {
+  const fileUrl = '/somefile.pdf'
   return (
     <SpeechRecognitionProvider>
+      <PDFTextProvider>
       <main className='flex flex-col w-screen h-screen overflow-hidden'>
         <header className='w-screen h-10 border-b'></header>
         <ResizablePanelGroup direction='horizontal' className='w-full h-full'>
@@ -22,7 +25,7 @@ export default function Home() {
             <ResizablePanelGroup direction='vertical'>
               <ResizablePanel defaultSize={60} minSize={30}>
 
-                  <Viewer fileUrl='/somefile.pdf'/>
+                  <Viewer fileUrl={fileUrl}/>
               </ResizablePanel>
               <ResizableHandle />
               <ResizablePanel defaultSize={40}>
@@ -39,6 +42,7 @@ export default function Home() {
 
         <footer className='w-screen h-5 border-t'></footer>
       </main>
+      </PDFTextProvider>
     </SpeechRecognitionProvider>
   )
 }

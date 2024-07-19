@@ -19,12 +19,14 @@ import {
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { aiStream } from '@/lib/ai'
+
 import { useSpeechRecognitionContext } from '@/context/useSpeechRecognitionContext'
 import BubbleChat from './ui/bubble-chat'
+import { usePDFText } from '@/context/usePDFTextExtractionContext'
+import { aiStream } from '@/lib/ai'
 
 const formSchema = z.object({
-  message: z.string().min(1, 'Message cannot be empty')
+  message: z.string().min(1, 'El mensaje no puede estar vacío')
 })
 
 export default function Chat() {
@@ -33,6 +35,8 @@ export default function Chat() {
   const [isPending, startTransition] = useTransition()
   const [messages, setMessages] = useState<MessageType[]>([])
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true)
+
+  const { text } = usePDFText()
 
   const { history } = useSpeechRecognitionContext()
 
@@ -64,10 +68,9 @@ export default function Chat() {
     startTransition(async () => {
       const { textStream } = await aiStream({
         prompt: values.message,
-        transcription: transcript
+        transcription: transcript,
+        textPdf: text
       })
-
-      form.reset()
 
       let aiResponse = ''
       for await (const text of textStream) {

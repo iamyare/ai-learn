@@ -1,5 +1,5 @@
 'use client'
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Worker } from '@react-pdf-viewer/core';
 import { toolbarPlugin } from '@react-pdf-viewer/toolbar';
 
@@ -8,7 +8,8 @@ import '@react-pdf-viewer/page-navigation/lib/styles/index.css';
 import '@react-pdf-viewer/toolbar/lib/styles/index.css';
 import usePDFViewer from './usePDFViewer'; // Adjust the import path as needed
 import Toolbar from './viewer/toolbar';
-import useExtractPDFText from './useExtractPDFText';
+import { usePDFText } from '@/context/usePDFTextExtractionContext';
+
 
 interface PDFViewerProps {
     fileUrl: string;
@@ -23,15 +24,15 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ fileUrl }) => {
 
     const toolbarPluginInstance = toolbarPlugin();
     const { Toolbar: ToolbarSlot } = toolbarPluginInstance;
+    
+    const { extractTextFromPDF } = usePDFText();
+    
+    useEffect(() => {
+        extractTextFromPDF(fileUrl);
+    }, [fileUrl, extractTextFromPDF]);
 
 
-    const { text, isLoading, error } = useExtractPDFText(fileUrl);
-
-    console.log('text', text);
-    console.log('isLoading', isLoading);
-    console.log('error', error);
-
-
+    
     if (!workerSrc) {
         return <div>Loading...</div>;
     }
