@@ -23,8 +23,11 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useSpeechRecognitionContext } from '@/context/useSpeechRecognitionContext'
 import BubbleChat from './ui/bubble-chat'
 import { usePDFText } from '@/context/usePDFTextExtractionContext'
-import { aiStream, generateImportantEvents } from '@/lib/ai'
+import { aiStream } from '@/lib/ai'
 import { readStreamableValue } from 'ai/rsc'
+import { Sparkles } from 'lucide-react'
+import { formatDate } from '@/lib/utils'
+import { generateImportantEvents } from '@/lib/ai/ai-extra'
 
 const formSchema = z.object({
   message: z.string().min(1, 'El mensaje no puede estar vacío')
@@ -100,10 +103,12 @@ export default function Chat() {
 
   function importantEvents() {
     setAiResponse(async() => {
+      const transcript = history.map((entry) => entry.text).join(' ')
+
       const { object } = await generateImportantEvents({
         prompt: "Lista de cosas importantes para la próxima semana",
-        transcription: "Transcripción de la clase...",
-        textPdf: "Contenido del PDF de la clase..."
+        transcription: transcript,
+        textPdf: text
       });
 
       for await (const partialObject of readStreamableValue(object)) {
@@ -145,6 +150,37 @@ export default function Chat() {
           {messages.map((message, index) => (
             <BubbleChat key={index} message={message} />
           ))}
+          {
+            events && (
+              <div className=' flex flex-col gap-2'>
+                <h2 className=' text-lg font-semibold '>Eventos importantes</h2>
+                <ul className=' grid gap-2'>
+                  {events.map((event, index) => (
+                    <li key={index} className=' flex flex-col bg-muted/10 border p-2 rounded-lg shadow-md'>
+                      <div className=' flex justify-between items-center'>
+                      <h3 className=' font-medium  text-foreground'>{event.title}</h3>
+                      <span className=' rounded-full px-2 py-1 bg-muted'>
+                        {event.priority}
+                      </span>
+                      </div>
+                      <p className=' text-muted-foreground text-sm '>{event.description}</p>
+                      <hr className='my-2' />
+                        {/* Separar la fecha y la hora */}
+                    <div className=' flex justify-between'>
+                      <span className=' text-sm text-muted-foreground'>Fecha: {
+                         event.date
+                        }</span>
+                      <span className=' text-muted-foreground'>Hora: {
+                          //dar formato solo a la hora
+                          formatDate(event.date, 'time')
+                        }</span>
+                    </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )
+          }
           <div ref={messagesEndRef} />
         </div>
       </div>
@@ -156,20 +192,12 @@ export default function Chat() {
             className='flex flex-col gap-2'
           >
             <div className=' flex gap-2'>
-            <Button type='button' size={'sm'} variant={'outline'} onClick={importantEvents}>Hola</Button>
-           {
-            events && (
-              <div>
-                <h2>Eventos importantes</h2>
-                <ul>
-                  {events.map((event, index) => (
-                    <li key={index}>{event.title}</li>
-                  ))}
-                </ul>
-              </div>
-            )
-           }
+              <Button type='button' size={'sm'} variant={'outline'} onClick={importantEvents}>
+                <Sparkles className='size-4 mr-2' />
+                <span>Eventos importantes</span>
+              </Button>
             </div>
+
             <div className=' flex space-x-2'>
             <FormField
               control={form.control}
