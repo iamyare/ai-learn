@@ -70,3 +70,21 @@
   }
 }
 
+.animated-border {
+  stroke-dasharray: 1500;
+  stroke-dashoffset: 1500;
+  animation: dash 1s linear forwards infinite;
+}
+
+@keyframes dash {
+  to {
+      stroke-dashoffset: 0;
+  }
+}
+
+
+.rpv-core__page-layer::after{
+  box-shadow:  30px 30px 60px hsl(var(--accent)) ,
+  -30px -30px 60px hsl(var(--accent)) !important;
+  border-radius: var(--radius) !important;
+}
