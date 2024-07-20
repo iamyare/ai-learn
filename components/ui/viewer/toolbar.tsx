@@ -23,10 +23,10 @@ import {
   ZoomOutIcon,
   DownloadIcon,
   LucideIcon,
-  Ellipsis,
   ChevronUp
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useCurrentPage } from '@/context/useCurrentPageContext' // Importa el hook del contexto
 
 interface ToolbarProps {
   toolbarSlot: ToolbarSlot
@@ -50,8 +50,6 @@ function ToolbarButton<T extends RenderProps>({
   icon: LucideIcon
   render: (renderButton: (onClick: () => void) => ReactElement) => ReactElement
 }) {
-
-
   return (
     <Tooltip delayDuration={500}>
       <TooltipTrigger>
@@ -82,6 +80,7 @@ export default function Toolbar({ toolbarSlot, className }: ToolbarProps) {
   } = toolbarSlot
 
   const [isOpen, setIsOpen] = useState(true);
+  const { currentPage, setCurrentPage } = useCurrentPage(); // Usa el contexto
 
   return (
     <TooltipProvider>
@@ -129,7 +128,10 @@ export default function Toolbar({ toolbarSlot, className }: ToolbarProps) {
             icon={ChevronLeft}
             render={(renderButton) => (
               <GoToPreviousPage>
-                {(props: RenderGoToPageProps) => renderButton(props.onClick)}
+                {(props: RenderGoToPageProps) => renderButton(() => {
+                  props.onClick();
+                  setCurrentPage(currentPage - 1);
+                })}
               </GoToPreviousPage>
             )}
           />
@@ -143,7 +145,10 @@ export default function Toolbar({ toolbarSlot, className }: ToolbarProps) {
             icon={ChevronRight}
             render={(renderButton) => (
               <GoToNextPage>
-                {(props: RenderGoToPageProps) => renderButton(props.onClick)}
+                {(props: RenderGoToPageProps) => renderButton(() => {
+                  props.onClick();
+                  setCurrentPage(currentPage + 1);
+                })}
               </GoToNextPage>
             )}
           />

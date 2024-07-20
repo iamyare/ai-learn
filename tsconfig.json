@@ -18,7 +18,9 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@/hooks/*": ["./hooks/*"],
+      "@/context/*": ["./context/*"],
     },
     // ... other options ...
     "typeRoots": ["./node_modules/@types", "./types"]

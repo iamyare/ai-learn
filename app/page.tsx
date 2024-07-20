@@ -11,12 +11,14 @@ import {
 import { SpeechRecognitionProvider } from '@/context/useSpeechRecognitionContext'
 import Viewer from '@/components/ui/viewer'
 import { PDFTextProvider } from '@/context/usePDFTextExtractionContext'
+import { CurrentPageProvider } from '@/context/useCurrentPageContext'
 
 export default function Home() {
   const fileUrl = '/somefile.pdf'
   return (
     <SpeechRecognitionProvider>
       <PDFTextProvider>
+        <CurrentPageProvider>
       <main className='flex flex-col w-screen h-screen overflow-hidden'>
         <header className='w-screen h-10 border-b'></header>
         <ResizablePanelGroup direction='horizontal' className='w-full h-full'>
@@ -42,6 +44,7 @@ export default function Home() {
 
         <footer className='w-screen h-5 border-t'></footer>
       </main>
+        </CurrentPageProvider>
       </PDFTextProvider>
     </SpeechRecognitionProvider>
   )
