@@ -14,6 +14,7 @@
     "components": "@/components",
     "utils": "@/lib/utils",
     "context": "@/context",
-    "hooks": "@/hooks"
+    "hooks": "@/hooks",
+    "actions" : "@/actions"
   }
 }
