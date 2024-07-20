@@ -17,6 +17,8 @@
     "@radix-ui/react-tooltip": "^1.1.2",
     "@react-pdf-viewer/default-layout": "^3.12.0",
     "@react-pdf-viewer/page-navigation": "^3.12.0",
+    "@supabase/ssr": "^0.4.0",
+    "@supabase/supabase-js": "^2.44.4",
     "@types/dom-speech-recognition": "^0.0.4",
     "ai": "^3.2.27",
     "ansi-html": "^0.0.9",
