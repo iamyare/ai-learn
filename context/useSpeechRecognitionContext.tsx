@@ -2,11 +2,9 @@
 'use client'
 
 import React, { createContext, useContext, ReactNode, useEffect, useCallback, useMemo, useState } from 'react'
-import { useSpeechRecognition} from '@/components/ui/useSpeechRecognition'
+import { useSpeechRecognition } from '@/components/ui/useSpeechRecognition'
 import { useCurrentPage } from './useCurrentPageContext'
 import { DialogEntry, SpeechRecognitionContextType } from '@/types/speechRecognition'
-
-
 
 const SpeechRecognitionContext = createContext<SpeechRecognitionContextType | undefined>(undefined)
 
@@ -26,36 +24,30 @@ export const SpeechRecognitionProvider: React.FC<{ children: ReactNode }> = ({ c
     }
   }, [speechRecognition])
 
-  const finishCurrentTranscription = useCallback(() => {
-    if (speechRecognition.transcript.trim()) {
+  const addEntryToHistory = useCallback((text: string, page: number) => {
+    if (text.trim()) {
       const newEntry: DialogEntry = {
         timestamp: new Date().toISOString(),
-        text: speechRecognition.transcript.trim(),
-        page: lastRecordedPage || 1
+        text: text.trim(),
+        page: page
       }
       speechRecognition.updateOptions({
-        history: [...speechRecognition.history, newEntry]
+        history: [...speechRecognition.history, newEntry],
       })
-      speechRecognition.stopListening()
-      speechRecognition.updateOptions({ transcript: '' })
     }
-  }, [speechRecognition, lastRecordedPage])
-
-  const startNewTranscription = useCallback(() => {
-    setLastRecordedPage(currentPage || 1)
-    if (speechRecognition.isListening) {
-      speechRecognition.stopListening()
-      speechRecognition.startListening()
-    }
-  }, [currentPage, speechRecognition])
+  }, [speechRecognition])
 
   useEffect(() => {
-    console.log('currentPage', currentPage)
     if (currentPage !== lastRecordedPage) {
-      finishCurrentTranscription()
-      startNewTranscription()
+      // If there's ongoing transcription, add it to history with the previous page
+      addEntryToHistory(speechRecognition.transcript, lastRecordedPage)
+      
+      // Clear the current transcript
+      speechRecognition.updateOptions({ transcript: '' })
+      
+      setLastRecordedPage(currentPage)
     }
-  }, [currentPage, lastRecordedPage, finishCurrentTranscription, startNewTranscription])
+  }, [currentPage, lastRecordedPage, speechRecognition, addEntryToHistory])
 
   useEffect(() => {
     const handleSpeechRecognitionError = (event: ErrorEvent) => {
@@ -78,13 +70,19 @@ export const SpeechRecognitionProvider: React.FC<{ children: ReactNode }> = ({ c
     error,
     startListening: () => {
       setError(null)
-      speechRecognition.startListening()
+      if (!speechRecognition.isListening) {
+        speechRecognition.startListening()
+      }
     },
     stopListening: () => {
-      speechRecognition.stopListening()
-      finishCurrentTranscription()
+      if (speechRecognition.isListening) {
+        speechRecognition.stopListening()
+        // Add any remaining transcript to history
+        addEntryToHistory(speechRecognition.transcript, lastRecordedPage)
+        speechRecognition.updateOptions({ transcript: '' })
+      }
     }
-  }), [speechRecognition, error, finishCurrentTranscription])
+  }), [speechRecognition, error, lastRecordedPage, addEntryToHistory])
 
   return (
     <SpeechRecognitionContext.Provider value={contextValue}>
