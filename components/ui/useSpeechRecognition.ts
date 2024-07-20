@@ -1,15 +1,10 @@
 'use client'
+import { DialogEntry, SpeechRecognitionOptions } from "@/types/speechRecognition"
 import { useCallback, useEffect, useRef, useState } from "react"
 
-interface DialogEntry {
-  timestamp: string
-  text: string
-}
 
-interface SpeechRecognitionOptions {
-  groupingInterval?: number
-  language?: string
-}
+
+
 
 export const useSpeechRecognition = (options: SpeechRecognitionOptions = {}) => {
   const {
@@ -50,7 +45,7 @@ export const useSpeechRecognition = (options: SpeechRecognitionOptions = {}) => 
         const lastEntry = prevHistory[prevHistory.length - 1]
         
         if (lastEntry && now - lastEntryTimestampRef.current < optionsRef.current.groupingInterval!) {
-          // Agrupar con la última entrada si está dentro del intervalo
+          // Group with the last entry if within the interval
           const updatedHistory = [...prevHistory]
           updatedHistory[updatedHistory.length - 1] = {
             ...lastEntry,
@@ -58,11 +53,11 @@ export const useSpeechRecognition = (options: SpeechRecognitionOptions = {}) => 
           }
           return updatedHistory
         } else {
-          // Crear una nueva entrada
+          // Create a new entry
           lastEntryTimestampRef.current = now
           return [
             ...prevHistory,
-            { timestamp: formatTimestamp(new Date(now)), text: text.trim() }
+            { timestamp: formatTimestamp(new Date(now)), text: text.trim(), page: undefined }
           ]
         }
       })
@@ -141,12 +136,16 @@ export const useSpeechRecognition = (options: SpeechRecognitionOptions = {}) => 
     if (recognitionRef.current) {
       recognitionRef.current.lang = optionsRef.current.language!
     }
+    if (newOptions.history) {
+      setHistory(newOptions.history); // Add this line
+    }
   }, [])
 
   return { 
     isListening, 
     transcript, 
-    history, 
+    history,
+    
     startListening, 
     stopListening,
     updateOptions

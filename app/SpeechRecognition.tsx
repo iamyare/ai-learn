@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button"
 import CoursorText from "@/components/ui/coursor-text"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useSpeechRecognitionContext } from "@/context/useSpeechRecognitionContext"
-// import { useSpeechRecognition } from "@/components/ui/useSpeechRecognition"
 import { cn } from "@/lib/utils"
 import { Mic, Play, SkipBack, SkipForward } from "lucide-react"
 
@@ -41,25 +40,19 @@ export default function SpeechRecognition({classNameContainer, classNameHeader, 
       <ScrollArea className={cn(" w-full h-full px-4 overflow-scroll ", classNameTranscript)}>
       {history.length !== 0 ? (
             <>
-              {history.map((entry, index) => (
-                <p key={index} className='flex flex-col'>
-                  <span className=' ml-2 text-muted-foreground text-sm'>
-                    {entry.timestamp} - Pagina 2
-                  </span>
-                  {entry.text}
-                  {
-                    //si es la última entrada, anexar puntos suspensivos
-                    index === history.length - 1
-                      ? isListening && (
-                          <span>
-                            {' '}{transcript}<CoursorText />
-                          </span>
-                        )
-                      : null
-                  }
-                  {/* {index < history.length - 1 ? '\n' : ''} */}
-                </p>
-              ))}
+{history.map((entry, index) => (
+  <p key={index} className='flex flex-col'>
+    <span className='ml-2 text-muted-foreground text-sm'>
+      {entry.timestamp} - Page {entry.page || 'Unknown'}
+    </span>
+    {entry.text}
+    {index === history.length - 1 && isListening && (
+      <span>
+        {' '}{transcript}<CoursorText />
+      </span>
+    )}
+  </p>
+))}
             </>
           ) : (
             isListening && (
