@@ -123,7 +123,7 @@ export const useSpeechRecognition = (initialOptions: SpeechRecognitionOptions = 
         addToHistory(transcript, currentPageRef.current)
         setTranscript('')
       }
-      addToHistory(`[Page changed to ${newPage}]`, newPage)
+      // addToHistory(`[Page changed to ${newPage}]`, newPage)
       setCurrentPage(newPage)
       currentPageRef.current = newPage
     }
