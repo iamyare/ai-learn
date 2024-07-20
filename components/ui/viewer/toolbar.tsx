@@ -1,6 +1,6 @@
 'use client'
 
-import { ReactElement, useState } from 'react'
+import React, { useState, useCallback, memo, ReactElement, useRef } from 'react'
 import { ToolbarSlot } from '@react-pdf-viewer/toolbar'
 import { RenderZoomInProps, RenderZoomOutProps } from '@react-pdf-viewer/zoom'
 import { RenderGoToPageProps } from '@react-pdf-viewer/page-navigation'
@@ -26,7 +26,7 @@ import {
   ChevronUp
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useCurrentPage } from '@/context/useCurrentPageContext' // Importa el hook del contexto
+import { useCurrentPage } from '@/context/useCurrentPageContext'
 
 interface ToolbarProps {
   toolbarSlot: ToolbarSlot
@@ -66,9 +66,30 @@ function ToolbarButton<T extends RenderProps>({
   )
 }
 
+interface CurrentPageLabelProps {
+  children: (props: {
+    currentPage: number
+    numberOfPages: number
+  }) => ReactElement
+}
+
+const MemoizedCurrentPageLabel = memo(
+  ({
+    children,
+    CurrentPageLabel
+  }: CurrentPageLabelProps & {
+    CurrentPageLabel: React.ComponentType<CurrentPageLabelProps>
+  }) => {
+    return <CurrentPageLabel>{children}</CurrentPageLabel>
+  }
+)
+
+MemoizedCurrentPageLabel.displayName = 'MemoizedCurrentPageLabel'
+
 export default function Toolbar({ toolbarSlot, className }: ToolbarProps) {
   const {
     CurrentPageInput,
+    CurrentPageLabel,
     Download,
     EnterFullScreen,
     GoToNextPage,
@@ -79,8 +100,19 @@ export default function Toolbar({ toolbarSlot, className }: ToolbarProps) {
     ZoomOut
   } = toolbarSlot
 
-  const [isOpen, setIsOpen] = useState(true);
-  const { currentPage, setCurrentPage } = useCurrentPage(); // Usa el contexto
+  const [isOpen, setIsOpen] = useState(true)
+  const { currentPage, setCurrentPage } = useCurrentPage()
+  const prevPageRef = useRef<number | null>(null)
+
+  const updateCurrentPage = useCallback(
+    (newPage: number) => {
+      if (prevPageRef.current !== newPage) {
+        setCurrentPage(newPage + 1)
+        prevPageRef.current = newPage
+      }
+    },
+    [setCurrentPage]
+  )
 
   return (
     <TooltipProvider>
@@ -88,20 +120,27 @@ export default function Toolbar({ toolbarSlot, className }: ToolbarProps) {
         className={cn(
           'flex gap-2 w-fit bg-muted/90 border backdrop-blur-sm mx-auto rounded-full items-center justify-center px-4 py-2 absolute left-1/2 -translate-x-1/2 z-10 transition-transform duration-300',
           className,
-          isOpen ? 'bottom-2' : ' bottom-2 translate-y-full hover:translate-y-[90%]'
+          isOpen
+            ? 'bottom-2'
+            : ' bottom-2 translate-y-full hover:translate-y-[90%]'
         )}
       >
         <Button
           variant={'secondary'}
-          className={cn(' absolute top-0 -translate-y-1/2  left-1/2 -translate-x-1/2 px-2 py-1 h-fit ',
+          className={cn(
+            ' absolute top-0 -translate-y-1/2  left-1/2 -translate-x-1/2 px-2 py-1 h-fit ',
             isOpen ? '' : ''
           )}
-            onClick={() => setIsOpen((prev) => !prev)}
+          onClick={() => setIsOpen((prev) => !prev)}
         >
-          <ChevronUp className={cn('size-4  transition-transform duration-300', 
-            isOpen ? 'rotate-180' : ''
-          )} />
+          <ChevronUp
+            className={cn(
+              'size-4  transition-transform duration-300',
+              isOpen ? 'rotate-180' : ''
+            )}
+          />
         </Button>
+
         <ToolbarButton<RenderZoomOutProps>
           tooltip='Zoom Out'
           icon={ZoomOutIcon}
@@ -128,13 +167,22 @@ export default function Toolbar({ toolbarSlot, className }: ToolbarProps) {
             icon={ChevronLeft}
             render={(renderButton) => (
               <GoToPreviousPage>
-                {(props: RenderGoToPageProps) => renderButton(() => {
-                  props.onClick();
-                  setCurrentPage(currentPage - 1);
-                })}
+                {(props: RenderGoToPageProps) =>
+                  renderButton(() => {
+                    props.onClick()
+                    setCurrentPage(currentPage - 1)
+                  })
+                }
               </GoToPreviousPage>
             )}
           />
+
+          <MemoizedCurrentPageLabel CurrentPageLabel={CurrentPageLabel}>
+            {(props: { currentPage: number; numberOfPages: number }) => {
+              updateCurrentPage(props.currentPage)
+              return <></>
+            }}
+          </MemoizedCurrentPageLabel>
 
           <CurrentPageInput />
           <span>/</span>
@@ -145,10 +193,12 @@ export default function Toolbar({ toolbarSlot, className }: ToolbarProps) {
             icon={ChevronRight}
             render={(renderButton) => (
               <GoToNextPage>
-                {(props: RenderGoToPageProps) => renderButton(() => {
-                  props.onClick();
-                  setCurrentPage(currentPage + 1);
-                })}
+                {(props: RenderGoToPageProps) =>
+                  renderButton(() => {
+                    props.onClick()
+                    setCurrentPage(currentPage + 1)
+                  })
+                }
               </GoToNextPage>
             )}
           />

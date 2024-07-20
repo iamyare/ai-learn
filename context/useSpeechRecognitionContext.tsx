@@ -50,6 +50,7 @@ export const SpeechRecognitionProvider: React.FC<{ children: ReactNode }> = ({ c
   }, [currentPage, speechRecognition])
 
   useEffect(() => {
+    console.log('currentPage', currentPage)
     if (currentPage !== lastRecordedPage) {
       finishCurrentTranscription()
       startNewTranscription()
