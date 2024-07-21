@@ -1,47 +1,52 @@
 'use client'
+import { DialogEntry, SpeechRecognitionOptions } from "@/types/speechRecognition"
 import { useCallback, useEffect, useRef, useState } from "react"
 
-interface DialogEntry {
-  timestamp: string
-  text: string
-}
-
-export const useSpeechRecognition = () => {
+export const useSpeechRecognition = (initialOptions: SpeechRecognitionOptions = {}) => {
+  const [options, setOptions] = useState<SpeechRecognitionOptions>(initialOptions)
   const [isListening, setIsListening] = useState(false)
   const [transcript, setTranscript] = useState('')
   const [history, setHistory] = useState<DialogEntry[]>([])
+  const [currentPage, setCurrentPage] = useState<number>(1)
   const recognitionRef = useRef<SpeechRecognition | null>(null)
   const currentTranscriptRef = useRef('')
+  const lastEntryTimestampRef = useRef<number>(0)
+  const currentPageRef = useRef<number>(1)
+
+  useEffect(() => {
+    currentPageRef.current = currentPage
+  }, [currentPage])
 
   const formatTimestamp = (date: Date): string => {
     return date.toISOString()
   }
 
-  const stopListening = useCallback(() => {
-    setIsListening(false)
-    if (recognitionRef.current) {
-      recognitionRef.current.stop()
-      recognitionRef.current = null
-    }
-    setTranscript('')
-    currentTranscriptRef.current = ''
-  }, [])
-
-  const addToHistory = useCallback((text: string) => {
+  const addToHistory = useCallback((text: string, page: number) => {
     if (text.trim() !== '') {
       setHistory((prevHistory) => {
+        const now = Date.now()
         const lastEntry = prevHistory[prevHistory.length - 1]
-        if (lastEntry && lastEntry.text === text.trim()) {
-          return prevHistory // No añadir si es exactamente igual a la última entrada
+        
+        if (lastEntry && now - lastEntryTimestampRef.current < options.groupingInterval! && lastEntry.page === page) {
+          // Group with the last entry if within the interval and on the same page
+          const updatedHistory = [...prevHistory]
+          updatedHistory[updatedHistory.length - 1] = {
+            ...lastEntry,
+            text: lastEntry.text + ' ' + text.trim()
+          }
+          return updatedHistory
+        } else {
+          // Create a new entry
+          lastEntryTimestampRef.current = now
+          return [
+            ...prevHistory,
+            { timestamp: formatTimestamp(new Date(now)), text: text.trim(), page: page }
+          ]
         }
-        return [
-          ...prevHistory,
-          { timestamp: formatTimestamp(new Date()), text: text.trim() }
-        ]
       })
       setTranscript('')
     }
-  }, [])
+  }, [options.groupingInterval])
 
   const startListening = useCallback(() => {
     setIsListening(true)
@@ -51,7 +56,7 @@ export const useSpeechRecognition = () => {
 
     recognition.continuous = true
     recognition.interimResults = true
-    recognition.lang = 'es-ES'
+    recognition.lang = options.language || 'es-ES'
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       let interimTranscript = ''
@@ -69,7 +74,7 @@ export const useSpeechRecognition = () => {
       if (finalTranscript !== '') {
         currentTranscriptRef.current += finalTranscript
         setTranscript(currentTranscriptRef.current)
-        addToHistory(currentTranscriptRef.current)
+        addToHistory(currentTranscriptRef.current, currentPageRef.current)
         currentTranscriptRef.current = ''
       } else {
         setTranscript(currentTranscriptRef.current + interimTranscript)
@@ -78,7 +83,6 @@ export const useSpeechRecognition = () => {
 
     recognition.onend = () => {
       if (isListening) {
-        // Reiniciar inmediatamente si aún se supone que estamos escuchando
         recognition.start()
       }
     }
@@ -86,7 +90,6 @@ export const useSpeechRecognition = () => {
     recognition.onerror = (event) => {
       console.error('Speech recognition error', event.error)
       if (isListening) {
-        // Reiniciar inmediatamente en caso de error
         recognition.stop()
         recognition.start()
       }
@@ -99,15 +102,57 @@ export const useSpeechRecognition = () => {
       recognition.stop()
       setIsListening(false)
     }
-  }, [isListening, addToHistory])
+  }, [isListening, addToHistory, options.language])
 
-  useEffect(() => {
-    return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop()
+  const stopListening = useCallback(() => {
+    setIsListening(false)
+    if (recognitionRef.current) {
+      recognitionRef.current.stop()
+      recognitionRef.current = null
+    }
+    if (currentTranscriptRef.current.trim()) {
+      addToHistory(currentTranscriptRef.current, currentPageRef.current)
+    }
+    setTranscript('')
+    currentTranscriptRef.current = ''
+  }, [addToHistory])
+
+  const changePage = useCallback((newPage: number) => {
+    if (newPage !== currentPageRef.current) {
+      if (transcript.trim()) {
+        addToHistory(transcript, currentPageRef.current)
+        setTranscript('')
       }
+      // addToHistory(`[Page changed to ${newPage}]`, newPage)
+      setCurrentPage(newPage)
+      currentPageRef.current = newPage
+    }
+  }, [transcript, addToHistory])
+
+  const updateOptions = useCallback((newOptions: Partial<SpeechRecognitionOptions>) => {
+    setOptions(prevOptions => ({
+      ...prevOptions,
+      ...newOptions
+    }))
+    if (newOptions.language && recognitionRef.current) {
+      recognitionRef.current.lang = newOptions.language
+    }
+    if (newOptions.history) {
+      setHistory(newOptions.history)
+    }
+    if (newOptions.transcript !== undefined) {
+      setTranscript(newOptions.transcript)
     }
   }, [])
 
-  return { isListening, transcript, history, startListening, stopListening }
+  return { 
+    isListening, 
+    transcript, 
+    history,
+    currentPage,
+    startListening, 
+    stopListening,
+    changePage,
+    updateOptions
+  }
 }

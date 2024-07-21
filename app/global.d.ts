@@ -1,6 +1,13 @@
+import { type Database as DB } from '@/lib/database.types'
+
 declare global {
-    interface Window {
-        SpeechRecognition: typeof SpeechRecognition;
-        webkitSpeechRecognition: typeof SpeechRecognition;
-      }
-    }
+  type Database = DB
+  
+  interface Window {
+    SpeechRecognition: typeof SpeechRecognition
+    webkitSpeechRecognition: typeof SpeechRecognition
+  }
+
+
+
+}

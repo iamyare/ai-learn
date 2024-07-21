@@ -18,9 +18,16 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
-    }
+      "@/*": ["./*"],
+      "@/hooks/*": ["./hooks/*"],
+      "@/context/*": ["./context/*"],
+    },
+    // ... other options ...
+    "typeRoots": ["./node_modules/@types", "./types"]
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", 
+    // ... other paths ...
+    "types/**/*.ts"
+  ],
   "exclude": ["node_modules"]
 }
