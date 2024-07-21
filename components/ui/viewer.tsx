@@ -1,8 +1,7 @@
 'use client'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Worker } from '@react-pdf-viewer/core'
 import { toolbarPlugin } from '@react-pdf-viewer/toolbar'
-
 import '@react-pdf-viewer/core/lib/styles/index.css'
 import '@react-pdf-viewer/page-navigation/lib/styles/index.css'
 import '@react-pdf-viewer/toolbar/lib/styles/index.css'
@@ -21,15 +20,15 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ fileUrl }) => {
     DynamicViewer, 
     viewerProps, 
     pageNavigationPluginInstance,
-    pdfDocument
   } = usePDFViewer(fileUrl)
 
   const toolbarPluginInstance = toolbarPlugin()
   const { Toolbar: ToolbarSlot } = toolbarPluginInstance
 
+
   const { extractTextFromPDF } = usePDFText()
 
-  if (!workerSrc || !pdfDocument) {
+  if (!workerSrc) {
     return (
       <div className='flex w-full h-full justify-center items-center'>
         <LoadingComponent />
@@ -37,8 +36,10 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ fileUrl }) => {
     )
   }
 
+
+
   return (
-    <Worker workerUrl={workerSrc}>
+    <Worker workerUrl={'https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.js'}>
       <div className='relative flex flex-col h-full bg-transparent'>
         <div className='flex-grow overflow-hidden'>
           <DynamicViewer
@@ -46,7 +47,6 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ fileUrl }) => {
             plugins={[pageNavigationPluginInstance, toolbarPluginInstance]}
             onDocumentLoad={() => {
               console.log('Document loaded')
-              // You can call extractTextFromPDF here if needed
               extractTextFromPDF(fileUrl)
             }}
           />
