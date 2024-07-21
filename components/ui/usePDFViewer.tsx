@@ -2,7 +2,8 @@
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { Viewer } from '@react-pdf-viewer/core';
-import { pageNavigationPlugin, RenderGoToPageProps } from '@react-pdf-viewer/page-navigation';
+import { pageNavigationPlugin } from '@react-pdf-viewer/page-navigation';
+
 
 // Dynamically import the Viewer component with correct props
 const DynamicViewer = dynamic(() => import('@react-pdf-viewer/core').then((mod) => {
@@ -30,6 +31,8 @@ const usePDFViewer = (fileUrl: string) => {
         NumberOfPages,
         // ... other properties
     } = pageNavigationPluginInstance;
+
+
 
     useEffect(() => {
         import('pdfjs-dist/build/pdf.worker.entry').then((worker) => {
