@@ -1,12 +1,13 @@
 import { createGoogleGenerativeAI } from '@ai-sdk/google'
 import { streamText } from 'ai'
 
+
 const google = createGoogleGenerativeAI({
   apiKey: process.env.NEXT_PUBLIC_GEMINI_KEY ?? ''
 })
 
 interface MessageType {
-  role: 'user' | 'assistant'
+  role: string
   content: string
 }
 

@@ -10,9 +10,9 @@ import {
 import { SpeechRecognitionProvider } from '@/context/useSpeechRecognitionContext'
 import Viewer from '@/components/ui/viewer'
 import { PDFTextProvider } from '@/context/usePDFTextExtractionContext'
-import { CurrentPageProvider } from '@/context/useCurrentPageContext'
+import { PDFProvider } from '@/context/useCurrentPageContext'
 import SpeechRecognition from './components/SpeechRecognition'
-import DragAndDrop from '@/components/ui/dragAndDrop'
+import PDFViewer from '@/components/ui/viewer'
 
 
 export default function Home() {
@@ -20,7 +20,7 @@ export default function Home() {
   const fileUrl = 'https://udmwntxrpzjwqptmwozr.supabase.co/storage/v1/object/public/pdf_documents/ingenieria%20social%20.pdf.pdf'
   return (
     <PDFTextProvider>
-      <CurrentPageProvider>
+      <PDFProvider>
         <SpeechRecognitionProvider>
           <main className='flex relative flex-col w-screen h-screen overflow-hidden'>
           {/* <DragAndDrop /> */}
@@ -33,7 +33,7 @@ export default function Home() {
               <ResizablePanel defaultSize={70}>
                 <ResizablePanelGroup direction='vertical'>
                   <ResizablePanel defaultSize={60} minSize={30}>
-                    <Viewer fileUrl={fileUrl} />
+                    <PDFViewer initialFileUrl={fileUrl} />
                   </ResizablePanel>
                   <ResizableHandle />
                   <ResizablePanel defaultSize={40}>
@@ -51,7 +51,7 @@ export default function Home() {
             <footer className='w-screen h-5 border-t'></footer>
           </main>
         </SpeechRecognitionProvider>
-      </CurrentPageProvider>
+      </PDFProvider>
     </PDFTextProvider>
   )
 }

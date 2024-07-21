@@ -26,7 +26,7 @@ import {
   ChevronUp
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useCurrentPage } from '@/context/useCurrentPageContext'
+import { usePDFContext } from '@/context/useCurrentPageContext'
 
 interface ToolbarProps {
   toolbarSlot: ToolbarSlot
@@ -76,7 +76,7 @@ interface CurrentPageLabelProps {
 const CurrentPageWrapper: React.FC<{
   CurrentPageLabel: React.ComponentType<CurrentPageLabelProps>;
 }> = ({ CurrentPageLabel }) => {
-  const { setCurrentPage } = useCurrentPage();
+  const { setCurrentPage } = usePDFContext();
   const [currentPage, setCurrentPageLocal] = useState(0);
   const [numberOfPages, setNumberOfPages] = useState(0);
 
@@ -124,7 +124,7 @@ export default function Toolbar({ toolbarSlot, className }: ToolbarProps) {
   } = toolbarSlot
 
   const [isOpen, setIsOpen] = useState(true)
-  const { currentPage, setCurrentPage } = useCurrentPage()
+  const { currentPage, setCurrentPage } = usePDFContext()
   const prevPageRef = useRef<number | null>(null)
 
   const updateCurrentPage = useCallback(

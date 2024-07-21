@@ -1,30 +1,34 @@
+'use client'
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-interface CurrentPageContextType {
+interface PDFContextType {
+  fileUrl: string;
+  setFileUrl: (url: string) => void;
   currentPage: number;
   setCurrentPage: (page: number) => void;
 }
 
-const CurrentPageContext = createContext<CurrentPageContextType | undefined>(undefined);
+const PDFContext = createContext<PDFContextType | undefined>(undefined);
 
-export const useCurrentPage = () => {
-  const context = useContext(CurrentPageContext);
+export const usePDFContext = () => {
+  const context = useContext(PDFContext);
   if (!context) {
-    throw new Error('useCurrentPage must be used within a CurrentPageProvider');
+    throw new Error('usePDFContext must be used within a PDFProvider');
   }
   return context;
 };
 
-interface CurrentPageProviderProps {
+interface PDFProviderProps {
   children: ReactNode;
 }
 
-export const CurrentPageProvider: React.FC<CurrentPageProviderProps> = ({ children }) => {
+export const PDFProvider: React.FC<PDFProviderProps> = ({ children }) => {
+  const [fileUrl, setFileUrl] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
 
   return (
-    <CurrentPageContext.Provider value={{ currentPage, setCurrentPage }}>
+    <PDFContext.Provider value={{ fileUrl, setFileUrl, currentPage, setCurrentPage }}>
       {children}
-    </CurrentPageContext.Provider>
+    </PDFContext.Provider>
   );
 };

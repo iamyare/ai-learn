@@ -5,6 +5,7 @@ import { pageNavigationPlugin } from '@react-pdf-viewer/page-navigation';
 import type { ViewerProps } from '@react-pdf-viewer/core';
 import { PDFDocumentProxy } from 'pdfjs-dist';
 
+
 // Dynamically import the Viewer component with correct props
 const DynamicViewer = dynamic(
   () =>

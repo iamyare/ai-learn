@@ -1,11 +1,11 @@
 'use client'
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo, ReactNode } from 'react';
 
 interface PDFTextContextType {
     text: string;
     isLoading: boolean;
     error: string | null;
-    extractTextFromPDF: (fileUrl: string) => void;
+    extractTextFromPDF: (fileUrl: string) => Promise<void>;
 }
 
 const PDFTextContext = createContext<PDFTextContextType | undefined>(undefined);
@@ -27,7 +27,7 @@ export const PDFTextProvider: React.FC<PDFTextProviderProps> = ({ children }) =>
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-    const extractTextFromPDF = async (fileUrl: string) => {
+    const extractTextFromPDF = useCallback(async (fileUrl: string) => {
         try {
             setIsLoading(true);
             setError(null);
@@ -49,19 +49,20 @@ export const PDFTextProvider: React.FC<PDFTextProviderProps> = ({ children }) =>
             }
 
             setText(fullText.trim());
-            setIsLoading(false);
         } catch (err) {
             setError('Error extracting text from PDF');
+            console.error('PDF extraction error:', err);
+        } finally {
             setIsLoading(false);
         }
-    };
+    }, []);
 
-    const value = {
+    const value = useMemo(() => ({
         text,
         isLoading,
         error,
         extractTextFromPDF
-    };
+    }), [text, isLoading, error, extractTextFromPDF]);
 
     return (
         <PDFTextContext.Provider value={value}>
