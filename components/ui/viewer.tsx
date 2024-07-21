@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect } from 'react'
+import React from 'react'
 import { Worker } from '@react-pdf-viewer/core'
 import { toolbarPlugin } from '@react-pdf-viewer/toolbar'
 
@@ -8,27 +8,28 @@ import '@react-pdf-viewer/page-navigation/lib/styles/index.css'
 import '@react-pdf-viewer/toolbar/lib/styles/index.css'
 import usePDFViewer from './usePDFViewer' // Adjust the import path as needed
 import Toolbar from './viewer/toolbar'
-import { usePDFText } from '@/context/usePDFTextExtractionContext'
 import LoadingComponent from './loading-component'
+import { usePDFText } from '@/context/usePDFTextExtractionContext'
 
 interface PDFViewerProps {
   fileUrl: string
 }
 
 const PDFViewer: React.FC<PDFViewerProps> = ({ fileUrl }) => {
-  const { workerSrc, DynamicViewer, pageNavigationPluginInstance } =
-    usePDFViewer(fileUrl)
+  const { 
+    workerSrc, 
+    DynamicViewer, 
+    viewerProps, 
+    pageNavigationPluginInstance,
+    pdfDocument
+  } = usePDFViewer(fileUrl)
 
   const toolbarPluginInstance = toolbarPlugin()
   const { Toolbar: ToolbarSlot } = toolbarPluginInstance
 
   const { extractTextFromPDF } = usePDFText()
 
-  useEffect(() => {
-    extractTextFromPDF(fileUrl)
-  }, [fileUrl, extractTextFromPDF])
-
-  if (!workerSrc) {
+  if (!workerSrc || !pdfDocument) {
     return (
       <div className='flex w-full h-full justify-center items-center'>
         <LoadingComponent />
@@ -41,8 +42,13 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ fileUrl }) => {
       <div className='relative flex flex-col h-full bg-transparent'>
         <div className='flex-grow overflow-hidden'>
           <DynamicViewer
-            fileUrl={fileUrl}
+            {...viewerProps}
             plugins={[pageNavigationPluginInstance, toolbarPluginInstance]}
+            onDocumentLoad={() => {
+              console.log('Document loaded')
+              // You can call extractTextFromPDF here if needed
+              extractTextFromPDF(fileUrl)
+            }}
           />
         </div>
 

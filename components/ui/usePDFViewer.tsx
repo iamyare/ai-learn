@@ -1,18 +1,15 @@
 'use client'
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { Viewer } from '@react-pdf-viewer/core';
+import { Viewer, SpecialZoomLevel } from '@react-pdf-viewer/core';
 import { pageNavigationPlugin } from '@react-pdf-viewer/page-navigation';
-
+import type { ViewerProps } from '@react-pdf-viewer/core';
+import { PDFDocumentProxy } from 'pdfjs-dist';
 
 // Dynamically import the Viewer component with correct props
 const DynamicViewer = dynamic(() => import('@react-pdf-viewer/core').then((mod) => {
-    interface ViewerProps {
-      fileUrl: string;
-      plugins: Plugin[];
-    }
-    const DynamicViewerComponent: React.FC<ViewerProps> = ({ fileUrl, plugins }) => (
-      <Viewer fileUrl={fileUrl} plugins={plugins} />
+    const DynamicViewerComponent: React.FC<ViewerProps> = (props) => (
+      <Viewer {...props} />
     );
     DynamicViewerComponent.displayName = 'DynamicViewerComponent';
     return DynamicViewerComponent;
@@ -20,6 +17,7 @@ const DynamicViewer = dynamic(() => import('@react-pdf-viewer/core').then((mod) 
 
 const usePDFViewer = (fileUrl: string) => {
     const [workerSrc, setWorkerSrc] = useState<string | undefined>(undefined);
+    const [pdfDocument, setPdfDocument] = useState<PDFDocumentProxy | null>(null);
     const pageNavigationPluginInstance = pageNavigationPlugin();
     const { 
         GoToFirstPage,
@@ -29,10 +27,7 @@ const usePDFViewer = (fileUrl: string) => {
         CurrentPageInput,
         CurrentPageLabel,
         NumberOfPages,
-        // ... other properties
     } = pageNavigationPluginInstance;
-
-
 
     useEffect(() => {
         import('pdfjs-dist/build/pdf.worker.entry').then((worker) => {
@@ -40,9 +35,34 @@ const usePDFViewer = (fileUrl: string) => {
         });
     }, []);
 
+    useEffect(() => {
+        const loadPdf = async () => {
+            if (!workerSrc) return;
+
+            const pdfjsLib = await import('pdfjs-dist');
+            pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
+
+            try {
+                const loadingTask = pdfjsLib.getDocument(fileUrl);
+                const pdf = await loadingTask.promise;
+                setPdfDocument(pdf);
+            } catch (error) {
+                console.error('Error loading PDF:', error);
+            }
+        };
+
+        loadPdf();
+    }, [fileUrl, workerSrc]);
+
+    const viewerProps: ViewerProps = {
+        fileUrl: fileUrl,
+        plugins: [pageNavigationPluginInstance],
+        defaultScale: SpecialZoomLevel.PageFit,
+    };
+
     return {
-        workerSrc,
         DynamicViewer,
+        viewerProps,
         pageNavigationPluginInstance,
         GoToFirstPage,
         GoToLastPage,
@@ -51,8 +71,8 @@ const usePDFViewer = (fileUrl: string) => {
         CurrentPageInput,
         CurrentPageLabel,
         NumberOfPages,
-        // ... other properties you want to expose
-        fileUrl
+        workerSrc,
+        pdfDocument,
     };
 };
 
