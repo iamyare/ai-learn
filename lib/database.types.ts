@@ -104,21 +104,21 @@ export type Database = {
         Row: {
           created_at: string
           folder_id: string
-          id: string
+          notebook_id: string
           notebook_name: string
           updated_at: string
         }
         Insert: {
           created_at?: string
           folder_id: string
-          id?: string
+          notebook_id?: string
           notebook_name: string
           updated_at?: string
         }
         Update: {
           created_at?: string
           folder_id?: string
-          id?: string
+          notebook_id?: string
           notebook_name?: string
           updated_at?: string
         }
@@ -138,32 +138,32 @@ export type Database = {
           file_name: string
           file_path: string
           file_size: string
-          id: string
           notebook_id: string
+          pdf_id: string
         }
         Insert: {
           created_at?: string
           file_name: string
           file_path: string
           file_size: string
-          id?: string
           notebook_id: string
+          pdf_id?: string
         }
         Update: {
           created_at?: string
           file_name?: string
           file_path?: string
           file_size?: string
-          id?: string
           notebook_id?: string
+          pdf_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "pdf_documents_notebook_id_fkey"
+            foreignKeyName: "pdf_documents_id_notebook_fkey"
             columns: ["notebook_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "notebooks"
-            referencedColumns: ["id"]
+            referencedColumns: ["notebook_id"]
           },
         ]
       }
@@ -215,15 +215,7 @@ export type Database = {
           id?: string
           notebook_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "transcriptions_notebook_id_fkey"
-            columns: ["notebook_id"]
-            isOneToOne: false
-            referencedRelation: "notebooks"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       users: {
         Row: {

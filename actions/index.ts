@@ -28,7 +28,6 @@ export async function getFolders({userId}: {userId: string}) {
     .select('*')
     .eq('user_id', userId);
 
-  console.log(folders, errorFolders);
 
   return { folders, errorFolders };
 }
@@ -40,7 +39,36 @@ export async function getFolders({userId}: {userId: string}) {
     .eq('folder_id', folderId)
     .single()
 
-    console.log(folder, errorFolder)
 
     return { folder, errorFolder }
+  }
+
+  export async function getNotebooks ({folderId}: {folderId: string}) {
+    const { data: notebooks, error: errorNotebooks } = await supabase
+    .from('notebooks')
+    .select('*')
+    .eq('folder_id', folderId)
+
+    return { notebooks, errorNotebooks }
+  }
+
+  export async function getNotebook ({notebookId}: {notebookId: string}) {
+    const { data:notebook, error:errorNotebook } = await supabase
+    .from('notebooks')
+    .select('*')
+    .eq('notebook_id', notebookId)
+    .single()
+
+    return { notebook, errorNotebook }
+  }
+
+
+  export async function getNotebookInfo ({notebookId}: {notebookId: string}) {
+    const { data:notebookInfo, error:errorNotebookInfo } = await supabase
+    .from('notebooks')
+    .select('*, pdf_documents!inner(*)')
+    .eq('notebook_id', notebookId)
+    .single()
+
+    return { notebookInfo, errorNotebookInfo }
   }
