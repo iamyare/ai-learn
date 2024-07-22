@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useCallback, memo, ReactElement, useRef, useEffect } from 'react'
+import React, { useState, useCallback, ReactElement, useRef } from 'react'
 import { ToolbarSlot } from '@react-pdf-viewer/toolbar'
 import { RenderZoomInProps, RenderZoomOutProps } from '@react-pdf-viewer/zoom'
 import { RenderGoToPageProps } from '@react-pdf-viewer/page-navigation'
@@ -26,7 +26,7 @@ import {
   ChevronUp
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useCurrentPage } from '@/context/useCurrentPageContext'
+import { usePDFContext } from '@/context/useCurrentPageContext'
 
 interface ToolbarProps {
   toolbarSlot: ToolbarSlot
@@ -66,53 +66,10 @@ function ToolbarButton<T extends RenderProps>({
   )
 }
 
-interface CurrentPageLabelProps {
-  children: (props: {
-    currentPage: number
-    numberOfPages: number
-  }) => ReactElement
-}
-
-const CurrentPageWrapper: React.FC<{
-  CurrentPageLabel: React.ComponentType<CurrentPageLabelProps>;
-}> = ({ CurrentPageLabel }) => {
-  const { setCurrentPage } = useCurrentPage();
-  const [currentPage, setCurrentPageLocal] = useState(0);
-  const [numberOfPages, setNumberOfPages] = useState(0);
-
-  useEffect(() => {
-    // Asumiendo que quieres incrementar currentPage por 1 antes de establecerlo
-    setCurrentPage(currentPage + 1);
-  }, [currentPage, setCurrentPage]);
-
-  return (
-    <CurrentPageLabel>
-      {(props: { currentPage: number; numberOfPages: number }) => {
-        // Actualiza el estado local que a su vez, disparará el useEffect
-        if (currentPage !== props.currentPage) {
-          setCurrentPageLocal(props.currentPage);
-        }
-        if (numberOfPages !== props.numberOfPages) {
-          setNumberOfPages(props.numberOfPages);
-        }
-
-        return (
-          <>
-            {/* Tu lógica de visualización de página aquí */}
-            <span>{props.currentPage + 1}</span>
-          </>
-        );
-      }}
-    </CurrentPageLabel>
-  );
-};
-
-const MemoizedCurrentPageWrapper = React.memo(CurrentPageWrapper);
 
 export default function Toolbar({ toolbarSlot, className }: ToolbarProps) {
   const {
     CurrentPageInput,
-    CurrentPageLabel,
     Download,
     EnterFullScreen,
     GoToNextPage,
@@ -124,7 +81,7 @@ export default function Toolbar({ toolbarSlot, className }: ToolbarProps) {
   } = toolbarSlot
 
   const [isOpen, setIsOpen] = useState(true)
-  const { currentPage, setCurrentPage } = useCurrentPage()
+  const { currentPage, setCurrentPage } = usePDFContext()
   const prevPageRef = useRef<number | null>(null)
 
   const updateCurrentPage = useCallback(
@@ -199,8 +156,6 @@ export default function Toolbar({ toolbarSlot, className }: ToolbarProps) {
               </GoToPreviousPage>
             )}
           />
-
-          <MemoizedCurrentPageWrapper CurrentPageLabel={CurrentPageLabel} />
 
           <CurrentPageInput />
           <span>/</span>

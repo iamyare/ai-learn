@@ -2,14 +2,15 @@
 
 import React, { createContext, useContext, ReactNode, useMemo, useEffect } from 'react'
 import { useSpeechRecognition } from '@/components/ui/useSpeechRecognition'
-import { useCurrentPage } from './useCurrentPageContext'
 import { SpeechRecognitionContextType } from '@/types/speechRecognition'
+import { usePDFContext } from '@/context/useCurrentPageContext'
+
 
 const SpeechRecognitionContext = createContext<SpeechRecognitionContextType | undefined>(undefined)
 
 export const SpeechRecognitionProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const speechRecognition = useSpeechRecognition()
-  const { currentPage } = useCurrentPage()
+  const { currentPage } = usePDFContext()
 
   useEffect(() => {
     speechRecognition.changePage(currentPage)

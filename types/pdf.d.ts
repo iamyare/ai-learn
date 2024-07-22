@@ -1,14 +1,15 @@
 
 
-declare module 'pdfjs-dist/build/pdf.worker.entry' {
-    const content: any;
-    export default content;
-}
+// declare module 'pdfjs-dist/build/pdf.worker.entry' {
+//     const content: any;
+//     export default content;
+// }
 
-declare module '@react-pdf-viewer/core' {
-    export const Worker: any;
-    export const Viewer: any;
-}
+declare module 'pdfjs-dist/build/pdf.worker.entry' {
+    const worker: any;
+    export default worker;
+  }
+
 
 declare module '@react-pdf-viewer/page-navigation' {
     export const pageNavigationPlugin: any;
