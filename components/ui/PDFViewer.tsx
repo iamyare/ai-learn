@@ -17,7 +17,7 @@ interface PDFViewerProps {
 }
 
 const PDFViewer: React.FC<PDFViewerProps> = ({ initialFileUrl }) => {
-  const { fileUrl, setFileUrl } = usePDFContext();
+  const { fileUrl, setFileUrl, setCurrentPage } = usePDFContext();
   
   const { 
     workerSrc, 
@@ -42,8 +42,16 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ initialFileUrl }) => {
     }
   }, [initialFileUrl, fileUrl, setFileUrl]);
 
+  const handlePageChange = (e: { currentPage: number }) => {
+    setCurrentPage(e.currentPage + 1);
+  };
+
   if (!workerSrc) {
-    return <LoadingComponent />
+    return (
+      <div className=' w-full h-full flex justify-center items-center'>
+        <LoadingComponent />
+      </div>
+    )
   }
 
   return (
@@ -56,6 +64,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ initialFileUrl }) => {
             onDocumentLoad={(props) => {
               setFileUrl(props.file.data as string);
             }}
+            onPageChange={handlePageChange}
           />
         </div>
         <ToolbarSlot>

@@ -8,11 +8,10 @@ import {
   ResizablePanelGroup
 } from '@/components/ui/resizable'
 import { SpeechRecognitionProvider } from '@/context/useSpeechRecognitionContext'
-import Viewer from '@/components/ui/viewer'
 import { PDFTextProvider } from '@/context/usePDFTextExtractionContext'
 import { PDFProvider } from '@/context/useCurrentPageContext'
 import SpeechRecognition from './components/SpeechRecognition'
-import PDFViewer from '@/components/ui/viewer'
+import PDFViewer from '@/components/ui/PDFViewer'
 
 
 export default function Home() {
