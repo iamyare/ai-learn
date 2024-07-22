@@ -54,7 +54,6 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ initialFileUrl }) => {
             {...viewerProps}
             plugins={plugins}
             onDocumentLoad={(props) => {
-              console.log('onDocumentLoad', props.file.data);
               setFileUrl(props.file.data as string);
             }}
           />

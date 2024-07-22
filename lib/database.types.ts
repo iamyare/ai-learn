@@ -60,15 +60,7 @@ export type Database = {
           notebook_id?: string
           title?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "chats_notebook_id_fkey"
-            columns: ["notebook_id"]
-            isOneToOne: false
-            referencedRelation: "notebooks"
-            referencedColumns: ["notebook_id"]
-          },
-        ]
+        Relationships: []
       }
       folders: {
         Row: {
@@ -94,11 +86,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "folders_user_id_fkey"
+            foreignKeyName: "folders_id_user_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["user_id"]
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -106,33 +98,25 @@ export type Database = {
         Row: {
           created_at: string
           folder_id: string
-          notebook_id: string
+          id: string
           notebook_name: string
           updated_at: string
         }
         Insert: {
           created_at?: string
           folder_id: string
-          notebook_id?: string
+          id?: string
           notebook_name: string
           updated_at?: string
         }
         Update: {
           created_at?: string
           folder_id?: string
-          notebook_id?: string
+          id?: string
           notebook_name?: string
           updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "notebooks_folder_id_fkey"
-            columns: ["folder_id"]
-            isOneToOne: false
-            referencedRelation: "folders"
-            referencedColumns: ["folder_id"]
-          },
-        ]
+        Relationships: []
       }
       pdf_documents: {
         Row: {
@@ -140,24 +124,24 @@ export type Database = {
           file_name: string
           file_path: string
           file_size: string
+          id: string
           notebook_id: string
-          pdf_id: string
         }
         Insert: {
           created_at?: string
           file_name: string
           file_path: string
           file_size: string
+          id?: string
           notebook_id: string
-          pdf_id?: string
         }
         Update: {
           created_at?: string
           file_name?: string
           file_path?: string
           file_size?: string
+          id?: string
           notebook_id?: string
-          pdf_id?: string
         }
         Relationships: [
           {
@@ -165,7 +149,36 @@ export type Database = {
             columns: ["notebook_id"]
             isOneToOne: false
             referencedRelation: "notebooks"
-            referencedColumns: ["notebook_id"]
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tbl_folders: {
+        Row: {
+          created_at: string
+          folder_name: string
+          id: string
+          id_user: string
+        }
+        Insert: {
+          created_at?: string
+          folder_name: string
+          id?: string
+          id_user: string
+        }
+        Update: {
+          created_at?: string
+          folder_name?: string
+          id?: string
+          id_user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tbl_folders_id_user_fkey"
+            columns: ["id_user"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -173,20 +186,20 @@ export type Database = {
         Row: {
           content: Json
           created_at: string
+          id: string
           notebook_id: string
-          transcription_id: string
         }
         Insert: {
           content: Json
           created_at?: string
+          id?: string
           notebook_id: string
-          transcription_id?: string
         }
         Update: {
           content?: Json
           created_at?: string
+          id?: string
           notebook_id?: string
-          transcription_id?: string
         }
         Relationships: [
           {
@@ -194,33 +207,33 @@ export type Database = {
             columns: ["notebook_id"]
             isOneToOne: false
             referencedRelation: "notebooks"
-            referencedColumns: ["notebook_id"]
+            referencedColumns: ["id"]
           },
         ]
       }
       users: {
         Row: {
           created_at: string
+          id: string
           updated_at: string
-          user_id: string
           username: string
         }
         Insert: {
           created_at?: string
+          id: string
           updated_at?: string
-          user_id?: string
           username: string
         }
         Update: {
           created_at?: string
+          id?: string
           updated_at?: string
-          user_id?: string
           username?: string
         }
         Relationships: [
           {
-            foreignKeyName: "users_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: "users_id_fkey"
+            columns: ["id"]
             isOneToOne: true
             referencedRelation: "users"
             referencedColumns: ["id"]
