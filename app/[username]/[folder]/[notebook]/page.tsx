@@ -12,7 +12,11 @@ export default async function Home({params}: {params: {notebook: string}}) {
     return <div>Error</div>
   }
 
+  if (!notebookInfo){
+    return <div>No se eencontro nada</div>
+  }
+
   return (
-    <RenderView fileUrl={notebookInfo?.pdf_documents.file_path ?? ''} />
+    <RenderView notebookInfo={notebookInfo} />
   )
 }

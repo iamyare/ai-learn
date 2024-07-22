@@ -66,7 +66,7 @@ export async function getFolders({userId}: {userId: string}) {
   export async function getNotebookInfo ({notebookId}: {notebookId: string}) {
     const { data:notebookInfo, error:errorNotebookInfo } = await supabase
     .from('notebooks')
-    .select('*, pdf_documents!inner(*)')
+    .select('*, pdf_document:pdf_documents!inner(*)')
     .eq('notebook_id', notebookId)
     .single()
 

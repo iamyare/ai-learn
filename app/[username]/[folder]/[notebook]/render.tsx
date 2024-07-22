@@ -12,16 +12,29 @@ import { PDFTextProvider } from '@/context/usePDFTextExtractionContext'
 import { PDFProvider } from '@/context/useCurrentPageContext'
 import SpeechRecognition from './components/SpeechRecognition'
 import PDFViewer from '@/components/ui/PDFViewer'
+import { Button } from '@/components/ui/button'
+import { ChevronLeft } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
-
-export default function RenderView({ fileUrl }:{fileUrl: string}) {
+export default function RenderView({
+  notebookInfo
+}: {
+  notebookInfo: NotebookInfo
+}) {
+    const router = useRouter()
   return (
     <PDFTextProvider>
       <PDFProvider>
         <SpeechRecognitionProvider>
           <main className='flex relative flex-col w-screen h-screen overflow-hidden'>
-          {/* <DragAndDrop /> */}
-            <header className='w-screen h-10 border-b'></header>
+            <header className='w-screen flex justify-between h-10 py-1 px-2 border-b'>
+              <div className=' flex items-center gap-2'>
+                <Button size={'icon'} variant={'ghost'} className='p-1 size-8' onClick={()=>router.back()}>
+                  <ChevronLeft className=' size-4' />
+                </Button>
+                <h2 className=' font-medium'>{notebookInfo.notebook_name}</h2>
+              </div>
+            </header>
             <ResizablePanelGroup
               direction='horizontal'
               className='w-full h-full'
@@ -30,7 +43,9 @@ export default function RenderView({ fileUrl }:{fileUrl: string}) {
               <ResizablePanel defaultSize={70}>
                 <ResizablePanelGroup direction='vertical'>
                   <ResizablePanel defaultSize={60} minSize={30}>
-                    <PDFViewer initialFileUrl={fileUrl} />
+                    <PDFViewer
+                      initialFileUrl={notebookInfo.pdf_document.file_path}
+                    />
                   </ResizablePanel>
                   <ResizableHandle />
                   <ResizablePanel defaultSize={40}>
