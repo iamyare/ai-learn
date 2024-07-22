@@ -36,8 +36,11 @@ export async function getFolders({userId}: {userId: string}) {
   export async function getFolder ({folderId}: {folderId: string}) {
     const { data:folder, error:errorFolder } = await supabase
     .from('folders')
-    .select('*')
-    .eq('id', folderId)
+    .select('*, notebooks!inner(*)')
+    .eq('folder_id', folderId)
+    .single()
+
+    console.log(folder, errorFolder)
 
     return { folder, errorFolder }
   }

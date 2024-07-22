@@ -11,6 +11,7 @@ import usePDFViewer from './usePDFViewer'
 import Toolbar from './viewer/toolbar'
 import LoadingComponent from './loading-component'
 import { usePDFContext } from '@/context/useCurrentPageContext';
+import { usePDFText } from '@/context/usePDFTextExtractionContext';
 
 interface PDFViewerProps {
   initialFileUrl: string;
@@ -18,6 +19,8 @@ interface PDFViewerProps {
 
 const PDFViewer: React.FC<PDFViewerProps> = ({ initialFileUrl }) => {
   const { fileUrl, setFileUrl, setCurrentPage } = usePDFContext();
+
+  const { isPending:isLoading } = usePDFText()
   
   const { 
     workerSrc, 
@@ -57,7 +60,14 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ initialFileUrl }) => {
   return (
     <Worker workerUrl={workerSrc}>
       <div className='relative flex flex-col h-full bg-transparent'>
-        <div className='flex-grow overflow-hidden'>
+        <div className='relative flex-grow overflow-hidden'>
+          {
+            isLoading && (
+              <div className='absolute top-0 z-50 left-0 w-full h-full flex justify-center items-center'>
+                <span>se esta cargando el texto</span>
+              </div>
+            )
+          }
           <DynamicViewer
             {...viewerProps}
             plugins={plugins}

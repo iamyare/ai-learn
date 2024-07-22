@@ -5,9 +5,7 @@ import {
   Archive,
   ArchiveX,
   FileIcon,
-  Glasses,
   Inbox,
-  LucideIcon,
   MessagesSquare,
   Plus,
   Search,
@@ -25,7 +23,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup
 } from './ui/resizable'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Nav } from './nav'
 import { Button } from './ui/button'
 
@@ -37,12 +35,19 @@ interface SidebarProps {
 }
 
 export function Sidebar({
-  defaultLayout = 265,
+  defaultLayout = 20,
   defaultCollapsed = false,
   navCollapsedSize = 4,
   children
 }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState<boolean>(defaultCollapsed)
+
+  useEffect(() => {
+    const savedCollapsed = localStorage.getItem('react-resizable-panels:collapsed')
+    if (savedCollapsed !== null) {
+      setIsCollapsed(savedCollapsed === 'true')
+    }
+  }, [])
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -53,25 +58,25 @@ export function Sidebar({
             sizes
           )}`
         }}
-        className='h-full min-h-screen  items-stretch'
+        className='h-full min-h-screen items-stretch'
       >
         <ResizablePanel
           defaultSize={defaultLayout}
           collapsedSize={navCollapsedSize}
           collapsible={true}
-          minSize={15}
-          maxSize={20}
+          minSize={10}
+          maxSize={25}
           onCollapse={() => {
-            setIsCollapsed(true);
-            localStorage.setItem('react-resizable-panels:collapsed', 'true');
+            setIsCollapsed(true)
+            localStorage.setItem('react-resizable-panels:collapsed', 'true')
           }}
           onExpand={() => {
-            setIsCollapsed(false);
-            localStorage.setItem('react-resizable-panels:collapsed', 'false');
+            setIsCollapsed(false)
+            localStorage.setItem('react-resizable-panels:collapsed', 'false')
           }}
           className={cn(
             isCollapsed &&
-              'min-w-[50px] transition-all duration-300 ease-in-out'
+              'min-w-[50px]  transition-all duration-300 ease-in-out'
           )}
         >
           <div
@@ -198,7 +203,7 @@ export function Sidebar({
           />
         </ResizablePanel>
         <ResizableHandle withHandle />
-        <ResizablePanel>
+        <ResizablePanel defaultSize={80}>
             <main className=' p-5'>
             {children}
             </main>

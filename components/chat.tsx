@@ -72,7 +72,7 @@ export default function Chat() {
       setMessages(prev => [...prev, userMessage])
       setShouldAutoScroll(true)
       form.reset()
-
+  
       const transcript = history.map(entry => entry.text).join(' ')
       const messageHistory = messages
         .filter((msg): msg is MessageType => 'content' in msg)
@@ -80,33 +80,40 @@ export default function Chat() {
           role: msg.isUser ? 'user' : 'assistant',
           content: msg.content
         }));
-
-      const { textStream } = await aiStream({
-        prompt: values.message,
-        transcription: transcript,
-        textPdf: text,
-        messageHistory: messageHistory
-      })
-
-      let aiResponse = ''
-      for await (const text of textStream) {
-        aiResponse += text
-        setMessages(prev => {
-          const updatedMessages = [...prev]
-          const lastMessage = updatedMessages[updatedMessages.length - 1]
-          if (!lastMessage.isUser && 'content' in lastMessage) {
-            lastMessage.content = aiResponse
-          } else {
-            updatedMessages.push({
-              content: aiResponse,
-              isUser: false,
-              timestamp: new Date().toISOString()
+  
+      startTransition(async () => {
+        try {
+          const { textStream } = await aiStream({
+            prompt: values.message,
+            transcription: transcript,
+            textPdf: text,
+            messageHistory: messageHistory
+          })
+  
+          let aiResponse = ''
+          for await (const text of textStream) {
+            aiResponse += text
+            setMessages(prev => {
+              const updatedMessages = [...prev]
+              const lastMessage = updatedMessages[updatedMessages.length - 1]
+              if (!lastMessage.isUser && 'content' in lastMessage) {
+                lastMessage.content = aiResponse
+              } else {
+                updatedMessages.push({
+                  content: aiResponse,
+                  isUser: false,
+                  timestamp: new Date().toISOString()
+                })
+              }
+              return updatedMessages
             })
+            setShouldAutoScroll(true)
           }
-          return updatedMessages
-        })
-        setShouldAutoScroll(true)
-      }
+        } catch (err) {
+          console.error('Error in AI stream:', err)
+          setError('Hubo un error al procesar la respuesta del AI. Por favor, intenta de nuevo.')
+        }
+      })
     } catch (err) {
       console.error('Error in chat submission:', err)
       setError('Hubo un error al procesar tu mensaje. Por favor, intenta de nuevo.')
@@ -192,7 +199,7 @@ export default function Chat() {
                   )}
                 />
                 <Button type='submit' disabled={isPending}>
-                  Enviar
+                  {isPending ? 'Procesando...' : 'Enviar'}
                 </Button>
               </div>
             </div>

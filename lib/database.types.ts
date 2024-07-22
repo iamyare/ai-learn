@@ -65,6 +65,8 @@ export type Database = {
       folders: {
         Row: {
           created_at: string
+          folder_color: string | null
+          folder_icon: string | null
           folder_id: string
           folder_name: string
           updated_at: string
@@ -72,6 +74,8 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          folder_color?: string | null
+          folder_icon?: string | null
           folder_id?: string
           folder_name: string
           updated_at?: string
@@ -79,6 +83,8 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          folder_color?: string | null
+          folder_icon?: string | null
           folder_id?: string
           folder_name?: string
           updated_at?: string
@@ -116,7 +122,15 @@ export type Database = {
           notebook_name?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "notebooks_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "folders"
+            referencedColumns: ["folder_id"]
+          },
+        ]
       }
       pdf_documents: {
         Row: {
