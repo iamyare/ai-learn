@@ -1,9 +1,22 @@
 'use client'
 
-import React, { useRef, useEffect, useTransition, useState, useCallback, ErrorInfo } from 'react'
+import React, {
+  useRef,
+  useEffect,
+  useTransition,
+  useState,
+  useCallback,
+  ErrorInfo
+} from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage
+} from '@/components/ui/form'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -25,18 +38,17 @@ export default function Chat() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const [isPending, startTransition] = useTransition()
-  const [aiResponse, setAiResponse] = useState<string>('')
   const [messages, setMessages] = useState<ChatMessageType[]>([])
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const { text, extractTextFromPDF} = usePDFText()
-  const {fileUrl} = usePDFContext()
+  const { text, extractTextFromPDF } = usePDFText()
+  const { fileUrl } = usePDFContext()
   const { history } = useSpeechRecognitionContext()
 
   useEffect(() => {
     if (fileUrl) {
-        extractTextFromPDF(fileUrl)
+      extractTextFromPDF(fileUrl)
     }
   }, [fileUrl, extractTextFromPDF])
 
@@ -68,19 +80,19 @@ export default function Chat() {
         content: values.message,
         isUser: true,
         timestamp: new Date().toISOString()
-      };
-      setMessages(prev => [...prev, userMessage])
+      }
+      setMessages((prev) => [...prev, userMessage])
       setShouldAutoScroll(true)
       form.reset()
-  
-      const transcript = history.map(entry => entry.text).join(' ')
+
+      const transcript = history.map((entry) => entry.text).join(' ')
       const messageHistory = messages
         .filter((msg): msg is MessageType => 'content' in msg)
-        .map(msg => ({
+        .map((msg) => ({
           role: msg.isUser ? 'user' : 'assistant',
           content: msg.content
-        }));
-  
+        }))
+
       startTransition(async () => {
         try {
           const { textStream } = await aiStream({
@@ -89,11 +101,11 @@ export default function Chat() {
             textPdf: text,
             messageHistory: messageHistory
           })
-  
+
           let aiResponse = ''
           for await (const text of textStream) {
             aiResponse += text
-            setMessages(prev => {
+            setMessages((prev) => {
               const updatedMessages = [...prev]
               const lastMessage = updatedMessages[updatedMessages.length - 1]
               if (!lastMessage.isUser && 'content' in lastMessage) {
@@ -111,53 +123,64 @@ export default function Chat() {
           }
         } catch (err) {
           console.error('Error in AI stream:', err)
-          setError('Hubo un error al procesar la respuesta del AI. Por favor, intenta de nuevo.')
+          setError(
+            'Hubo un error al procesar la respuesta del AI. Por favor, intenta de nuevo.'
+          )
         }
       })
     } catch (err) {
       console.error('Error in chat submission:', err)
-      setError('Hubo un error al procesar tu mensaje. Por favor, intenta de nuevo.')
+      setError(
+        'Hubo un error al procesar tu mensaje. Por favor, intenta de nuevo.'
+      )
     }
   }
 
-  const importantEvents = async () => {
-    try {
-      setAiResponse('')
-      const transcript = history.map(entry => entry.text).join(' ')
-      const { object } = await generateImportantEvents({
-        prompt: "Lista de cosas importantes para la próxima semana",
-        transcription: transcript,
-        textPdf: text
-      });
+  const importantEvents = () => {
+    startTransition(async () => {
+      try {
+        const transcript = history.map((entry) => entry.text).join(' ')
+        const { object } = await generateImportantEvents({
+          prompt: 'Lista de cosas importantes para la próxima semana',
+          transcription: transcript,
+          textPdf: text
+        })
 
-      for await (const partialObject of readStreamableValue(object)) {
-        if (partialObject) {
-          const eventMessage: EventMessageType = {
-            events: partialObject.importantEvents,
-            isUser: false,
-            timestamp: new Date().toISOString()
-          };
-          setMessages(prev => [...prev, eventMessage]);
+        for await (const partialObject of readStreamableValue(object)) {
+          if (partialObject) {
+            const eventMessage: EventMessageType = {
+              events: partialObject.importantEvents,
+              isUser: false,
+              timestamp: new Date().toISOString()
+            }
+            setMessages((prev) => [...prev, eventMessage])
+          }
         }
+        setShouldAutoScroll(true)
+      } catch (err) {
+        console.error('Error generating important events:', err)
+        setError(
+          'Hubo un error al generar eventos importantes. Por favor, intenta de nuevo.'
+        )
       }
-      setShouldAutoScroll(true)
-    } catch (err) {
-      console.error('Error generating important events:', err)
-      setError('Hubo un error al generar eventos importantes. Por favor, intenta de nuevo.')
-    }
+    })
   }
 
   if (error) {
-    return <div className="error-message">{error}</div>
+    return <div className='error-message'>{error}</div>
   }
 
   return (
-    <section className='flex flex-col h-full max-h-full'>
+    <section className='flex flex-col h-full max-h-full '>
       <header className='flex-none w-full py-2 px-4 bg-background'>
         <h2 className='text-lg font-semibold'>Chat</h2>
       </header>
 
-      <div className='flex-grow overflow-y-auto pb-16 px-4' ref={chatContainerRef} onScroll={handleScroll}>
+      <div
+        className='flex-grow overflow-y-auto pb-16 px-4'
+        ref={chatContainerRef}
+        onScroll={handleScroll}
+      >
         <div className='space-y-4'>
           {messages.map((message, index) => (
             <BubbleChat key={index} message={message} />
@@ -168,11 +191,20 @@ export default function Chat() {
 
       <footer className='w-full p-4'>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className='relative h-full w-full flex flex-col gap-2'>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className='relative h-full w-full flex flex-col gap-2'
+          >
             <div className='absolute flex flex-col gap-2 w-full bottom-0 left-0'>
               <div className='flex gap-2'>
-                <Button type='button' size={'sm'} variant={'outline'} disabled={!!aiResponse} onClick={importantEvents}>
-                  {aiResponse ? (
+                <Button
+                  type='button'
+                  size={'sm'}
+                  variant={'outline'}
+                  disabled={isPending}
+                  onClick={importantEvents}
+                >
+                  {isPending ? (
                     <div className='relative'>
                       <div className='absolute size-3 bg-primary/50 blur-sm top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse'></div>
                       <div className='absolute size-3 bg-primary blur-md top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse'></div>

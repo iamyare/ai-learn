@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
-import CoursorText from '@/components/ui/coursor-text'
+import  {  CoursorText } from '@/components/ui/coursor-text'
 import { useSpeechRecognitionContext } from '@/context/useSpeechRecognitionContext'
 import { cn } from '@/lib/utils'
 import { Mic, Play, SkipBack, SkipForward } from 'lucide-react'
