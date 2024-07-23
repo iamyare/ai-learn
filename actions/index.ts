@@ -51,7 +51,15 @@ export async function getFolders({userId}: {userId: string}) {
     .single()
 
     return {folder, errorFolder}
-    
+  }
+
+  export async function deleteFolder({folderId}:{folderId: string}) {
+    const { error:errorFolder } = await supabase
+    .from('folders')
+    .delete()
+    .eq('folder_id', folderId)
+
+    return { errorFolder}
   }
 
   export async function getNotebooks ({folderId}: {folderId: string}) {

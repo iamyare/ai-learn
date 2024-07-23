@@ -9,6 +9,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Button } from './button';
+import { Theme } from 'emoji-picker-react';
 
 interface EmojiPickerProps {
   children: React.ReactNode;
@@ -20,6 +21,9 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({ children, getValue }) => {
   const onClick = (selectedEmoji: any) => {
     if (getValue) getValue(selectedEmoji.emoji);
   };
+
+  const {AUTO} = Theme
+
   return (
       <Popover>
         <PopoverTrigger asChild>
@@ -28,7 +32,7 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({ children, getValue }) => {
         <PopoverContent
           className=" p-0 w-fit border-none "
         >
-          <Picker height={350} width={250} onEmojiClick={onClick} />
+          <Picker height={350} width={250} theme={AUTO} onEmojiClick={onClick} />
         </PopoverContent>
       </Popover>
   );
