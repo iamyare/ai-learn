@@ -8,6 +8,8 @@ declare global {
     webkitSpeechRecognition: typeof SpeechRecognition
   }
 
+  type GetFoldersAndNotebooksFunction = DB['public']['Functions']['get_folders_and_notebooks']['Returns'][0]
+  type GetFolderFunction = DB['public']['Functions']['get_folders']['Returns'][0]
   type Folder = DB['public']['Tables']['folders']['Row']
   type FolderInsert = DB['public']['Tables']['folders']['Insert']
   type Notebook = DB['public']['Tables']['notebooks']['Row']

@@ -21,13 +21,18 @@ export async function getUser () {
   }
 
 
+//obetner folders y notebooks de un usuario de forma responsiva
+export async function getFoldersAndNotebooks({userId}: {userId: string}) {
+  const { data: folders, error: errorFolders } = await supabase
+  .rpc('get_folders_and_notebooks', { p_user_id: userId })
+
+  return { folders, errorFolders };
+}
+
   //Obtener Folders de un usuario
 export async function getFolders({userId}: {userId: string}) {
   const { data: folders, error: errorFolders } = await supabase
-    .from('folders')
-    .select('*')
-    .eq('user_id', userId);
-
+  .rpc('get_folders', { p_user_id: userId })
 
   return { folders, errorFolders };
 }

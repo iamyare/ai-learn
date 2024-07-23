@@ -69,6 +69,7 @@ export type Database = {
           folder_icon: string | null
           folder_id: string
           folder_name: string
+          parent_folder_id: string | null
           updated_at: string
           user_id: string
         }
@@ -78,6 +79,7 @@ export type Database = {
           folder_icon?: string | null
           folder_id?: string
           folder_name: string
+          parent_folder_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -87,6 +89,7 @@ export type Database = {
           folder_icon?: string | null
           folder_id?: string
           folder_name?: string
+          parent_folder_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -98,29 +101,39 @@ export type Database = {
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "folders_parent_folder_id_fkey"
+            columns: ["parent_folder_id"]
+            isOneToOne: false
+            referencedRelation: "folders"
+            referencedColumns: ["folder_id"]
+          },
         ]
       }
       notebooks: {
         Row: {
           created_at: string
-          folder_id: string
+          folder_id: string | null
           notebook_id: string
           notebook_name: string
           updated_at: string
+          user_id: string
         }
         Insert: {
           created_at?: string
-          folder_id: string
+          folder_id?: string | null
           notebook_id?: string
           notebook_name: string
           updated_at?: string
+          user_id: string
         }
         Update: {
           created_at?: string
-          folder_id?: string
+          folder_id?: string | null
           notebook_id?: string
           notebook_name?: string
           updated_at?: string
+          user_id?: string
         }
         Relationships: [
           {
@@ -129,6 +142,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "folders"
             referencedColumns: ["folder_id"]
+          },
+          {
+            foreignKeyName: "notebooks_user_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -251,7 +271,37 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_folders: {
+        Args: {
+          p_user_id: string
+          p_parent_folder_id?: string
+        }
+        Returns: {
+          folder_id: string
+          folder_name: string
+          parent_folder_id: string
+          folder_icon: string
+          folder_color: string
+          subfolder_count: number
+          notebook_count: number
+        }[]
+      }
+      get_folders_and_notebooks: {
+        Args: {
+          p_user_id: string
+          p_parent_folder_id?: string
+        }
+        Returns: {
+          item_id: string
+          item_name: string
+          item_type: string
+          parent_folder_id: string
+          icon: string
+          color: string
+          subfolder_count: number
+          notebook_count: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

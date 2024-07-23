@@ -1,6 +1,5 @@
 'use client'
 import { deleteFolder } from '@/actions'
-import { Button } from '@/components/ui/button'
 import {
   ContextMenu,
   ContextMenuContent,
@@ -13,7 +12,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 
 interface FolderItemProps {
-  folder: Folder
+  folder: GetFoldersAndNotebooksFunction
 }
 
 export default function FolderItem({ folder }: FolderItemProps) {
@@ -21,7 +20,7 @@ export default function FolderItem({ folder }: FolderItemProps) {
   const pathname = usePathname()
 
   const handleDelete = async () => {
-    const { errorFolder } = await deleteFolder({ folderId: folder.folder_id })
+    const { errorFolder } = await deleteFolder({ folderId: folder.item_id })
     if (!errorFolder) {
       router.push(pathname)
       router.refresh()
@@ -35,31 +34,31 @@ export default function FolderItem({ folder }: FolderItemProps) {
           <Link
             className='flex flex-col items-center gap-2 p-4 rounded-lg justify-center text-lg text-center h-[200px] w-full transition-shadow duration-300 hover:ring-2 ring-offset-background hover:ring-offset-2 hover:shadow-black/[0.05] hover:shadow-xl animated-gradient '
             style={{
-              background: folder.folder_color
-                ? `linear-gradient(45deg,${folder.folder_color}10 0%, ${folder.folder_color}60 100%)`
+              background: folder.item_id
+                ? `linear-gradient(45deg,${folder.color}20 0%, ${folder.color}60 100%)`
                 : 'linear-gradient(45deg,hsla(var(--muted)/1) 0%, hsla(var(--muted-foreground)/0.5) 100%)',
-              ['--tw-ring-color' as any]: folder.folder_color
-                ? `${folder.folder_color}60`
+              ['--tw-ring-color' as any]: folder.color
+                ? `${folder.color}60`
                 : 'hsla(var(--muted-foreground)/0.6)'
             }}
-            href={`/${folder.folder_id}`}
+            href={`/username/${folder.item_id}`}
           >
             <span
               className='text-4xl'
               style={{
-                color: folder.folder_color ?? 'hsla(var(--primary)/1)'
+                color: folder.color ?? 'hsla(var(--primary)/1)'
               }}
             >
-              {folder.folder_icon}
+              {folder.icon}
             </span>
             <div className='flex flex-col'>
               <p
                 className='font-medium'
                 style={{
-                  color: folder.folder_color ?? 'hsla(var(--primary)/1)'
+                  color: folder.color ?? 'hsla(var(--primary)/1)'
                 }}
               >
-                {folder.folder_name}
+                {folder.item_name}
               </p>
               <span className='text-sm text-muted-foreground'>4 elementos</span>
             </div>

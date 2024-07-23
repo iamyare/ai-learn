@@ -1,7 +1,7 @@
 'use client'
 import FolderItem from './folder-item'
 
-export default function FolderList({ folders }: { folders: Folder[] }) {
+export default function FolderList({ folders }: { folders: GetFoldersAndNotebooksFunction[] }) {
 
   return (
     <section>
@@ -9,7 +9,7 @@ export default function FolderList({ folders }: { folders: Folder[] }) {
 
         {folders.map((folder, index) => (
           <FolderItem
-            key={folder.folder_id || index}
+            key={folder.item_id || index}
             folder={folder}
           />
         ))}
