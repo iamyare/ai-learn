@@ -15,7 +15,7 @@ interface FolderItemProps {
   folder: GetFoldersAndNotebooksFunction
 }
 
-export default function FolderItem({ folder }: FolderItemProps) {
+export default function Item({ folder }: FolderItemProps) {
   const router = useRouter()
   const pathname = usePathname()
   const { navigateToFolder } = useFolderNavigation()
@@ -42,7 +42,7 @@ export default function FolderItem({ folder }: FolderItemProps) {
       <ContextMenuTrigger>
         <li
           onClick={handleClick}
-          className='flex flex-col items-center gap-2 p-4 rounded-lg justify-center text-lg text-center h-[200px] w-full transition-shadow duration-300 hover:ring-2 ring-offset-background hover:ring-offset-2 hover:shadow-black/[0.05] hover:shadow-xl animated-gradient '
+          className='flex flex-col items-center gap-2 p-4 rounded-lg justify-center text-lg text-center h-[200px] w-full transition-shadow duration-300 hover:ring-2 ring-offset-background hover:ring-offset-2 hover:shadow-black/[0.05] hover:shadow-xl cursor-pointer'
           style={{
             background: folder.item_id
               ? `linear-gradient(45deg,${folder.color}20 0%, ${folder.color}60 100%)`

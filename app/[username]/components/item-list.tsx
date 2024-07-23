@@ -1,8 +1,8 @@
 'use client'
 import { useFolderNavigation } from '@/context/useFolderNavigationContext';
-import FolderItem from './folder-item';
+import FolderItem from './item';
 
-export default function FolderList({ folders }: { folders: GetFoldersAndNotebooksFunction[] }) {
+export default function ItemList({ folders }: { folders: GetFoldersAndNotebooksFunction[] }) {
   const { currentPath, navigateUp } = useFolderNavigation();
 
   return (
