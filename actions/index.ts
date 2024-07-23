@@ -35,12 +35,23 @@ export async function getFolders({userId}: {userId: string}) {
   export async function getFolder ({folderId}: {folderId: string}) {
     const { data:folder, error:errorFolder } = await supabase
     .from('folders')
-    .select('*, notebooks!inner(*)')
+    .select('*, notebooks(*)')
     .eq('folder_id', folderId)
     .single()
 
 
     return { folder, errorFolder }
+  }
+
+  export async function insertFolder({folderData}:{folderData: FolderInsert}) {
+    const { data:folder, error:errorFolder } = await supabase
+    .from('folders')
+    .insert({...folderData})
+    .select('*')
+    .single()
+
+    return {folder, errorFolder}
+    
   }
 
   export async function getNotebooks ({folderId}: {folderId: string}) {
