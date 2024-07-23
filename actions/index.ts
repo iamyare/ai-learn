@@ -22,9 +22,9 @@ export async function getUser () {
 
 
 //obetner folders y notebooks de un usuario de forma responsiva
-export async function getFoldersAndNotebooks({userId}: {userId: string}) {
+export async function getFoldersAndNotebooks({userId, parentFolderId}: {userId: string, parentFolderId: string | undefined}) {
   const { data: folders, error: errorFolders } = await supabase
-  .rpc('get_folders_and_notebooks', { p_user_id: userId })
+  .rpc('get_folders_and_notebooks', { p_user_id: userId, p_parent_folder_id: parentFolderId })
 
   return { folders, errorFolders };
 }

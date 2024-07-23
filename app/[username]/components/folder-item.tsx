@@ -7,8 +7,8 @@ import {
   ContextMenuTrigger
 } from '@/components/ui/context-menu'
 import { Separator } from '@/components/ui/separator'
+import { useFolderNavigation } from '@/context/useFolderNavigationContext'
 import { Edit, Info, Trash } from 'lucide-react'
-import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 
 interface FolderItemProps {
@@ -18,6 +18,16 @@ interface FolderItemProps {
 export default function FolderItem({ folder }: FolderItemProps) {
   const router = useRouter()
   const pathname = usePathname()
+  const { navigateToFolder } = useFolderNavigation()
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    if (folder.item_type === 'folder') {
+      navigateToFolder(folder.item_id, folder.item_name)
+    } else {
+      // Manejar la navegación a notebooks si es necesario
+    }
+  }
 
   const handleDelete = async () => {
     const { errorFolder } = await deleteFolder({ folderId: folder.item_id })
@@ -30,39 +40,37 @@ export default function FolderItem({ folder }: FolderItemProps) {
   return (
     <ContextMenu>
       <ContextMenuTrigger>
-        <li>
-          <Link
-            className='flex flex-col items-center gap-2 p-4 rounded-lg justify-center text-lg text-center h-[200px] w-full transition-shadow duration-300 hover:ring-2 ring-offset-background hover:ring-offset-2 hover:shadow-black/[0.05] hover:shadow-xl animated-gradient '
+        <li
+          onClick={handleClick}
+          className='flex flex-col items-center gap-2 p-4 rounded-lg justify-center text-lg text-center h-[200px] w-full transition-shadow duration-300 hover:ring-2 ring-offset-background hover:ring-offset-2 hover:shadow-black/[0.05] hover:shadow-xl animated-gradient '
+          style={{
+            background: folder.item_id
+              ? `linear-gradient(45deg,${folder.color}20 0%, ${folder.color}60 100%)`
+              : 'linear-gradient(45deg,hsla(var(--muted)/1) 0%, hsla(var(--muted-foreground)/0.5) 100%)',
+            ['--tw-ring-color' as any]: folder.color
+              ? `${folder.color}60`
+              : 'hsla(var(--muted-foreground)/0.6)'
+          }}
+        >
+          <span
+            className='text-4xl'
             style={{
-              background: folder.item_id
-                ? `linear-gradient(45deg,${folder.color}20 0%, ${folder.color}60 100%)`
-                : 'linear-gradient(45deg,hsla(var(--muted)/1) 0%, hsla(var(--muted-foreground)/0.5) 100%)',
-              ['--tw-ring-color' as any]: folder.color
-                ? `${folder.color}60`
-                : 'hsla(var(--muted-foreground)/0.6)'
+              color: folder.color ?? 'hsla(var(--primary)/1)'
             }}
-            href={`/username/${folder.item_id}`}
           >
-            <span
-              className='text-4xl'
+            {folder.icon}
+          </span>
+          <div className='flex flex-col'>
+            <p
+              className='font-medium'
               style={{
                 color: folder.color ?? 'hsla(var(--primary)/1)'
               }}
             >
-              {folder.icon}
-            </span>
-            <div className='flex flex-col'>
-              <p
-                className='font-medium'
-                style={{
-                  color: folder.color ?? 'hsla(var(--primary)/1)'
-                }}
-              >
-                {folder.item_name}
-              </p>
-              <span className='text-sm text-muted-foreground'>4 elementos</span>
-            </div>
-          </Link>
+              {folder.item_name}
+            </p>
+            <span className='text-sm text-muted-foreground'>4 elementos</span>
+          </div>
         </li>
       </ContextMenuTrigger>
 
