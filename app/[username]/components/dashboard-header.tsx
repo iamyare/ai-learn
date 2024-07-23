@@ -8,7 +8,7 @@ export default function DashboardHeader() {
   return (
     <header className='flex flex-col gap-4'>
       <div className='flex justify-between items-center'>
-        <h1 className='text-2xl font-semibold'>Folder</h1>
+        <h1 className='text-3xl font-semibold'>Dashboard</h1>
         <span>hola</span>
       </div>
       <div className='flex gap-2 items-center'>

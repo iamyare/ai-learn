@@ -14,7 +14,7 @@ export default function FolderItem({ folder }: FolderItemProps) {
           background: folder.folder_color
             ? `linear-gradient(45deg,${folder.folder_color}10 0%, ${folder.folder_color}60 100%)`
             : 'linear-gradient(45deg,hsla(var(--muted)/1) 0%, hsla(var(--muted-foreground)/0.5) 100%)',
-            ['--tw-ring-color' as any]: folder.folder_color ? `${folder.folder_color}60` : 'hsla(var(--muted-foreground)/40)'
+            ['--tw-ring-color' as any]: folder.folder_color ? `${folder.folder_color}60` : 'hsla(var(--muted-foreground)/0.6)'
         }}
         href={`/${folder.folder_id}`}
       >
