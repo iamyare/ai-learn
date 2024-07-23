@@ -1,32 +1,31 @@
-'use client'
-import { Sidebar } from '@/components/sidebar';
-import { useParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
 
-export default function UsernameLayout({
+import { getUserInfo } from '@/actions';
+import { UserProvider } from '@/context/useUserContext';
+import UsernameLayoutClient from './components/layout-client';
+
+export default async function UsernameLayout({
   children,
+  params
 }: {
   children: React.ReactNode;
+  params: { username: string };
 }) {
-  const params = useParams();
-  const [isCollapsed, setIsCollapsed] = useState<boolean | null>(null);
+  const { user } = await getUserInfo();
 
-  useEffect(() => {
-    const collapsedState = localStorage.getItem('react-resizable-panels:collapsed');
-    setIsCollapsed(collapsedState === 'true');
-  }, []);
-
-  if (params?.notebook) {
-    return <div>{children}</div>;
+  if (!user) {
+    // Redirect to login page
+    return <div>Please log in</div>;
   }
 
-  if (isCollapsed === null) {
-    return null; // or a loading spinner
+  if (user.username !== params.username) {
+    // Redirect to correct username page
+    // You might want to use redirect() from 'next/navigation' here
+    return <div>Redirecting...</div>;
   }
 
   return (
-    <Sidebar defaultCollapsed={isCollapsed}>
-      {children}
-    </Sidebar>
+    <UserProvider user={user}>
+      <UsernameLayoutClient>{children}</UsernameLayoutClient>
+    </UserProvider>
   );
 }

@@ -1,41 +1,45 @@
-'use client'
-import { useEffect, useState } from 'react'
-import { getFoldersAndNotebooks } from '@/actions'
-import { useFolderNavigation } from '@/context/useFolderNavigationContext'
-import DashboardHeader from './dashboard-header'
-import ItemList from './item-list'
 
-const useFolderData = (user: User) => {
-  const [folders, setFolders] = useState<GetFoldersAndNotebooksFunction[]>([])
-  const [error, setError] = useState<string | null>(null)
-  const { currentPath } = useFolderNavigation()
+// app/[username]/components/dashboard.tsx
+'use client'
+import { useFolderNavigation } from '@/context/useFolderNavigationContext';
+import { useEffect, useState } from 'react';
+import { getFoldersAndNotebooks } from '@/actions';
+import DashboardHeader from './dashboard-header';
+import ItemList from './item-list';
+import { useUser } from '@/context/useUserContext';
+
+const useFolderData = (userId: string) => {
+  const [folders, setFolders] = useState<GetFoldersAndNotebooksFunction[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const { currentPath } = useFolderNavigation();
 
   useEffect(() => {
     const fetchFolders = async () => {
-      const currentFolderId = currentPath[currentPath.length - 1].id
+      const currentFolderId = currentPath[currentPath.length - 1].id;
       const { folders, errorFolders } = await getFoldersAndNotebooks({
-        userId: user.id,
+        userId,
         parentFolderId: currentFolderId === 'root' ? undefined : currentFolderId
-      })
+      });
 
       if (errorFolders) {
-        setError('Error al cargar las carpetas')
+        setError('Error al cargar las carpetas');
       } else {
-        setFolders(folders || [])
+        setFolders(folders || []);
       }
-    }
+    };
 
-    fetchFolders()
-  }, [currentPath, user.id])
+    fetchFolders();
+  }, [currentPath, userId]);
 
-  return { folders, error }
-}
+  return { folders, error };
+};
 
-export default function DashboardClient({ user }: { user: User }) {
-  const { folders, error: folderError } = useFolderData(user)
+export default function DashboardClient() {
+  const { user } = useUser();
+  const { folders, error: folderError } = useFolderData(user!.id);
 
   if (folderError) {
-    return <div>{folderError}</div>
+    return <div>{folderError}</div>;
   }
 
   return (
@@ -43,5 +47,5 @@ export default function DashboardClient({ user }: { user: User }) {
       <DashboardHeader />
       <ItemList folders={folders} />
     </main>
-  )
+  );
 }
