@@ -240,3 +240,33 @@
       transform: scaleY(0.8) scaleX(1.2);
     }
   }
+
+
+  /* Define the keyframes for the gradient animation */
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Add this class to your existing styles */
+.animated-gradient {
+  background-size: 200% 200%;
+  transition: all 0.3s ease;
+}
+
+/* Apply the animation on hover */
+.animated-gradient:hover {
+  animation: gradientShift 3s ease infinite;
+}
+
+/* Modify your existing hover styles */
+.hover\:animated-gradient:hover {
+  animation: gradientShift 3s ease infinite;
+}
