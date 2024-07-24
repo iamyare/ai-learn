@@ -17,4 +17,6 @@ declare global {
   type PDFDocuments = DB['public']['Tables']['pdf_documents']['Row']
   type NotebookInfo = Notebook & {pdf_document: PDFDocuments}
 
+  type ViewType = 'grid' | 'list' | 'detail' | 'verticalGrid' | 'squareGrid';
+
 }

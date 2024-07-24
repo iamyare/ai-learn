@@ -96,6 +96,15 @@ export async function deleteFolder({ folderId }: { folderId: string }) {
   return { errorFolder }
 }
 
+export async function deleteNotebook({ notebookId }: { notebookId: string }) {
+  const { error: errorNotebook } = await supabase
+    .from('notebooks')
+    .delete()
+    .eq('notebook_id', notebookId)
+
+  return { errorNotebook }
+}
+
 export async function getNotebooks({ folderId }: { folderId: string }) {
   const { data: notebooks, error: errorNotebooks } = await supabase
     .from('notebooks')

@@ -300,6 +300,8 @@ export type Database = {
           color: string
           subfolder_count: number
           notebook_count: number
+          created_at: string
+          updated_at: string
         }[]
       }
     }
