@@ -18,7 +18,16 @@ export const FolderNavigationProvider: React.FC<{ children: React.ReactNode }> =
   const [currentPath, setCurrentPath] = useState<FolderPath[]>([{ id: 'root', name: 'Root' }]);
 
   const navigateToFolder = (folderId: string, folderName: string) => {
-    setCurrentPath(prev => [...prev, { id: folderId, name: folderName }]);
+    setCurrentPath(prevPath => {
+      const index = prevPath.findIndex(item => item.id === folderId);
+      if (index !== -1) {
+        // Si la carpeta ya está en el path, corta el path hasta esa carpeta
+        return prevPath.slice(0, index + 1);
+      } else {
+        // Si es una nueva carpeta, añádela al final
+        return [...prevPath, { id: folderId, name: folderName }];
+      }
+    });
   };
 
   const navigateUp = () => {

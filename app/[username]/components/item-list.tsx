@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import Item from './item'; // Assuming the existing component is named 'item'
 import { useView } from '@/context/useViewContext';
 import { usePathname, useRouter } from 'next/navigation';
+import RenderBreadcrumb from './breadcrumb';
 
 interface ViewButtonProps {
   icon: React.ElementType;
@@ -83,7 +84,7 @@ interface ItemListProps {
 }
 
 const ItemList: React.FC<ItemListProps> = ({ items }) => {
-  const { currentPath, navigateUp, navigateToFolder } = useFolderNavigation();
+  const { currentPath, navigateToFolder } = useFolderNavigation();
   const { currentView, setView } = useView();
   const pathname = usePathname();
   const router = useRouter();
@@ -117,14 +118,9 @@ const ItemList: React.FC<ItemListProps> = ({ items }) => {
   return (
     <section>
       <div className="mb-4 flex justify-between items-center">
-        <div>
-          <Button onClick={navigateUp} disabled={currentPath.length === 1} variant="secondary">
-            Go Back
-          </Button>
-          <span className="ml-4">
-            Current location: {currentPath.map(item => item.name).join(' > ')}
-          </span>
-        </div>
+      <div className="mb-4">
+        <RenderBreadcrumb currentPath={currentPath} navigateToFolder={navigateToFolder} />
+      </div>
         <div className="flex space-x-2">
           <ViewButton icon={Grid} viewType="grid" onClick={() => setView('grid')} isActive={currentView === 'grid'} />
           <ViewButton icon={List} viewType="list" onClick={() => setView('list')} isActive={currentView === 'list'} />
