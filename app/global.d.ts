@@ -18,5 +18,9 @@ declare global {
   type NotebookInfo = Notebook & {pdf_document: PDFDocuments}
 
   type ViewType = 'grid' | 'list' | 'detail' | 'verticalGrid' | 'squareGrid';
+  interface ViewProps {
+    items: GetFoldersAndNotebooksFunction[];
+    onItemClick: (item: GetFoldersAndNotebooksFunction) => void;
+  }
 
 }

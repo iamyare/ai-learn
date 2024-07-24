@@ -1,83 +1,15 @@
-'use client'
 import React from 'react';
 import { useFolderNavigation } from '@/context/useFolderNavigationContext';
-import { Grid, List, Layout, AlignJustify, Square } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import Item from './item'; // Assuming the existing component is named 'item'
 import { useView } from '@/context/useViewContext';
 import { usePathname, useRouter } from 'next/navigation';
+import GridView from './views/grid-view';
+import ListView from './views/list-view';
+import DetailView from './views/detail-view';
+import VerticalGridView from './views/vertical-grid-view';
+import SquareGridView from './views/square-grid-view';
 import RenderBreadcrumb from './breadcrumb';
+import ViewButtons from './view-buttons';
 
-interface ViewButtonProps {
-  icon: React.ElementType;
-  viewType: ViewType;
-  onClick: () => void;
-  isActive: boolean;
-}
-
-const ViewButton: React.FC<ViewButtonProps> = ({ icon: Icon, onClick, isActive }) => (
-  <Button
-    onClick={onClick}
-    variant={isActive ? 'default' : 'secondary'}
-    size="icon"
-  >
-    <Icon className="size-4" />
-  </Button>
-);
-
-interface ViewProps {
-  items: GetFoldersAndNotebooksFunction[];
-  onItemClick: (item: GetFoldersAndNotebooksFunction) => void;
-}
-
-const GridView: React.FC<ViewProps> = ({ items, onItemClick }) => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-    {items.map((item) => (
-      <Item key={item.item_id} item={item} onClick={() => onItemClick(item)} />
-    ))}
-  </div>
-);
-
-const ListView: React.FC<ViewProps> = ({ items, onItemClick }) => (
-  <div className="space-y-2">
-    {items.map((item) => (
-      <Item key={item.item_id} item={item} onClick={() => onItemClick(item)} />
-    ))}
-  </div>
-);
-
-const DetailView: React.FC<ViewProps> = ({ items, onItemClick }) => (
-  <div className="space-y-4">
-    {items.map((item) => (
-      <div key={item.item_id} className="bg-secondary p-4 rounded-lg">
-        <Item item={item} onClick={() => onItemClick(item)} />
-        <p className="mt-2 text-sm text-muted-foreground">
-          Created: {new Date(item.created_at).toLocaleDateString()} | Last accessed: {new Date(item.updated_at).toLocaleDateString()}
-        </p>
-      </div>
-    ))}
-  </div>
-);
-
-const VerticalGridView: React.FC<ViewProps> = ({ items, onItemClick }) => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-    {items.map((item) => (
-      <div key={item.item_id} className="flex flex-col h-80">
-        <Item item={item} onClick={() => onItemClick(item)} />
-      </div>
-    ))}
-  </div>
-);
-
-const SquareGridView: React.FC<ViewProps> = ({ items, onItemClick }) => (
-  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-    {items.map((item) => (
-      <div key={item.item_id} className="aspect-square">
-        <Item item={item} onClick={() => onItemClick(item)} />
-      </div>
-    ))}
-  </div>
-);
 
 interface ItemListProps {
   items: GetFoldersAndNotebooksFunction[];
@@ -93,6 +25,9 @@ const ItemList: React.FC<ItemListProps> = ({ items }) => {
     if (item.item_type === 'folder') {
       navigateToFolder(item.item_id, item.item_name);
     } else {
+      // Suponiendo que `item.parent_folder_id` es la propiedad que indica si tiene un folder padre
+      // y que `undefined` o `null` significan que no tiene uno.
+      const pathSuffix = item.parent_folder_id ? '' : 'root/';
       router.push(`${pathname}/${item.item_id}`);
     }
   };
@@ -118,16 +53,8 @@ const ItemList: React.FC<ItemListProps> = ({ items }) => {
   return (
     <section>
       <div className="mb-4 flex justify-between items-center">
-      <div className="mb-4">
         <RenderBreadcrumb currentPath={currentPath} navigateToFolder={navigateToFolder} />
-      </div>
-        <div className="flex space-x-2">
-          <ViewButton icon={Grid} viewType="grid" onClick={() => setView('grid')} isActive={currentView === 'grid'} />
-          <ViewButton icon={List} viewType="list" onClick={() => setView('list')} isActive={currentView === 'list'} />
-          <ViewButton icon={Layout} viewType="detail" onClick={() => setView('detail')} isActive={currentView === 'detail'} />
-          <ViewButton icon={AlignJustify} viewType="verticalGrid" onClick={() => setView('verticalGrid')} isActive={currentView === 'verticalGrid'} />
-          <ViewButton icon={Square} viewType="squareGrid" onClick={() => setView('squareGrid')} isActive={currentView === 'squareGrid'} />
-        </div>
+        <ViewButtons currentView={currentView} setView={setView} />
       </div>
       {renderView()}
     </section>

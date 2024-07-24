@@ -1,25 +1,57 @@
-import { Skeleton } from "@/components/ui/skeleton"
+import React from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useView } from '@/context/useViewContext';
 
-export function ItemSkeleton() {
-  return (
-<Skeleton className="animate-pulse h-[200px] w-full flex flex-col items-center justify-center gap-2 p-4 rounded-lg">
-  <Skeleton className="size-14 bg-muted-foreground/20  rounded-full"></Skeleton>
-  <div className="flex flex-col gap-1 items-center">
-    <Skeleton className="h-4 w-16 bg-muted-foreground/20 rounded"></Skeleton>
-    <Skeleton className="h-3 w-10 bg-muted-foreground/20 rounded"></Skeleton>
-  </div>
-</Skeleton>
-  )
-}
+export const ItemListSkeleton: React.FC = () => {
+  const { currentView } = useView();
 
-export function ItemListSkeleton() {
-  //numero random de items entre 1 y 6
-  const items = Math.floor(Math.random() * 6) + 1
+  const renderSkeletonItems = () => {
+    switch (currentView) {
+      case 'grid':
+      case 'squareGrid':
+        return (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {[...Array(8)].map((_, i) => (
+              <Skeleton key={i} className="h-40 w-full" />
+            ))}
+          </div>
+        );
+      case 'list':
+        return (
+          <div className="space-y-2">
+            {[...Array(5)].map((_, i) => (
+              <Skeleton key={i} className="h-16 w-full" />
+            ))}
+          </div>
+        );
+      case 'detail':
+        return (
+          <div className="space-y-4">
+            {[...Array(3)].map((_, i) => (
+              <Skeleton key={i} className="h-32 w-full" />
+            ))}
+          </div>
+        );
+      case 'verticalGrid':
+        return (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {[...Array(8)].map((_, i) => (
+              <Skeleton key={i} className="h-80 w-full" />
+            ))}
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
-    <div className="grid grid-cols-3 gap-4">
-      {[...Array(items)].map((_, index) => (
-        <ItemSkeleton key={index} />
-      ))}
-    </div>
-  )
-}
+    <section>
+      <div className="mb-4 flex justify-between items-center">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-8 w-32" />
+      </div>
+      {renderSkeletonItems()}
+    </section>
+  );
+};
