@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 
-export function ThemeToggle() {
+export function ThemeToggle({className, classNameIcon}: {className?: string, classNameIcon?: string}) {
   const { theme, setTheme } = useTheme()
   const [isSystemDark, setIsSystemDark] = React.useState(false)
 
@@ -23,17 +23,17 @@ export function ThemeToggle() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <Button variant="ghost" size="icon" className={`relative ${className}`}>
           <div
             className={`absolute transition-all duration-300 ${
               theme === 'system'
                 ? isSystemDark
-                  ? ' rotate-90 scale-0'
-                  : ' rotate-0 scale-100'
+                  ? 'rotate-90 scale-0'
+                  : 'rotate-0 scale-100'
                 : theme === 'dark'
-                ? ' rotate-90 scale-0'
-                : ' rotate-0 scale-100'
-            }`}
+                ? 'rotate-90 scale-0'
+                : 'rotate-0 scale-100'
+            } ${classNameIcon}`}
           >
             <Sun className="size-5" />
           </div>
@@ -41,12 +41,12 @@ export function ThemeToggle() {
             className={`absolute transition-all duration-300 ${
               theme === 'system'
                 ? isSystemDark
-                  ? ' rotate-0 scale-100'
-                  : ' rotate-90 scale-0'
+                  ? 'rotate-0 scale-100'
+                  : 'rotate-90 scale-0'
                 : theme === 'dark'
-                ? ' rotate-0 scale-100'
-                : ' rotate-90 scale-0'
-            }`}
+                ? 'rotate-0 scale-100'
+                : 'rotate-90 scale-0'
+            } ${classNameIcon}`}
           >
             <Moon className="size-5" />
           </div>

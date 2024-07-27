@@ -267,7 +267,7 @@ export default function Chat({ notebookId }: { notebookId: string }) {
               <BubbleChat key={index} message={message} />
             ))
           ) : (
-            <p className="text-center text-gray-500">No hay mensajes aún. Comienza la conversación.</p>
+            <p className="text-center text-muted-foreground">No hay mensajes aún. Comienza la conversación.</p>
           )}
           <div ref={messagesEndRef} />
         </div>

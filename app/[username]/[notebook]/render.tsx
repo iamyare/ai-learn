@@ -28,7 +28,7 @@ export default function RenderView({
       <PDFProvider>
         <SpeechRecognitionProvider>
           <main className='flex relative flex-col w-screen h-screen overflow-hidden'>
-            <header className='w-screen flex justify-between h-10 py-1 px-2 border-b'>
+            <header className='w-screen flex justify-between items-center h-10 py-1 px-2 border-b'>
               <div className=' flex items-center gap-2'>
                 <Button
                   size={'icon'}
@@ -41,7 +41,7 @@ export default function RenderView({
                 <h2 className=' font-medium'>{notebookInfo.notebook_name}</h2>
               </div>
 
-              <ThemeToggle />
+              <ThemeToggle className='h-full ' />
             </header>
             <ResizablePanelGroup
               direction='horizontal'
@@ -55,13 +55,13 @@ export default function RenderView({
                       initialFileUrl={notebookInfo.pdf_document.file_path}
                     />
                   </ResizablePanel>
-                  <ResizableHandle  />
+                  <ResizableHandle />
                   <ResizablePanel defaultSize={35} className=''>
                     <SpeechRecognition notebookId={notebookInfo.notebook_id} />
                   </ResizablePanel>
                 </ResizablePanelGroup>
               </ResizablePanel>
-              <ResizableHandle  />
+              <ResizableHandle />
               {/* Segundo ResizablePanel */}
               <ResizablePanel defaultSize={30} maxSize={50}>
                 <Chat notebookId={notebookInfo.notebook_id} />
