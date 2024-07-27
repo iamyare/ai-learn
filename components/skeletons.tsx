@@ -55,3 +55,18 @@ export const ItemListSkeleton: React.FC = () => {
     </section>
   );
 };
+
+
+//Skeleton transcription
+export const TranscriptionSkeleton: React.FC = () => {
+  return (
+    <div className="flex flex-col gap-4">
+      {[...Array(3)].map((_, i) => (
+        <div key={i} className="flex flex-col gap-2">
+          <Skeleton className="h-4 w-1/2" />
+          <Skeleton className="h-4 w-3/4" />
+        </div>
+      ))}
+    </div>
+  );
+};

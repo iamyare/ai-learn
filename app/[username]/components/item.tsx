@@ -44,8 +44,6 @@ const Item: React.FC<ItemProps> = ({ item, onClick }) => {
           <FileText className="text-primary mr-2" />
           <p className="font-medium text-primary">{item.item_name}</p>
         </div>
-        <div className="flex-grow bg-gray-100 rounded-md"></div>
-        <p className="text-xs text-muted-foreground mt-2">Last edited: {item.updated_at}</p>
       </div>
     );
   }

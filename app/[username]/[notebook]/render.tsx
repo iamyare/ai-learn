@@ -57,7 +57,7 @@ export default function RenderView({
                   </ResizablePanel>
                   <ResizableHandle  />
                   <ResizablePanel defaultSize={35} className=''>
-                    <SpeechRecognition />
+                    <SpeechRecognition notebookId={notebookInfo.notebook_id} />
                   </ResizablePanel>
                 </ResizablePanelGroup>
               </ResizablePanel>

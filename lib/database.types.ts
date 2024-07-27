@@ -222,20 +222,31 @@ export type Database = {
           created_at: string
           id: string
           notebook_id: string
+          updated_at: string
         }
         Insert: {
           content: Json
           created_at?: string
           id?: string
           notebook_id: string
+          updated_at?: string
         }
         Update: {
           content?: Json
           created_at?: string
           id?: string
           notebook_id?: string
+          updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "transcriptions_notebook_id_fkey"
+            columns: ["notebook_id"]
+            isOneToOne: true
+            referencedRelation: "notebooks"
+            referencedColumns: ["notebook_id"]
+          },
+        ]
       }
       users: {
         Row: {

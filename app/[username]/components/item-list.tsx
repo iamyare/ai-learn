@@ -25,9 +25,7 @@ const ItemList: React.FC<ItemListProps> = ({ items }) => {
     if (item.item_type === 'folder') {
       navigateToFolder(item.item_id, item.item_name);
     } else {
-      // Suponiendo que `item.parent_folder_id` es la propiedad que indica si tiene un folder padre
-      // y que `undefined` o `null` significan que no tiene uno.
-      const pathSuffix = item.parent_folder_id ? '' : 'root/';
+
       router.push(`${pathname}/${item.item_id}`);
     }
   };

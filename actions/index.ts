@@ -1,6 +1,7 @@
 'use server'
 import { supabase } from '@/lib/supabase'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { DialogEntry } from '@/types/speechRecognition'
 
 export async function getUser() {
   const supabase = await createSupabaseServerClient()
@@ -133,3 +134,59 @@ export async function getNotebookInfo({ notebookId }: { notebookId: string }) {
 
   return { notebookInfo, errorNotebookInfo }
 }
+
+//Obtener transcripciones de un notebook
+export async function getTranscriptions({
+  notebookId
+}: {
+  notebookId: string
+}) {
+  const { data: transcriptions, error: errorTranscriptions } = await supabase
+    .from('transcriptions')
+    .select('*')
+    .eq('notebook_id', notebookId)
+    .maybeSingle()
+
+  return { transcriptions, errorTranscriptions }
+}
+
+//Create transcript notebook
+export async function createTranscriptNotebook({
+  transcriptHistory,
+  notebookId
+}: {
+  transcriptHistory: DialogEntry[]
+  notebookId: string
+}) {
+  const { data: transcriptInsert, error: errorTranscriptInsert } =
+    await supabase
+      .from('transcriptions')
+      .insert({
+        notebook_id: notebookId,
+        content: JSON.stringify(transcriptHistory)
+      })
+      .select('*')
+      .single()
+
+  return { transcriptInsert, errorTranscriptInsert }
+}
+
+//Update transcript notebook
+export async function updateTranscriptNotebook({
+  transcriptHistory,
+  notebookId
+}: {
+  transcriptHistory: DialogEntry[]
+  notebookId: string
+}) {
+  const { data: transcriptUpdate, error: errorTranscriptUpdate } =
+    await supabase
+      .from('transcriptions')
+      .update({ content: JSON.stringify(transcriptHistory) })
+      .eq('notebook_id', notebookId)
+      .select('*')
+      .single()
+
+  return { transcriptUpdate, errorTranscriptUpdate }
+}
+
