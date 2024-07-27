@@ -44,23 +44,34 @@ export type Database = {
       chats: {
         Row: {
           chat_id: string
+          content: Json | null
           created_at: string
           notebook_id: string
           title: string | null
         }
         Insert: {
           chat_id?: string
+          content?: Json | null
           created_at?: string
           notebook_id: string
           title?: string | null
         }
         Update: {
           chat_id?: string
+          content?: Json | null
           created_at?: string
           notebook_id?: string
           title?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "chats_notebook_id_fkey"
+            columns: ["notebook_id"]
+            isOneToOne: true
+            referencedRelation: "notebooks"
+            referencedColumns: ["notebook_id"]
+          },
+        ]
       }
       folders: {
         Row: {

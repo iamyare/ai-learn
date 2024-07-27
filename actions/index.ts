@@ -190,3 +190,42 @@ export async function updateTranscriptNotebook({
   return { transcriptUpdate, errorTranscriptUpdate }
 }
 
+//Obtener chat de un notebook
+export async function getChat(notebookId: string) {
+  const { data: chat, error: errorChat } = await supabase
+    .from('chats')
+    .select('*')
+    .eq('notebook_id', notebookId)
+    .maybeSingle()
+
+  return { chat, errorChat }
+}
+
+//Create chat notebook
+export async function createChatNotebook({ notebookId }: { notebookId: string }) {
+  const { data: chatInsert, error: errorChatInsert } = await supabase
+    .from('chats')
+    .insert({ notebook_id: notebookId })
+    .select('*')
+    .single()
+
+  return { chatInsert, errorChatInsert }
+}
+
+//Update chat notebook
+export async function updateChatNotebook({
+  content,
+  notebookId
+}: {
+  content: string
+  notebookId: string
+}) {
+  const { data: chatUpdate, error: errorChatUpdate } = await supabase
+    .from('chats')
+    .update({ content })
+    .eq('notebook_id', notebookId)
+    .select('*')
+    .single()
+
+  return { chatUpdate, errorChatUpdate }
+}

@@ -64,7 +64,7 @@ export default function RenderView({
               <ResizableHandle  />
               {/* Segundo ResizablePanel */}
               <ResizablePanel defaultSize={30} maxSize={50}>
-                <Chat />
+                <Chat notebookId={notebookInfo.notebook_id} />
               </ResizablePanel>
             </ResizablePanelGroup>
 
