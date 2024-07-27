@@ -1,5 +1,6 @@
 
 'use client'
+import ConfigModal from '@/components/modals/config'
 import CreateFolder from '@/components/modals/create-folder'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
@@ -12,6 +13,7 @@ export default function DashboardHeader() {
         <h1 className='text-3xl font-semibold'>Dashboard</h1>
         <div className='flex gap-2 items-center'>
           <ThemeToggle />
+          <ConfigModal />
           
 
         </div>

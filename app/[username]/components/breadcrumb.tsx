@@ -73,13 +73,13 @@ export default function RenderBreadcrumb({ currentPath, navigateToFolder }: Fold
           <React.Fragment key={item.id}>
             {index < visiblePath.length - 1 ? (
               <>
-                <BreadcrumbItem>
+                <BreadcrumbItem className="cursor-pointer">
                   <BreadcrumbLink onClick={() => navigateToFolder(item.id, item.name)}>{item.name}</BreadcrumbLink>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
               </>
             ) : (
-              <BreadcrumbItem>
+              <BreadcrumbItem className="cursor-pointer">
                 <BreadcrumbPage>{item.name}</BreadcrumbPage>
               </BreadcrumbItem>
             )}

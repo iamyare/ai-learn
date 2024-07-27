@@ -10,7 +10,7 @@ import {
   DialogTrigger
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { FolderPlus } from 'lucide-react'
+import { FolderPlus, Settings } from 'lucide-react'
 import { useState, useTransition } from 'react'
 import EmojiPicker from '../ui/emoji-picker'
 import ColorPicker from '../ui/color-picker'
@@ -20,8 +20,6 @@ import * as z from "zod"
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form"
 import { insertFolder } from '@/actions'
 import { toast } from '../ui/use-toast'
-import { usePathname, useRouter } from 'next/navigation'
-import { useFolderNavigation } from '@/context/useFolderNavigationContext'
 
 const formSchema = z.object({
   folder_name: z.string().min(1, "El nombre de la carpeta es requerido"),
@@ -30,11 +28,10 @@ const formSchema = z.object({
   user_id: z.string().min(1, "Falta User id"),
 })
 
-export default function CreateFolder({userId}:{userId: string}) {
+export default function ConfigModal() {
   const [open, setOpen] = useState(false)
   const [isPeding, startTransition] = useTransition()
 
-  const {navigateToFolder} =  useFolderNavigation()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -42,7 +39,7 @@ export default function CreateFolder({userId}:{userId: string}) {
       folder_name: "",
       folder_icon: "🚀",
       folder_color: "#8B00FF",
-      user_id: userId
+      user_id: ''
     },
   })
 
@@ -69,7 +66,6 @@ export default function CreateFolder({userId}:{userId: string}) {
       }
 
       // router.push(`${pathname}/${folder.folder_id}`)
-      navigateToFolder(folder.folder_id, folder.folder_name)
       setOpen(false)
     })
   }
@@ -77,16 +73,15 @@ export default function CreateFolder({userId}:{userId: string}) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant={'outline'}>
-          <FolderPlus className='size-4 mr-2' />
-          <span>Carpeta</span>
+        <Button size={'icon'} variant={'ghost'}>
+          <Settings className='size-4' />
         </Button>
       </DialogTrigger>
       <DialogContent className='sm:max-w-[425px]'>
         <DialogHeader>
-          <DialogTitle>Crear nueva carpeta</DialogTitle>
+          <DialogTitle>Configuracion</DialogTitle>
           <DialogDescription>
-            Las carpetas te permiten organizar tus notas en grupos.
+            Configura tu cuenta
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>

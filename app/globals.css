@@ -91,6 +91,29 @@
   -30px -30px 60px hsl(var(--accent)) !important; */
   /* border-radius: var(--radius) !important; */
   box-shadow: none !important;
+
+}
+
+
+
+.scanner_text {
+  background: linear-gradient(45deg, hsla(var(--primary)/0.3) 30%, hsla(var(--primary)/0.5) 50%, hsla(var(--primary)/0.3) 70%);
+  background-size: 200% 200%;
+  animation: scanner 5s ease infinite;
+}
+
+
+
+@keyframes scanner {
+  0% {
+      background-position: 0% 50%;
+  }
+  50% {
+      background-position: 100% 20%;
+  }
+  100% {
+      background-position: 0% 50%;
+  }
 }
 
 .rpv-core__page-layer{

@@ -28,6 +28,7 @@
     "@react-pdf-viewer/page-navigation": "^3.12.0",
     "@supabase/ssr": "^0.4.0",
     "@supabase/supabase-js": "^2.44.4",
+    "@tsparticles/slim": "^3.5.0",
     "@types/dom-speech-recognition": "^0.0.4",
     "ai": "^3.2.27",
     "ansi-html": "^0.0.9",

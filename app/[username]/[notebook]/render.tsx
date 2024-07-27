@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button'
 import { ChevronLeft } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
+import ConfigModal from '@/components/modals/config'
 
 export default function RenderView({
   notebookInfo
@@ -41,7 +42,11 @@ export default function RenderView({
                 <h2 className=' font-medium'>{notebookInfo.notebook_name}</h2>
               </div>
 
-              <ThemeToggle className='h-full ' />
+            <div className=' flex items-center'>
+            <ThemeToggle className='h-full ' />
+            <ConfigModal/>
+            </div>
+              
             </header>
             <ResizablePanelGroup
               direction='horizontal'

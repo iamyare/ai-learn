@@ -4,6 +4,8 @@ import { useView } from '@/context/useViewContext';
 
 export const ItemListSkeleton: React.FC = () => {
   const { currentView } = useView();
+  //numero random de elementos de 1 a 8
+  const randomItems = Math.floor(Math.random() * 8) + 1;
 
   const renderSkeletonItems = () => {
     switch (currentView) {
@@ -11,7 +13,7 @@ export const ItemListSkeleton: React.FC = () => {
       case 'squareGrid':
         return (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {[...Array(8)].map((_, i) => (
+            {[...Array(randomItems)].map((_, i) => (
               <Skeleton key={i} className="h-40 w-full" />
             ))}
           </div>
@@ -19,7 +21,7 @@ export const ItemListSkeleton: React.FC = () => {
       case 'list':
         return (
           <div className="space-y-2">
-            {[...Array(5)].map((_, i) => (
+            {[...Array(randomItems)].map((_, i) => (
               <Skeleton key={i} className="h-16 w-full" />
             ))}
           </div>
@@ -27,7 +29,7 @@ export const ItemListSkeleton: React.FC = () => {
       case 'detail':
         return (
           <div className="space-y-4">
-            {[...Array(3)].map((_, i) => (
+            {[...Array(randomItems)].map((_, i) => (
               <Skeleton key={i} className="h-32 w-full" />
             ))}
           </div>
@@ -35,7 +37,7 @@ export const ItemListSkeleton: React.FC = () => {
       case 'verticalGrid':
         return (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {[...Array(8)].map((_, i) => (
+            {[...Array(randomItems)].map((_, i) => (
               <Skeleton key={i} className="h-80 w-full" />
             ))}
           </div>
@@ -47,10 +49,6 @@ export const ItemListSkeleton: React.FC = () => {
 
   return (
     <section>
-      <div className="mb-4 flex justify-between items-center">
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-8 w-32" />
-      </div>
       {renderSkeletonItems()}
     </section>
   );

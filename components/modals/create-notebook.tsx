@@ -20,7 +20,6 @@ import * as z from "zod"
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form"
 import { insertFolder } from '@/actions'
 import { toast } from '../ui/use-toast'
-import { usePathname, useRouter } from 'next/navigation'
 import { useFolderNavigation } from '@/context/useFolderNavigationContext'
 
 const formSchema = z.object({
@@ -30,7 +29,7 @@ const formSchema = z.object({
   user_id: z.string().min(1, "Falta User id"),
 })
 
-export default function CreateFolder({userId}:{userId: string}) {
+export default function CreateNotebook({userId, folderId}:{userId: string, folderId: string}) {
   const [open, setOpen] = useState(false)
   const [isPeding, startTransition] = useTransition()
 

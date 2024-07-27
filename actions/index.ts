@@ -190,6 +190,16 @@ export async function updateTranscriptNotebook({
   return { transcriptUpdate, errorTranscriptUpdate }
 }
 
+//delete transcript notebook
+export async function deleteTranscriptNotebook({ notebookId }: { notebookId: string }) {
+  const { error: errorTranscriptDelete } = await supabase
+    .from('transcriptions')
+    .delete()
+    .eq('notebook_id', notebookId)
+
+  return { errorTranscriptDelete }
+}
+
 //Obtener chat de un notebook
 export async function getChat(notebookId: string) {
   const { data: chat, error: errorChat } = await supabase

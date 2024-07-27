@@ -1,62 +1,71 @@
-import React from 'react';
-import { useFolderNavigation } from '@/context/useFolderNavigationContext';
-import { useView } from '@/context/useViewContext';
-import { usePathname, useRouter } from 'next/navigation';
-import GridView from './views/grid-view';
-import ListView from './views/list-view';
-import DetailView from './views/detail-view';
-import VerticalGridView from './views/vertical-grid-view';
-import SquareGridView from './views/square-grid-view';
-import RenderBreadcrumb from './breadcrumb';
-import ViewButtons from './view-buttons';
-
+import React from 'react'
+import { useFolderNavigation } from '@/context/useFolderNavigationContext'
+import { useView } from '@/context/useViewContext'
+import { usePathname, useRouter } from 'next/navigation'
+import GridView from './views/grid-view'
+import ListView from './views/list-view'
+import DetailView from './views/detail-view'
+import VerticalGridView from './views/vertical-grid-view'
+import SquareGridView from './views/square-grid-view'
+import RenderBreadcrumb from './breadcrumb'
+import ViewButtons from './view-buttons'
+import { ItemListSkeleton } from '@/components/skeletons'
 
 interface ItemListProps {
-  items: GetFoldersAndNotebooksFunction[];
+  items: GetFoldersAndNotebooksFunction[]
+  isLoading: boolean
 }
 
-const ItemList: React.FC<ItemListProps> = ({ items }) => {
-  const { currentPath, navigateToFolder } = useFolderNavigation();
-  const { currentView, setView } = useView();
-  const pathname = usePathname();
-  const router = useRouter();
+const ItemList: React.FC<ItemListProps> = ({ items, isLoading }) => {
+  const { currentPath, navigateToFolder } = useFolderNavigation()
+  const { currentView, setView } = useView()
+  const pathname = usePathname()
+  const router = useRouter()
 
   const handleItemClick = (item: GetFoldersAndNotebooksFunction) => {
     if (item.item_type === 'folder') {
-      navigateToFolder(item.item_id, item.item_name);
+      navigateToFolder(item.item_id, item.item_name)
     } else {
-
-      router.push(`${pathname}/${item.item_id}`);
+      router.push(`${pathname}/${item.item_id}`)
     }
-  };
+  }
 
   const renderView = () => {
-    const viewProps = { items, onItemClick: handleItemClick };
+    const viewProps = { items, onItemClick: handleItemClick }
     switch (currentView) {
       case 'grid':
-        return <GridView {...viewProps} />;
+        return <GridView {...viewProps} />
       case 'list':
-        return <ListView {...viewProps} />;
+        return <ListView {...viewProps} />
       case 'detail':
-        return <DetailView {...viewProps} />;
+        return <DetailView {...viewProps} />
       case 'verticalGrid':
-        return <VerticalGridView {...viewProps} />;
+        return <VerticalGridView {...viewProps} />
       case 'squareGrid':
-        return <SquareGridView {...viewProps} />;
+        return <SquareGridView {...viewProps} />
       default:
-        return <GridView {...viewProps} />;
+        return <GridView {...viewProps} />
     }
-  };
+  }
 
   return (
     <section>
-      <div className="mb-4 flex justify-between items-center">
-        <RenderBreadcrumb currentPath={currentPath} navigateToFolder={navigateToFolder} />
-        <ViewButtons currentView={currentView} setView={setView} />
-      </div>
-      {renderView()}
-    </section>
-  );
-};
+      <div className='mb-4 flex justify-between items-center'>
+        <RenderBreadcrumb
+          currentPath={currentPath}
+          navigateToFolder={navigateToFolder}
+        />
+          <ViewButtons currentView={currentView} setView={setView} />
 
-export default ItemList;
+
+      </div>
+      {isLoading ? (
+          <ItemListSkeleton />
+        ) : (
+      renderView()
+        )}
+    </section>
+  )
+}
+
+export default ItemList
