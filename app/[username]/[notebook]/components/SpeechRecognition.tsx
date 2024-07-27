@@ -1,3 +1,4 @@
+
 import React, {
   useRef,
   useEffect,
@@ -9,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { CoursorText } from '@/components/ui/coursor-text'
 import { useSpeechRecognitionContext } from '@/context/useSpeechRecognitionContext'
 import { cn, formatDate } from '@/lib/utils'
-import { Mic, Play, SkipBack, SkipForward, Check, Cloudy, CloudOff } from 'lucide-react'
+import { Mic, Play, SkipBack, SkipForward, Cloudy, CloudOff } from 'lucide-react'
 import {
   getTranscriptions,
   createTranscriptNotebook,
@@ -22,6 +23,7 @@ import {
   TooltipProvider,
   TooltipTrigger
 } from '@/components/ui/tooltip'
+import { MoreOptionsTranscript } from './more-options'
 
 interface SpeechRecognitionProps {
   classNameContainer?: string
@@ -51,6 +53,7 @@ export default function SpeechRecognition({
   const [isLoading, setIsLoading] = useState(true)
   const [isUpdated, setIsUpdated] = useState(false)
   const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null)
+  
 
   const scrollToBottom = useCallback(() => {
     if (shouldAutoScroll && scrollAreaRef.current) {
@@ -234,7 +237,7 @@ export default function SpeechRecognition({
             </TooltipContent>
           </Tooltip>
 
-            <Button>More</Button>
+            <MoreOptionsTranscript />
           </div>
         </header>
       </TooltipProvider>
