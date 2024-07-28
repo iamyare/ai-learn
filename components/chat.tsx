@@ -1,6 +1,4 @@
-'use client'
-
-import React, { useRef, useEffect, useTransition, useState, useCallback } from 'react'
+import React, { useRef, useEffect, useTransition, useState, useCallback, useMemo } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
@@ -18,30 +16,12 @@ import { generateImportantEvents } from '@/lib/ai/ai-extra'
 import { usePDFContext } from '@/context/useCurrentPageContext'
 import { getChat, createChatNotebook, updateChatNotebook } from '@/actions'
 import { Skeleton } from '@/components/ui/skeleton'
+import { toast } from '@/components/ui/use-toast'
 
 const formSchema = z.object({
   message: z.string().min(1, 'El mensaje no puede estar vacío')
 })
 
-
-interface ChatMessageType {
-  content: string;
-  isUser: boolean;
-  timestamp: string;
-}
-
-interface EventMessageType {
-  events: Array<{
-    title: string;
-    description: string;
-    date: string;
-    priority: string;
-  }>;
-  isUser: boolean;
-  timestamp: string;
-}
-
-type MessageType = ChatMessageType | EventMessageType;
 
 export default function Chat({ notebookId }: { notebookId: string }) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -49,7 +29,6 @@ export default function Chat({ notebookId }: { notebookId: string }) {
   const [isPending, startTransition] = useTransition()
   const [messages, setMessages] = useState<ChatMessageType[]>([])
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [chatId, setChatId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -68,47 +47,57 @@ export default function Chat({ notebookId }: { notebookId: string }) {
     }
   }, [fileUrl, extractTextFromPDF])
 
-  useEffect(() => {
-    const loadChat = async () => {
-      if (!notebookId) return
+  const loadChat = useCallback(async () => {
+    if (!notebookId) return
 
-      setIsLoading(true)
+    setIsLoading(true)
+    try {
       const { chat, errorChat } = await getChat(notebookId)
       
-      console.log('Chat cargado:', chat, errorChat)
       if (chat) {
         setChatId(chat.chat_id)
         if (chat.content) {
-          try {
-            const parsedContent = JSON.parse(String(chat.content))
-            setMessages(Array.isArray(parsedContent) ? parsedContent : [])
-          } catch (e) {
-            console.error('Error al parsear el contenido del chat:', e)
-            setMessages([])
-          }
+          const parsedContent = JSON.parse(String(chat.content))
+          setMessages(Array.isArray(parsedContent) ? parsedContent : [])
         } else {
-          // Si el contenido es null, inicializamos con un array vacío
           setMessages([])
         }
       } else if (errorChat) {
         console.error('Error al cargar el chat:', errorChat)
-        setError('No se pudo cargar el chat. Por favor, inténtalo de nuevo.')
+        toast({
+          title: "Error",
+          description: "No se pudo cargar el chat. Por favor, recarga la página.",
+          variant: "destructive",
+        })
       } else {
-        // Si no hay chat, creamos uno nuevo
         const { chatInsert, errorChatInsert } = await createChatNotebook({ notebookId })
         if (chatInsert) {
           setChatId(chatInsert.chat_id)
           setMessages([])
         } else if (errorChatInsert) {
           console.error('Error al crear el chat:', errorChatInsert)
-          setError('No se pudo crear el chat. Por favor, inténtalo de nuevo.')
+          toast({
+            title: "Error",
+            description: "No se pudo crear el chat. Por favor, inténtalo de nuevo más tarde.",
+            variant: "destructive",
+          })
         }
       }
-      
+    } catch (error) {
+      console.error('Error inesperado:', error)
+      toast({
+        title: "Error",
+        description: "Ocurrió un error inesperado. Por favor, inténtalo de nuevo más tarde.",
+        variant: "destructive",
+      })
+    } finally {
       setIsLoading(false)
     }
-    loadChat()
   }, [notebookId])
+
+  useEffect(() => {
+    loadChat()
+  }, [loadChat])
 
   const scrollToBottom = useCallback(() => {
     if (shouldAutoScroll && messagesEndRef.current) {
@@ -120,27 +109,49 @@ export default function Chat({ notebookId }: { notebookId: string }) {
     scrollToBottom()
   }, [messages, scrollToBottom])
 
-  const handleScroll = () => {
+  const handleScroll = useCallback(() => {
     if (chatContainerRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current
       setShouldAutoScroll(scrollTop + clientHeight >= scrollHeight - 10)
     }
-  }
+  }, [])
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    const userMessage: ChatMessageType = {
+  const updateChatInDatabase = useCallback(async (updatedMessages: ChatMessageType[]) => {
+    try {
+      const { errorChatUpdate } = await updateChatNotebook({ content: JSON.stringify(updatedMessages), notebookId })
+      if (errorChatUpdate) {
+        console.error('Error al actualizar el chat:', errorChatUpdate)
+        toast({
+          title: "Advertencia",
+          description: "No se pudo guardar el último mensaje. Algunos mensajes podrían perderse al recargar la página.",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error('Error al actualizar el chat:', error)
+      toast({
+        title: "Error",
+        description: "Hubo un problema al guardar los mensajes. Por favor, guarda una copia de tu conversación importante.",
+        variant: "destructive",
+      })
+    }
+  }, [notebookId])
+
+  const onSubmit = useCallback(async (values: z.infer<typeof formSchema>) => {
+    const userMessage: MessageType = {
       content: values.message,
       isUser: true,
       timestamp: new Date().toISOString()
     }
-    const updatedMessages = [...messages, userMessage]
-    setMessages(updatedMessages)
+    setMessages(prev => [...prev, userMessage])
     setShouldAutoScroll(true)
     form.reset()
 
+    await updateChatInDatabase([...messages, userMessage])
+
     const transcript = history.map((entry) => entry.text).join(' ')
-    const messageHistory = updatedMessages
-      .filter((msg): msg is ChatMessageType => 'content' in msg)
+    const messageHistory = messages
+      .filter((msg): msg is MessageType => 'content' in msg)
       .map((msg) => ({
         role: msg.isUser ? 'user' : 'assistant',
         content: msg.content
@@ -158,7 +169,7 @@ export default function Chat({ notebookId }: { notebookId: string }) {
         let aiResponse = ''
         for await (const text of textStream) {
           aiResponse += text
-          setMessages((prev) => {
+          setMessages(prev => {
             const updatedMessages = [...prev]
             const lastMessage = updatedMessages[updatedMessages.length - 1]
             if (!lastMessage.isUser && 'content' in lastMessage) {
@@ -170,59 +181,70 @@ export default function Chat({ notebookId }: { notebookId: string }) {
                 timestamp: new Date().toISOString()
               })
             }
+            updateChatInDatabase(updatedMessages)
             return updatedMessages
           })
           setShouldAutoScroll(true)
         }
-
-        // Actualizar el chat en la base de datos
-        const { errorChatUpdate } = await updateChatNotebook({ content: JSON.stringify(updatedMessages), notebookId })
-        if (errorChatUpdate) {
-          console.error('Error al actualizar el chat:', errorChatUpdate)
-          setError('No se pudo actualizar el chat. Por favor, inténtalo de nuevo.')
-        }
       } catch (err) {
         console.error('Error en el flujo de AI:', err)
-        setError('Hubo un error al procesar la respuesta. Por favor, inténtalo de nuevo.')
+        toast({
+          title: "Error",
+          description: "Hubo un problema al procesar tu mensaje. Por favor, inténtalo de nuevo.",
+          variant: "destructive",
+        })
       }
     })
-  }
+  }, [messages, history, text, updateChatInDatabase, form])
 
-  const importantEvents = () => {
+  const importantEvents = useCallback(() => {
     startTransition(async () => {
       const transcript = history.map((entry) => entry.text).join(' ')
-      const { object } = await generateImportantEvents({
-        prompt: 'Lista de eventos importantes para la próxima semana',
-        transcription: transcript,
-        textPdf: text
-      })
+      try {
+        const { object } = await generateImportantEvents({
+          prompt: 'Lista de eventos importantes para la próxima semana',
+          transcription: transcript,
+          textPdf: text
+        })
 
-      for await (const partialObject of readStreamableValue(object)) {
-        if (partialObject) {
-          const eventMessage: ChatMessageType = {
-            content: JSON.stringify(partialObject.importantEvents), // Agregar la propiedad content
-            isUser: false,
-            timestamp: new Date().toISOString()
-          }
-          setMessages((prev) => {
-            const updatedMessages = [...prev, eventMessage]
-            // Actualizar el chat en la base de datos
-            if (chatId) {
-              updateChatNotebook({ content: JSON.stringify(updatedMessages), notebookId })
-            } else {
-              createChatNotebook({ notebookId })
+        for await (const partialObject of readStreamableValue(object)) {
+          if (partialObject) {
+            const eventMessage: EventMessageType = {
+              events: partialObject.importantEvents,
+              isUser: false,
+              timestamp: new Date().toISOString()
             }
-            return updatedMessages
-          })
+            setMessages(prev => {
+              const updatedMessages = [...prev, eventMessage]
+              updateChatInDatabase(updatedMessages)
+              return updatedMessages
+            })
+          }
         }
+        setShouldAutoScroll(true)
+      } catch (error) {
+        console.error('Error al generar eventos importantes:', error)
+        toast({
+          title: "Error",
+          description: "No se pudieron generar los eventos importantes. Por favor, inténtalo de nuevo.",
+          variant: "destructive",
+        })
       }
-      setShouldAutoScroll(true)
     })
-  }
+  }, [history, text, updateChatInDatabase])
 
-  if (error) {
-    return <div className='error-message'>{error}</div>
-  }
+  const renderChatContent = useMemo(() => (
+    <div className='space-y-4'>
+      {messages.length > 0 ? (
+        messages.map((message, index) => (
+          <BubbleChat key={index} message={message} />
+        ))
+      ) : (
+        <p className="text-center text-muted-foreground">No hay mensajes aún. Comienza la conversación.</p>
+      )}
+      <div ref={messagesEndRef} />
+    </div>
+  ), [messages])
 
   if (isLoading) {
     return (
@@ -261,16 +283,7 @@ export default function Chat({ notebookId }: { notebookId: string }) {
         ref={chatContainerRef}
         onScroll={handleScroll}
       >
-        <div className='space-y-4'>
-          {messages.length > 0 ? (
-            messages.map((message, index) => (
-              <BubbleChat key={index} message={message} />
-            ))
-          ) : (
-            <p className="text-center text-muted-foreground">No hay mensajes aún. Comienza la conversación.</p>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
+        {renderChatContent}
       </div>
 
       <footer className='w-full p-4'>

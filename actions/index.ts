@@ -89,21 +89,21 @@ export async function insertFolder({
 }
 
 export async function deleteFolder({ folderId }: { folderId: string }) {
-  const { error: errorFolder } = await supabase
+  const { error } = await supabase
     .from('folders')
     .delete()
     .eq('folder_id', folderId)
 
-  return { errorFolder }
+  return { error }
 }
 
 export async function deleteNotebook({ notebookId }: { notebookId: string }) {
-  const { error: errorNotebook } = await supabase
+  const { error } = await supabase
     .from('notebooks')
     .delete()
     .eq('notebook_id', notebookId)
 
-  return { errorNotebook }
+  return { error }
 }
 
 export async function insertNotebook({notebookData}: {notebookData: NotebookInsert}) {

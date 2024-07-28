@@ -20,7 +20,6 @@ import * as z from "zod"
 import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form"
 import { insertFolder } from '@/actions'
 import { toast } from '../ui/use-toast'
-import { usePathname, useRouter } from 'next/navigation'
 import { useFolderNavigation } from '@/context/useFolderNavigationContext'
 
 const formSchema = z.object({

@@ -10,10 +10,8 @@ import {
   DialogTrigger
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { FilePlus2, FolderPlus } from 'lucide-react'
+import { FilePlus2 } from 'lucide-react'
 import { useEffect, useState, useTransition } from 'react'
-import EmojiPicker from '../ui/emoji-picker'
-import ColorPicker from '../ui/color-picker'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -25,12 +23,11 @@ import {
   FormLabel,
   FormMessage
 } from '@/components/ui/form'
-import { insertFolder, insertNotebook, insertPdfDocument, uploadPdfToStorage } from '@/actions'
+import { insertNotebook, insertPdfDocument } from '@/actions'
 import { toast } from '../ui/use-toast'
 import { useFolderNavigation } from '@/context/useFolderNavigationContext'
 import { usePathname, useRouter } from 'next/navigation'
-import DragAndDrop from '../ui/dragAndDrop'
-import { DropzoneState, useDropzone } from 'react-dropzone'
+import { useDropzone } from 'react-dropzone'
 import {
   acceptClass,
   DropzoneDisplay,
@@ -40,9 +37,7 @@ import {
 import { supabase } from '@/lib/supabase'
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
-const ACCEPTED_FILE_TYPES = [
-  'application/pdf'
-]
+const ACCEPTED_FILE_TYPES = ['application/pdf']
 
 const formSchema = z.object({
   notebook_name: z.string().min(1, 'El nombre del notebook es requerido'),
@@ -61,7 +56,7 @@ const formSchema = z.object({
 
 export default function CreateNotebook({ userId }: { userId: string }) {
   const [open, setOpen] = useState(false)
-  const [isPeding, startTransition] = useTransition()
+  const [isPending, startTransition] = useTransition()
   const router = useRouter()
   const pathname = usePathname()
 
@@ -85,94 +80,75 @@ export default function CreateNotebook({ userId }: { userId: string }) {
   }, [currentPath, form])
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values)
-    toast({
-      title: "Notebook creado",
-      description: `Nombre: ${values.notebook_name}, Archivo: ${values.file?.name || 'No seleccionado'}`,
-    })
-
-
     const { file, ...notebookData } = values;
 
-    startTransition(async()=>{
+    startTransition(async () => {
+      try {
+        // Generar un nombre de archivo único
+        const fileExtension = file.name.split('.').pop()
+        const uniqueFileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExtension}`
 
+        // Subir el archivo
+        const { data: uploadResult, error: errorUploadResult } = await supabase.storage
+          .from('pdf_documents')
+          .upload(uniqueFileName, file)
 
-      const { data: uploadResult, error:errorUploadResult } = await supabase.storage
-      .from('pdf_documents')
-      .upload(`${file.name}.pdf`, file)
+        if (errorUploadResult) {
+          throw new Error(`Error al subir el archivo: ${errorUploadResult.message}`)
+        }
 
-      console.log('uploadResult', uploadResult, errorUploadResult)
+        if (!uploadResult) {
+          throw new Error('No se pudo subir el archivo. Por favor, inténtalo de nuevo.')
+        }
 
-      if (errorUploadResult){
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description: "There was a problem with your request.",
+        // Insertar el notebook
+        const { notebook, errorNotebook } = await insertNotebook({notebookData})
+
+        if (errorNotebook) {
+          throw new Error(`Error al crear el notebook: ${errorNotebook.message}`)
+        }
+
+        if (!notebook) {
+          throw new Error('No se pudo crear el notebook. Por favor, inténtalo de nuevo.')
+        }
+
+        // Construir la URL completa del archivo
+        const baseURL = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/pdf_documents/`;
+        const fullPath = `${baseURL}${uploadResult.path}`;
+
+        // Insertar el documento PDF
+        const { pdfDocument, errorPdfDocument } = await insertPdfDocument({
+          pdfData: {
+            notebook_id: notebook.notebook_id,
+            file_path: fullPath,
+            file_name: file.name,
+            file_size: String(file.size),
+          }
         })
-        return
-      }
 
-      if (!uploadResult){
+        if (errorPdfDocument) {
+          throw new Error(`Error al guardar la información del PDF: ${errorPdfDocument.message}`)
+        }
+
+        if (!pdfDocument) {
+          throw new Error('No se pudo guardar la información del PDF. Por favor, inténtalo de nuevo.')
+        }
+
         toast({
-          title: "Uh oh! Something went wrong.",
-          description: "There was a problem with your request.",
+          title: "Notebook creado con éxito",
+          description: `Se ha creado el notebook "${values.notebook_name}" y se ha subido el archivo "${file.name}".`,
         })
-        return
-      }
 
-      const { notebook, errorNotebook } = await insertNotebook({notebookData})
-
-      console.log('notebook', notebook, errorNotebook)
-
-      if (errorNotebook){
+        router.push(`${pathname}/${notebook.notebook_id}`)
+        setOpen(false)
+      } catch (error) {
+        console.error('Error en la creación del notebook:', error)
         toast({
-          title: "Uh oh! Something went wrong.",
-          description: "There was a problem with your request.",
+          title: "Error al crear el notebook",
+          description: error instanceof Error ? error.message : "Ocurrió un error inesperado. Por favor, inténtalo de nuevo.",
+          variant: "destructive",
         })
-        return
       }
-
-      if (!notebook){
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description: "There was a problem with your request.",
-        })
-        return
-      }
-
-
-
-
-      const baseURL = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/`;
-      const fullPath = `${baseURL}${uploadResult.fullPath}`;
-
-
-      const {pdfDocument, errorPdfDocument} = await insertPdfDocument({ pdfData:{
-        notebook_id: notebook.notebook_id,
-        file_path: fullPath,
-        file_name: file.name,
-        file_size: String(file.size),
-      }})
-
-      console.log('pdfDocument', pdfDocument, errorPdfDocument)
-
-      if (errorPdfDocument){
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description: "There was a problem with your request.",
-        })
-        return
-      }
-
-      if (!pdfDocument){
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description: "There was a problem with your request.",
-        })
-        return
-      }
-
-      router.push(`${pathname}/${notebook.notebook_id}`)
-      setOpen(false)
     })
   }
 
@@ -230,7 +206,7 @@ export default function CreateNotebook({ userId }: { userId: string }) {
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
-            <div className='flex flex-col w-full  items-center gap-2'>
+            <div className='flex flex-col w-full items-center gap-2'>
               <FormField
                 control={form.control}
                 name='notebook_name'
@@ -244,7 +220,7 @@ export default function CreateNotebook({ userId }: { userId: string }) {
                   </FormItem>
                 )}
               />
-<Controller
+              <Controller
                 name='file'
                 control={form.control}
                 render={({
@@ -276,7 +252,7 @@ export default function CreateNotebook({ userId }: { userId: string }) {
               />
             </div>
             <DialogFooter>
-              <Button type='submit'>{isPeding ? 'Creando...' : 'Crear'}</Button>
+              <Button type='submit'>{isPending ? 'Creando...' : 'Crear'}</Button>
             </DialogFooter>
           </form>
         </Form>
