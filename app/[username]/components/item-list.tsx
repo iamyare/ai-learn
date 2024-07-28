@@ -11,6 +11,15 @@ import RenderBreadcrumb from './breadcrumb'
 import ViewButtons from './view-buttons'
 import { ItemListSkeleton } from '@/components/skeletons'
 
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu"
+import { Separator } from '@/components/ui/separator'
+
+
 interface ItemListProps {
   items: GetFoldersAndNotebooksFunction[]
   isLoading: boolean
@@ -62,7 +71,18 @@ const ItemList: React.FC<ItemListProps> = ({ items, isLoading }) => {
       {isLoading ? (
           <ItemListSkeleton />
         ) : (
-      renderView()
+
+          <ContextMenu>
+  <ContextMenuTrigger>{renderView()}</ContextMenuTrigger>
+  <ContextMenuContent>
+    <ContextMenuItem>Editar</ContextMenuItem>
+    <ContextMenuItem>Eliminar</ContextMenuItem>
+    <Separator className='my-1' />
+    <ContextMenuItem>Propiedades</ContextMenuItem>
+  </ContextMenuContent>
+</ContextMenu>
+
+      
         )}
     </section>
   )

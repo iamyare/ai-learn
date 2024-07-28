@@ -1,12 +1,11 @@
 'use client'
 
-import { cn } from '@/lib/utils'
 import { Image, ImageOff } from 'lucide-react'
 
 export const DropzoneDisplay = {
-  Normal: ({className}:{className?: string}) => {
+  Normal: () => {
     return (
-      <div className={cn('flex flex-col gap-4', className)}>
+      <div className='flex flex-col gap-4 w-full'>
         <Image
           className='mx-auto h-12 w-12 text-muted-foreground opacity-50'
           aria-hidden='true'
@@ -36,14 +35,29 @@ export const DropzoneDisplay = {
   },
   Accept: () => {
     return (
-      <div className='flex flex-col gap-4'>
+      <div className='flex flex-col gap-4 w-full'>
         <Image
-          className='mx-auto h-12 w-12 text-primary shadow-hover'
+          className='mx-auto h-12 w-12 text-muted-foreground opacity-50'
           aria-hidden='true'
         />
         <div className='flex flex-col'>
-          <p className=' text-primary select-none'>
-            Suelta la imagen para subirla
+          <div className='flex justify-center text-sm  text-muted-foreground'>
+            <label
+              htmlFor='file-upload'
+              className='relative flex cursor-pointer  rounded-md  font-semibold text-sec focus-within:outline-none focus-within:ring-2 focus-within:ring-sec focus-within:ring-offset-2 hover:text-sec'
+            >
+              <span>Subir sas un archivo</span>
+              <input
+                id='file-upload'
+                name='file-upload'
+                type='file'
+                className='sr-only'
+              />
+            </label>
+            <p className='ps-1 select-none'>o arrastra y suelta</p>
+          </div>
+          <p className='text-xs leading-5 text-muted-foreground select-none'>
+            Archivos permitidos PNG, JPG, WEBP hasta 10MB
           </p>
         </div>
       </div>
@@ -51,14 +65,8 @@ export const DropzoneDisplay = {
   },
   Reject: () => {
     return (
-      <div className='flex flex-col gap-4'>
-        <ImageOff
-          className='mx-auto h-12 w-12 text-destructive shadow-hover-destructive '
-          aria-hidden='true'
-        />
-        <div className='flex flex-col'>
-          <p className=' text-destructive select-none'>Archivo no permitido</p>
-        </div>
+      <div className='flex flex-col gap-4 w-full h-full bg-red-500'>
+        hola
       </div>
     )
   },
@@ -80,7 +88,7 @@ export const DropzoneDisplay = {
 }
 
 // Define tus clases de CSS
-export const focusedClass = 'bg-primary/5 border-primary text-primary'
+export const focusedClass = 'bg-primary/5 border-primary text-primary '
 export const acceptClass = 'bg-primary/5 border-primary text-primary '
 export const rejectClass =
   'bg-destructive/5 border-red-500 text-destructive'

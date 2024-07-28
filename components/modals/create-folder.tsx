@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { FolderPlus } from 'lucide-react'
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import EmojiPicker from '../ui/emoji-picker'
 import ColorPicker from '../ui/color-picker'
 import { useForm } from "react-hook-form"
@@ -28,13 +28,14 @@ const formSchema = z.object({
   folder_icon: z.string().min(1, "Debes seleccionar un emoji"),
   folder_color: z.string().regex(/^#[0-9A-F]{6}$/i, "Debes seleccionar un color válido"),
   user_id: z.string().min(1, "Falta User id"),
+  parent_folder_id: z.string().nullable()
 })
 
 export default function CreateFolder({userId}:{userId: string}) {
   const [open, setOpen] = useState(false)
   const [isPeding, startTransition] = useTransition()
 
-  const {navigateToFolder} =  useFolderNavigation()
+  const {currentPath} =  useFolderNavigation()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -42,13 +43,20 @@ export default function CreateFolder({userId}:{userId: string}) {
       folder_name: "",
       folder_icon: "🚀",
       folder_color: "#8B00FF",
+      parent_folder_id: null,
       user_id: userId
     },
   })
 
+  useEffect(() => {
+    const parentFolderId = currentPath.length > 1 
+      ? currentPath[currentPath.length - 1].id 
+      : null;
+    
+    form.setValue('parent_folder_id', parentFolderId);
+  }, [currentPath, form]);
+
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values)
-    // Aquí puedes manejar la creación de la carpeta
     startTransition(async()=>{
       const {folder, errorFolder} = await insertFolder({folderData: values})
 
@@ -68,8 +76,8 @@ export default function CreateFolder({userId}:{userId: string}) {
         return
       }
 
-      // router.push(`${pathname}/${folder.folder_id}`)
-      navigateToFolder(folder.folder_id, folder.folder_name)
+      //En caso de querer navegar a la carpeta creada
+      // navigateToFolder(folder.folder_id, folder.folder_name)
       setOpen(false)
     })
   }

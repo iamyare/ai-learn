@@ -106,6 +106,16 @@ export async function deleteNotebook({ notebookId }: { notebookId: string }) {
   return { errorNotebook }
 }
 
+export async function insertNotebook({notebookData}: {notebookData: NotebookInsert}) {
+  const { data: notebook, error: errorNotebook } = await supabase
+    .from('notebooks')
+    .insert({ ...notebookData })
+    .select('*')
+    .single()
+
+  return { notebook, errorNotebook }
+}
+
 export async function getNotebooks({ folderId }: { folderId: string }) {
   const { data: notebooks, error: errorNotebooks } = await supabase
     .from('notebooks')
@@ -238,4 +248,26 @@ export async function updateChatNotebook({
     .single()
 
   return { chatUpdate, errorChatUpdate }
+}
+
+//upload pdf to storage
+export async function uploadPdfToStorage({ pdf }: { pdf: File }) {
+  const { data: uploadResult, error:errorUploadResult } = await supabase.storage
+    .from('pdf_documents')
+    .upload(`${pdf.name}.pdf`, pdf)
+
+  return { uploadResult, errorUploadResult }
+}
+
+
+
+//insert pdf document
+export async function insertPdfDocument({ pdfData }: { pdfData: PDFDocumentsInsert }) {
+  const { data: pdfDocument, error: errorPdfDocument } = await supabase
+    .from('pdf_documents')
+    .insert({ ...pdfData })
+    .select('*')
+    .single()
+
+  return { pdfDocument, errorPdfDocument }
 }

@@ -16,7 +16,7 @@ export default function DashboardClient() {
 
   return (
     <main className='flex flex-col gap-8'>
-      <DashboardHeader />
+      <DashboardHeader userId={user?.id ?? ''} />
       <ViewProvider>
 
           <ItemList items={folders} isLoading={isLoading} />
