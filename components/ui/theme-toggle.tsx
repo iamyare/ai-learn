@@ -35,7 +35,7 @@ export function ThemeToggle({className, classNameIcon}: {className?: string, cla
                 : 'rotate-0 scale-100'
             } ${classNameIcon}`}
           >
-            <Sun className="size-5" />
+            <Sun className="size-4" />
           </div>
           <div
             className={`absolute transition-all duration-300 ${
@@ -48,7 +48,7 @@ export function ThemeToggle({className, classNameIcon}: {className?: string, cla
                 : 'rotate-90 scale-0'
             } ${classNameIcon}`}
           >
-            <Moon className="size-5" />
+            <Moon className="size-4" />
           </div>
           <span className="sr-only">Toggle theme</span>
         </Button>

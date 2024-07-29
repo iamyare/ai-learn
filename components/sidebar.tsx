@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronRight, ChevronLeft, ChevronDown, File, Folder, Plus, Search, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -86,6 +86,8 @@ interface SidebarProps {
 export function Sidebar({ children, userId, defaultOpen }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const [rootItems, setRootItems] = useState<FolderItem[]>([]);
+  const [isHovered, setIsHovered] = useState(false);
+  const sidebarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const loadRootItems = async () => {
@@ -114,46 +116,76 @@ export function Sidebar({ children, userId, defaultOpen }: SidebarProps) {
     document.cookie = `sidebarIsOpen=${newOpenState}`;
   };
 
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isOpen) {
+        const threshold = 40; // pixels from the left edge
+        setIsHovered(e.clientX <= threshold);
+      }
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, [isOpen]);
+
   return (
     <TooltipProvider delayDuration={0}>
       <div className="flex h-full min-h-screen items-stretch">
         <div
+          ref={sidebarRef}
           className={cn(
             "transition-all duration-300 ease-in-out",
-            isOpen ? "w-[250px]" : "w-[50px]"
+            isOpen ? "w-[250px]" : (isHovered ? "w-[250px]" : "w-0"),
+            !isOpen && "absolute left-0 top-0 bottom-0"
           )}
+          onMouseEnter={() => !isOpen && setIsHovered(true)}
+          onMouseLeave={() => !isOpen && setIsHovered(false)}
         >
-          <div className="flex flex-col h-full">
-            <div className="flex gap-1 px-2 my-4">
-              <Button size={isOpen ? 'default' : 'icon'} className={cn('w-full', !isOpen && 'p-1')}>
-                <Plus className="size-4" />
-                {isOpen && <span className="ml-2">Crear Notebook</span>}
-              </Button>
-              {isOpen && (
-                <>
-                  <Button size="icon" variant="outline" className="aspect-square">
-                    <Search className="size-4" />
-                  </Button>
-                  <Button size="icon" variant="outline" className="aspect-square">
-                    <Sparkles className="size-4" />
-                  </Button>
-                </>
-              )}
-            </div>
+          <div className={cn("flex flex-col relative py-2 px-4 border-r  transition-transform h-full bg-background/50 backdrop-blur-sm",
+            !isOpen && isHovered && "w-[250px] translate-x-0",
+            !isOpen && !isHovered && " -translate-x-52"
+
+          )}>
+          <Button
+          className={cn(
+            " transition-all duration-300  ",
+            !isOpen && "hidden",
+            isOpen && "absolute top-0 right-0 "
+          )}
+          size={'icon'}
+          onClick={toggleSidebar}
+          variant={'ghost'}
+        >
+          {isOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+        </Button>
+        <span className=' text-2xl font-medium mb-4 mt-2'>Stick Note</span>
+
             <div className="flex-grow overflow-auto">
               {rootItems.map(item => (
                 <FolderTreeItem key={item.item_id} item={item} depth={0} onExpand={handleExpand} />
               ))}
             </div>
           </div>
-        </div>
-        <Button
-          className="h-full w-2 hover:w-3 transition-all duration-200 rounded-none"
+
+          <Button
+          className={cn(
+            " transition-all duration-300  ",
+            !isOpen && "fixed left-0 top-0 bottom-0 rounded-none  h-full hover:bg-transparent -translate-x-2 ",
+            !isOpen && isHovered && "translate-x-0 ",
+            isOpen && "hidden "
+          )}
+          size={'icon'}
           onClick={toggleSidebar}
+          variant={'ghost'}
         >
           {isOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
         </Button>
-        <main className="flex-1 p-5">{children}</main>
+        </div>
+
+        <main className={cn("flex-1 p-5", !isOpen && "ml-2")}>{children}</main>
       </div>
     </TooltipProvider>
   );
