@@ -9,6 +9,32 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      api_keys: {
+        Row: {
+          gemini_key: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          gemini_key?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          gemini_key?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_keys_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_messages: {
         Row: {
           chat_id: string

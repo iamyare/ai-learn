@@ -10,62 +10,45 @@ import {
   DialogTrigger
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { FolderPlus, Settings } from 'lucide-react'
+import { Settings } from 'lucide-react'
 import { useState, useTransition } from 'react'
-import EmojiPicker from '../ui/emoji-picker'
-import ColorPicker from '../ui/color-picker'
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form"
-import { insertFolder } from '@/actions'
-import { toast } from '../ui/use-toast'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormMessage
+} from '@/components/ui/form'
+import { useApiKeys } from '@/context/useAPIKeysContext'
+import Link from 'next/link'
 
 const formSchema = z.object({
-  folder_name: z.string().min(1, "El nombre de la carpeta es requerido"),
-  folder_icon: z.string().min(1, "Debes seleccionar un emoji"),
-  folder_color: z.string().regex(/^#[0-9A-F]{6}$/i, "Debes seleccionar un color válido"),
-  user_id: z.string().min(1, "Falta User id"),
+  gemini_key: z.string().min(1, 'Gemini Key is required'),
+  user_id: z.string().min(1, 'User id is required')
 })
 
 export default function ConfigModal() {
   const [open, setOpen] = useState(false)
-  const [isPeding, startTransition] = useTransition()
-
+  const [isPending, startTransition] = useTransition()
+  const { apiKeys, updateApiKeys, user_id } = useApiKeys()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      folder_name: "",
-      folder_icon: "🚀",
-      folder_color: "#8B00FF",
-      user_id: ''
-    },
+      gemini_key: apiKeys.gemini_key || '',
+      user_id: user_id
+    }
   })
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values)
-    // Aquí puedes manejar la creación de la carpeta
-    startTransition(async()=>{
-      const {folder, errorFolder} = await insertFolder({folderData: values})
-
-      if (errorFolder){
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description: "There was a problem with your request.",
-        })
-        return
-      }
-
-      if (!folder){
-        toast({
-          title: "Uh oh! Something went wrong.",
-          description: "There was a problem with your request.",
-        })
-        return
-      }
-
-      // router.push(`${pathname}/${folder.folder_id}`)
+    startTransition(() => {
+      updateApiKeys({ gemini_key: values.gemini_key })
+      // Aquí puedes manejar la actualización del user_id si es necesario
+      console.log(values)
       setOpen(false)
     })
   }
@@ -73,62 +56,52 @@ export default function ConfigModal() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size={'icon'} variant={'ghost'}>
-          <Settings className='size-4' />
+        <Button variant='outline' size='icon'>
+          <Settings className='h-4 w-4' />
         </Button>
       </DialogTrigger>
       <DialogContent className='sm:max-w-[425px]'>
         <DialogHeader>
-          <DialogTitle>Configuracion</DialogTitle>
+          <DialogTitle>Configuración</DialogTitle>
           <DialogDescription>
-            Configura tu cuenta
+            Configura tus claves de API para un correcto funcionamiento.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className='flex items-center gap-2'>
-              <FormField
-                control={form.control}
-                name="folder_icon"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <EmojiPicker getValue={field.onChange}>
-                        {field.value}
-                      </EmojiPicker>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="folder_name"
-                render={({ field }) => (
-                  <FormItem className="flex-grow">
-                    <FormControl>
-                      <Input placeholder='Nombre de la carpeta' {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="folder_color"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <ColorPicker getValue={field.onChange} defaultColor={field.value} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
+            <FormField
+              control={form.control}
+              name='gemini_key'
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      placeholder='Gemini API Key'
+                      type='password'
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Puedes obtener tu Gemini API Key en tu cuenta de Gemini o
+                    dando click{' '}
+                    <Link
+                      href='https://exchange.gemini.com/settings/api'
+                      className=' underline'
+                      target='_blank'
+                      rel='noreferrer'
+                    >
+                      aquí
+                    </Link>
+                    .
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <DialogFooter>
-              <Button type='submit'>
-                {isPeding ? 'Creando...' : 'Crear'}
+              <Button type='submit' disabled={isPending}>
+                {isPending ? 'Guardando...' : 'Guardar cambios'}
               </Button>
             </DialogFooter>
           </form>

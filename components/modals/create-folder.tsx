@@ -34,7 +34,7 @@ export default function CreateFolder({userId}:{userId: string}) {
   const [open, setOpen] = useState(false)
   const [isPeding, startTransition] = useTransition()
 
-  const {currentPath} =  useFolderNavigation()
+  const {currentPath, navigateToFolder} =  useFolderNavigation()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -76,7 +76,9 @@ export default function CreateFolder({userId}:{userId: string}) {
       }
 
       //En caso de querer navegar a la carpeta creada
-      // navigateToFolder(folder.folder_id, folder.folder_name)
+      //navigateToFolder(folder.id, folder.name)
+      navigateToFolder(currentPath[currentPath.length - 1].id, currentPath[currentPath.length - 1].name)
+      form.reset()
       setOpen(false)
     })
   }

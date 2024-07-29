@@ -1,4 +1,5 @@
-import React, { useTransition  } from 'react';
+'use client'
+import React, { useTransition, useCallback } from 'react';
 import {
   ContextMenu,
   ContextMenuContent,
@@ -9,7 +10,8 @@ import { Separator } from '@/components/ui/separator';
 import { deleteFolder, deleteNotebook } from '@/actions';
 import { cn } from '@/lib/utils';
 import { toast } from '@/components/ui/use-toast';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useFolderNavigation } from '@/context/useFolderNavigationContext';
 
 interface ContextMenuProps {
   children: React.ReactNode;
@@ -21,13 +23,15 @@ const ReusableContextMenu: React.FC<ContextMenuProps> = ({
   item,
 }) => {
   const [isPending, startTransition] = useTransition();
-  const router = useRouter();
+const {reload, currentPath, navigateToFolder} = useFolderNavigation();
 
-  function handleEdit() {
+
+  const handleEdit = useCallback(() => {
     console.log(`Editing ${item.item_type}: ${item.item_name}`);
-  }
+    // Implementar lógica de edición aquí
+  }, [item]);
 
-  function handleDelete(){
+  const handleDelete = () => {
     console.log(`Deleting ${item.item_type}: ${item.item_name}`);
     startTransition(async () => {
       const { error } = item.item_type === 'folder'
@@ -49,19 +53,22 @@ const ReusableContextMenu: React.FC<ContextMenuProps> = ({
         variant: 'default',
       });
 
-      // Actualizar la lista de carpetas y notebooks
-      router.refresh();
+      
+      navigateToFolder(currentPath[currentPath.length - 1].id, currentPath[currentPath.length - 1].name);
+
+      
     });
   }
 
-  function handleViewProperties(){
+  const handleViewProperties = useCallback(() => {
     console.log(`Viewing properties of ${item.item_type}: ${item.item_name}`);
-  }
+    // Implementar lógica para ver propiedades aquí
+  }, [item]);
 
   return (
     <ContextMenu>
       <ContextMenuTrigger>
-        <div className={cn(isPending ? 'loading-card': 'w-full h-full')}>
+        <div className={cn(isPending ? 'opacity-50 pointer-events-none' : '', 'w-full h-full')}>
           {children}
         </div>
       </ContextMenuTrigger>

@@ -1,7 +1,8 @@
 
-import { getUserInfo } from '@/actions';
+import { getApiKeys, getUserInfo } from '@/actions';
 import { UserProvider } from '@/context/useUserContext';
 import UsernameLayoutClient from './components/layout-client';
+import { ApiKeysProvider } from '@/context/useAPIKeysContext';
 
 export default async function UsernameLayout({
   children,
@@ -23,9 +24,13 @@ export default async function UsernameLayout({
     return <div>Redirecting...</div>;
   }
 
+  const {apiKeys} = await getApiKeys({ userId: user.id });
+
   return (
     <UserProvider user={user}>
+      <ApiKeysProvider initialApiKeys={apiKeys ?? undefined} initialUserId={user.id} >
       <UsernameLayoutClient>{children}</UsernameLayoutClient>
+      </ApiKeysProvider>
     </UserProvider>
   );
 }

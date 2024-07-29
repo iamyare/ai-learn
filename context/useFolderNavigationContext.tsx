@@ -1,5 +1,6 @@
 'use client'
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 
 type FolderPath = {
   id: string;
@@ -8,16 +9,19 @@ type FolderPath = {
 
 type FolderNavigationContextType = {
   currentPath: FolderPath[];
+  setCurrentPath: React.Dispatch<React.SetStateAction<FolderPath[]>>;
   navigateToFolder: (folderId: string, folderName: string) => void;
   navigateUp: () => void;
+  reload: () => void;
 };
 
 const FolderNavigationContext = createContext<FolderNavigationContextType | undefined>(undefined);
 
 export const FolderNavigationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentPath, setCurrentPath] = useState<FolderPath[]>([{ id: 'root', name: 'Root' }]);
+  const router = useRouter();
 
-  const navigateToFolder = (folderId: string, folderName: string) => {
+  const navigateToFolder = useCallback((folderId: string, folderName: string) => {
     setCurrentPath(prevPath => {
       const index = prevPath.findIndex(item => item.id === folderId);
       if (index !== -1) {
@@ -28,14 +32,19 @@ export const FolderNavigationProvider: React.FC<{ children: React.ReactNode }> =
         return [...prevPath, { id: folderId, name: folderName }];
       }
     });
-  };
+  }, []);
 
-  const navigateUp = () => {
+  const navigateUp = useCallback(() => {
     setCurrentPath(prev => prev.slice(0, -1));
-  };
+  }, []);
+
+  const reload = useCallback(() => {
+    // Forzar una actualización completa de la página
+    router.refresh();
+  }, [router]);
 
   return (
-    <FolderNavigationContext.Provider value={{ currentPath, navigateToFolder, navigateUp }}>
+    <FolderNavigationContext.Provider value={{ currentPath, setCurrentPath, navigateToFolder, navigateUp, reload }}>
       {children}
     </FolderNavigationContext.Provider>
   );

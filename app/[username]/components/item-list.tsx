@@ -15,10 +15,9 @@ import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
-  ContextMenuTrigger,
-} from "@/components/ui/context-menu"
+  ContextMenuTrigger
+} from '@/components/ui/context-menu'
 import { Separator } from '@/components/ui/separator'
-
 
 interface ItemListProps {
   items: GetFoldersAndNotebooksFunction[]
@@ -64,26 +63,20 @@ const ItemList: React.FC<ItemListProps> = ({ items, isLoading }) => {
           currentPath={currentPath}
           navigateToFolder={navigateToFolder}
         />
-          <ViewButtons currentView={currentView} setView={setView} />
-
-
+        <ViewButtons currentView={currentView} setView={setView} />
       </div>
       {isLoading ? (
-          <ItemListSkeleton />
-        ) : (
-
-          <ContextMenu>
-  <ContextMenuTrigger>{renderView()}</ContextMenuTrigger>
-  <ContextMenuContent>
-    <ContextMenuItem>Editar</ContextMenuItem>
-    <ContextMenuItem>Eliminar</ContextMenuItem>
-    <Separator className='my-1' />
-    <ContextMenuItem>Propiedades</ContextMenuItem>
-  </ContextMenuContent>
-</ContextMenu>
-
-      
-        )}
+        <ItemListSkeleton />
+      ) : (
+        items.length > 0 ? (renderView()):(
+          <div className='flex flex-col items-center justify-center h-64 text-muted-foreground'>
+            <h4 className=' text-lg'>No hay elementos en esta carpeta</h4>
+            <p className=' text-sm'>
+              Considere crear una nueva carpeta o un nuevo notebook.
+            </p>
+          </div>
+        )
+      )}
     </section>
   )
 }

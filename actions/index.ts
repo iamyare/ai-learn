@@ -29,6 +29,17 @@ export async function getUserInfo() {
   return { user, errorUser }
 }
 
+//obtener api keys
+export async function getApiKeys({ userId}: { userId: string }) {
+  const { data: apiKeys, error: errorApiKeys } = await supabase
+    .from('api_keys')
+    .select('*')
+    .eq('user_id', userId)
+    .single()
+
+  return { apiKeys, errorApiKeys }
+}
+
 //Subir pdf a la base de datos
 export async function uploadPdf({ pdf }: { pdf: File }) {
   const { data, error } = await supabase.storage
