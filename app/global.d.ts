@@ -25,4 +25,11 @@ declare global {
     onItemClick: (item: GetFoldersAndNotebooksFunction) => void;
   }
 
+  type FolderItem = {
+    id: string;
+    name: string;
+    type: 'folder' | 'notebook';
+    children?: FolderItem[];
+  };
+
 }

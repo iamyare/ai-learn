@@ -6,28 +6,31 @@ import { FolderNavigationProvider } from '@/context/useFolderNavigationContext';
 
 export default function UsernameLayoutClient({
   children,
+  userId,
+  defaultOpen
 }: {
   children: React.ReactNode;
+  userId: string;
+  defaultOpen: boolean;
 }) {
   const params = useParams();
-  const [isCollapsed, setIsCollapsed] = useState<boolean | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    const collapsedState = localStorage.getItem('react-resizable-panels:collapsed');
-    setIsCollapsed(collapsedState === 'true');
+    setIsLoaded(true);
   }, []);
 
   if (params?.notebook) {
     return <div>{children}</div>;
   }
 
-  if (isCollapsed === null) {
+  if (!isLoaded) {
     return null; // or a loading spinner
   }
 
   return (
     <FolderNavigationProvider>
-      <Sidebar defaultCollapsed={isCollapsed}>
+      <Sidebar defaultOpen={defaultOpen} userId={userId}>
         {children}
       </Sidebar>
     </FolderNavigationProvider>

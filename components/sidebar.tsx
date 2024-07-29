@@ -1,214 +1,160 @@
 'use client'
+import React, { useState, useEffect, useCallback } from 'react';
+import { ChevronRight, ChevronLeft, ChevronDown, File, Folder, Plus, Search, Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { getFoldersAndNotebooks } from '@/actions';
 
-import {
-  AlertCircle,
-  Archive,
-  ArchiveX,
-  FileIcon,
-  Inbox,
-  MessagesSquare,
-  Plus,
-  Search,
-  Send,
-  ShoppingCart,
-  Sparkles,
-  Trash2,
-  Users2
-} from 'lucide-react'
+type FolderItem = {
+  item_id: string;
+  item_name: string;
+  item_type: string;
+  parent_folder_id: string;
+  icon: string;
+  color: string;
+  subfolder_count: number;
+  notebook_count: number;
+  created_at: string;
+  updated_at: string;
+};
 
-import { cn } from '@/lib/utils'
-import { TooltipProvider } from '@/components/ui/tooltip'
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup
-} from './ui/resizable'
-import { useState, useEffect } from 'react'
-import { Nav } from './nav'
-import { Button } from './ui/button'
-
-interface SidebarProps {
-  defaultLayout?: number
-  defaultCollapsed?: boolean
-  navCollapsedSize?: number
-  children: React.ReactNode
+interface FolderTreeItemProps {
+  item: FolderItem;
+  depth: number;
+  onExpand: (itemId: string) => Promise<FolderItem[]>;
 }
 
-export function Sidebar({
-  defaultLayout = 20,
-  defaultCollapsed = false,
-  navCollapsedSize = 4,
-  children
-}: SidebarProps) {
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(defaultCollapsed)
+const FolderTreeItem: React.FC<FolderTreeItemProps> = ({ item, depth, onExpand }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [children, setChildren] = useState<FolderItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const toggleExpand = useCallback(async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (item.item_type === 'folder') {
+      setIsLoading(true);
+      if (!isExpanded) {
+        const result = await onExpand(item.item_id);
+        setChildren(result);
+      }
+      setIsExpanded(!isExpanded);
+      setIsLoading(false);
+    }
+  }, [isExpanded, item, onExpand]);
+
+  return (
+    <div>
+      <Button
+        variant="ghost"
+        className={cn(
+          "w-full justify-start text-left font-normal",
+          item.item_type === 'folder' && "hover:bg-accent"
+        )}
+        onClick={item.item_type === 'folder' ? toggleExpand : undefined}
+        disabled={isLoading}
+      >
+        <span style={{ marginLeft: `${depth * 12}px` }} className="flex items-center">
+          {item.item_type === 'folder' && (
+            isExpanded ? <ChevronDown className="h-4 w-4 mr-2" /> : <ChevronRight className="h-4 w-4 mr-2" />
+          )}
+          {item.item_type === 'folder' ? <Folder className="h-4 w-4 mr-2" /> : <File className="h-4 w-4 mr-2" />}
+          {item.item_name}
+        </span>
+      </Button>
+      {isExpanded && (
+        <div>
+          {children.length > 0 ? (
+            children.map(child => (
+              <FolderTreeItem key={child.item_id} item={child} depth={depth + 1} onExpand={onExpand} />
+            ))
+          ) : (
+            <p className='px-4 text-sm text-muted-foreground'>Esta carpeta está vacía</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+interface SidebarProps {
+  children: React.ReactNode;
+  userId: string;
+  defaultOpen: boolean;
+}
+
+export function Sidebar({ children, userId, defaultOpen }: SidebarProps) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+  const [rootItems, setRootItems] = useState<FolderItem[]>([]);
 
   useEffect(() => {
-    const savedCollapsed = localStorage.getItem('react-resizable-panels:collapsed')
-    if (savedCollapsed !== null) {
-      setIsCollapsed(savedCollapsed === 'true')
-    }
-  }, [])
+    const loadRootItems = async () => {
+      const { folders, errorFolders } = await getFoldersAndNotebooks({
+        userId,
+        parentFolderId: undefined // For root items
+      });
+      if (folders && !errorFolders) {
+        setRootItems(folders);
+      }
+    };
+    loadRootItems();
+  }, [userId]);
+
+  const handleExpand = useCallback(async (itemId: string) => {
+    const { folders, errorFolders } = await getFoldersAndNotebooks({
+      userId,
+      parentFolderId: itemId
+    });
+    return folders && !errorFolders ? folders : [];
+  }, [userId]);
+
+  const toggleSidebar = () => {
+    const newOpenState = !isOpen;
+    setIsOpen(newOpenState);
+    document.cookie = `sidebarIsOpen=${newOpenState}`;
+  };
 
   return (
     <TooltipProvider delayDuration={0}>
-      <ResizablePanelGroup
-        direction='horizontal'
-        onLayout={(sizes: number[]) => {
-          document.cookie = `react-resizable-panels:layout=${JSON.stringify(
-            sizes
-          )}`
-        }}
-        className='h-full min-h-screen items-stretch'
-      >
-        <ResizablePanel
-          defaultSize={defaultLayout}
-          collapsedSize={navCollapsedSize}
-          collapsible={true}
-          minSize={10}
-          maxSize={25}
-          onCollapse={() => {
-            setIsCollapsed(true)
-            localStorage.setItem('react-resizable-panels:collapsed', 'true')
-          }}
-          onExpand={() => {
-            setIsCollapsed(false)
-            localStorage.setItem('react-resizable-panels:collapsed', 'false')
-          }}
+      <div className="flex h-full min-h-screen items-stretch">
+        <div
           className={cn(
-            isCollapsed &&
-              'min-w-[50px]  transition-all duration-300 ease-in-out'
+            "transition-all duration-300 ease-in-out",
+            isOpen ? "w-[250px]" : "w-[50px]"
           )}
         >
-          <div
-            className={cn(
-              'flex h-[52px] items-center justify-center',
-              isCollapsed ? 'h-[52px] ' : 'px-2'
-            )}
-          >
-            {/* <AccountSwitcher isCollapsed={isCollapsed} accounts={accounts} /> */}
-          </div>
-          {/* <Separator /> */}
-
-          <div className='flex gap-1 px-2 my-4 '>
-            <Button
-                size={
-                    isCollapsed ? 'default' : 'icon'
-                }
-              className={cn('w-full',
-                isCollapsed && 'p-1'
+          <div className="flex flex-col h-full">
+            <div className="flex gap-1 px-2 my-4">
+              <Button size={isOpen ? 'default' : 'icon'} className={cn('w-full', !isOpen && 'p-1')}>
+                <Plus className="size-4" />
+                {isOpen && <span className="ml-2">Crear Notebook</span>}
+              </Button>
+              {isOpen && (
+                <>
+                  <Button size="icon" variant="outline" className="aspect-square">
+                    <Search className="size-4" />
+                  </Button>
+                  <Button size="icon" variant="outline" className="aspect-square">
+                    <Sparkles className="size-4" />
+                  </Button>
+                </>
               )}
-            >
-              <Plus className='size-4' />
-              {isCollapsed ? null : (
-                <span className='ml-2'>Crear Notebook</span>
-              )}
-            </Button>
-            {!isCollapsed && (
-              <>
-                <Button
-                  size={'icon'}
-                  variant={'outline'}
-                  className=' aspect-square'
-                >
-                  <Search className='size-4' />
-                </Button>
-                <Button
-                  size={'icon'}
-                  variant={'outline'}
-                  className=' aspect-square'
-                >
-                  <Sparkles className='size-4' />
-                </Button>
-              </>
-            )}
+            </div>
+            <div className="flex-grow overflow-auto">
+              {rootItems.map(item => (
+                <FolderTreeItem key={item.item_id} item={item} depth={0} onExpand={handleExpand} />
+              ))}
+            </div>
           </div>
-
-          <Nav
-            isCollapsed={isCollapsed}
-            links={[
-              {
-                title: 'Inbox',
-                label: '128',
-                icon: Inbox,
-                variant: 'default'
-              },
-              {
-                title: 'Drafts',
-                label: '9',
-                icon: FileIcon,
-                variant: 'ghost'
-              },
-              {
-                title: 'Sent',
-                label: '',
-                icon: Send,
-                variant: 'ghost'
-              },
-              {
-                title: 'Junk',
-                label: '23',
-                icon: ArchiveX,
-                variant: 'ghost'
-              },
-              {
-                title: 'Trash',
-                label: '',
-                icon: Trash2,
-                variant: 'ghost'
-              },
-              {
-                title: 'Archive',
-                label: '',
-                icon: Archive,
-                variant: 'ghost'
-              }
-            ]}
-          />
-          {/* <Separator /> */}
-          <hr />
-          <Nav
-            isCollapsed={isCollapsed}
-            links={[
-              {
-                title: 'Social',
-                label: '972',
-                icon: Users2,
-                variant: 'ghost'
-              },
-              {
-                title: 'Updates',
-                label: '342',
-                icon: AlertCircle,
-                variant: 'ghost'
-              },
-              {
-                title: 'Forums',
-                label: '128',
-                icon: MessagesSquare,
-                variant: 'ghost'
-              },
-              {
-                title: 'Shopping',
-                label: '8',
-                icon: ShoppingCart,
-                variant: 'ghost'
-              },
-              {
-                title: 'Promotions',
-                label: '21',
-                icon: Archive,
-                variant: 'ghost'
-              }
-            ]}
-          />
-        </ResizablePanel>
-        <ResizableHandle withHandle />
-        <ResizablePanel defaultSize={80}>
-            <main className=' p-5'>
-            {children}
-            </main>
-        </ResizablePanel>
-      </ResizablePanelGroup>
+        </div>
+        <Button
+          className="h-full w-2 hover:w-3 transition-all duration-200 rounded-none"
+          onClick={toggleSidebar}
+        >
+          {isOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+        </Button>
+        <main className="flex-1 p-5">{children}</main>
+      </div>
     </TooltipProvider>
-  )
+  );
 }
