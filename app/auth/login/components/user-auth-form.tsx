@@ -15,6 +15,7 @@ import { useTransition } from 'react'
 import Link from 'next/link'
 import { FacebookButton, GitHubButton, GoogleButton } from '@/components/oauth-buttons'
 import { Icons } from '@/components/icons'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 
 const validationSchema = z.object({
   email: z
@@ -37,11 +38,7 @@ type ValidationSchema = z.infer<typeof validationSchema>
 export function UserAuthForm () {
   const [isPending, startTransition] = useTransition()
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors }
-  } = useForm<ValidationSchema>({
+  const form = useForm<z.infer<typeof validationSchema>>({
     resolver: zodResolver(validationSchema),
     defaultValues: {
       email: '',
@@ -57,72 +54,47 @@ export function UserAuthForm () {
 
   return (
     <>
-      <div className='grid gap-6'>
-        <div className='flex flex-col gap-4 '>
-          <div className='flex justify-between gap-2'>
+      <div className='flex gap-10 items-center w-full'>
+      <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className=" flex flex-col w-full gap-2">
+          <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input placeholder='Correo electronico' {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+                        <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Input type='password' placeholder='Contrasena' {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <Button type='submit'>
+                {isPending ? 'Creando...' : 'Crear'}
+              </Button>
+          </form>
+        </Form>
+
+        <span className=' text-2xl'>/</span>
+
+        <div className='flex flex-col gap-2 w-full'>
             <GoogleButton size={'icon'} />
             <GitHubButton size={'icon'} />
             <FacebookButton size={'icon'} />
-          </div>
-          <div className='relative'>
-            <div className='absolute inset-0 flex items-center'>
-              <span className='w-full border-t' />
-            </div>
-            <div className='relative flex justify-center text-xs uppercase'>
-              <span className='bg-background px-2 text-muted-foreground'>
-                O continuar con
-              </span>
-            </div>
-          </div>
         </div>
-
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div className='grid gap-5'>
-            <div className='grid gap-2'>
-              <Label htmlFor='email'>Correo electrónico</Label>
-              <Input
-                placeholder='name@example.com'
-                type='email'
-                autoCapitalize='none'
-                autoComplete='email'
-                autoCorrect='off'
-                disabled={isPending}
-                {...register('email')}
-              />
-              {errors.email && (
-                <p className='text-xs italic text-red-500 mt-1'>
-                  {errors.email?.message}
-                </p>
-              )}
-            </div>
-            <div className='grid gap-2'>
-              <Label htmlFor='password'>Contraseña</Label>
-              <Input
-                placeholder='Contraseña'
-                type='password'
-                autoCapitalize='none'
-                autoComplete='password'
-                autoCorrect='off'
-                disabled={isPending}
-                {...register('password')}
-              />
-              {errors.password && (
-                <p className='text-xs italic text-red-500 mt-1'>
-                  {errors.password?.message}
-                </p>
-              )}
-
-
-            </div>
-
-            <Button disabled={isPending}>
-              {isPending && (
-                <Icons.spinner className='mr-2 h-4 w-4 animate-spin' />
-              )}
-              Iniciar sesión
-            </Button>
-          </div>
-        </form>
       </div>
     </>
   )

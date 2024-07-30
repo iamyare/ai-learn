@@ -338,3 +338,7 @@
   inherits: true;
   initial-value: 0turn;
 }
+
+.libre-baskerville {
+  font-family: var(--font-libre-baskerville);
+}
