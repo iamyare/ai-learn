@@ -1,10 +1,10 @@
+
 import { createGoogleGenerativeAI } from '@ai-sdk/google'
 import { streamText } from 'ai'
 
 
-const google = createGoogleGenerativeAI({
-  apiKey: process.env.NEXT_PUBLIC_GEMINI_KEY ?? ''
-})
+
+
 
 interface MessageType {
   role: string
@@ -15,7 +15,8 @@ interface AiStreamParams {
   prompt: string
   transcription?: string
   textPdf?: string
-  messageHistory: MessageType[]
+  messageHistory: MessageType[],
+  apiKey: string
 }
 
 const MAX_MESSAGES = 10
@@ -63,6 +64,7 @@ function truncateHistory(history: MessageType[]): MessageType[] {
 
 function buildPrompt(params: AiStreamParams): string {
   const { prompt, transcription, textPdf, messageHistory } = params
+
   let userPrompt = ''
 
   if (transcription) {
@@ -89,6 +91,12 @@ function buildPrompt(params: AiStreamParams): string {
 
 export async function aiStream(params: AiStreamParams): Promise<{ textStream: AsyncIterable<string> }> {
   const userPrompt = buildPrompt(params)
+
+  const { apiKey } = params
+
+  const google = createGoogleGenerativeAI({
+    apiKey: apiKey ?? ''
+  })
 
   const { textStream } = await streamText({
     model: google('models/gemini-1.5-flash-latest'),

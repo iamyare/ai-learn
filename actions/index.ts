@@ -35,6 +35,29 @@ export async function getApiKeys({ userId}: { userId: string }) {
     .from('api_keys')
     .select('*')
     .eq('user_id', userId)
+    .maybeSingle()
+
+  return { apiKeys, errorApiKeys }
+}
+
+//insert api keys
+export async function insertApiKeys({ apiKeysData }: { apiKeysData: ApiKeysInsert }) {
+  const { data: apiKeys, error: errorApiKeys } = await supabase
+    .from('api_keys')
+    .insert({ ...apiKeysData })
+    .select('*')
+    .single()
+
+  return { apiKeys, errorApiKeys }
+}
+
+//update api keys
+export async function updateApiKeys({ apiKeysData, userId }: { apiKeysData: ApiKeysUpdate, userId: string }) {
+  const { data: apiKeys, error: errorApiKeys } = await supabase
+    .from('api_keys')
+    .update({ ...apiKeysData })
+    .eq('user_id', userId)
+    .select('*')
     .single()
 
   return { apiKeys, errorApiKeys }

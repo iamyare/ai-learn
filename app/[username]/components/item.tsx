@@ -1,5 +1,5 @@
 import React from 'react';
-import { Folder, FileText } from 'lucide-react';
+import { Folder, FileText, NotebookPen } from 'lucide-react';
 import ReusableContextMenu from './reusable-context-menu';
 
 interface ItemProps {
@@ -38,7 +38,7 @@ const Item: React.FC<ItemProps> = ({ item, onClick}) => {
       }}
     >
       <div className="flex items-center mb-2">
-        <FileText className="text-primary mr-2" />
+        <NotebookPen className="text-primary mr-2" />
         <p className="font-medium text-primary">{item.item_name}</p>
       </div>
     </div>

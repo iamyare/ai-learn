@@ -25,6 +25,8 @@ import {
 } from '@/components/ui/form'
 import { useApiKeys } from '@/context/useAPIKeysContext'
 import Link from 'next/link'
+import { getApiKeys, insertApiKeys, updateApiKeys as updateApiKeysBD } from '@/actions'
+import { useRouter } from 'next/navigation'
 
 const formSchema = z.object({
   gemini_key: z.string().min(1, 'Gemini Key is required'),
@@ -35,6 +37,7 @@ export default function ConfigModal() {
   const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
   const { apiKeys, updateApiKeys, user_id } = useApiKeys()
+  const router = useRouter()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -45,13 +48,49 @@ export default function ConfigModal() {
   })
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    startTransition(() => {
-      updateApiKeys({ gemini_key: values.gemini_key })
-      // Aquí puedes manejar la actualización del user_id si es necesario
-      console.log(values)
-      setOpen(false)
-    })
-  }
+
+    startTransition(async () => {
+      try {
+        // Primero, intentamos obtener las claves API existentes
+        const { apiKeys, errorApiKeys } = await getApiKeys({ userId: user_id });
+
+        if (errorApiKeys) {
+          console.error('Error al obtener las claves API:', errorApiKeys);
+          return;
+        }
+
+        if (apiKeys) {
+          // Si ya existen claves, actualizamos
+          const { apiKeys: updatedKeys, errorApiKeys: updateError } = await updateApiKeysBD({
+            apiKeysData: { gemini_key: values.gemini_key },
+            userId: user_id
+          });
+
+          if (updateError) {
+            console.error('Error al actualizar las claves API:', updateError);
+            return;
+          }
+
+          updateApiKeys({ gemini_key: values.gemini_key })
+        } else {
+          // Si no existen claves, insertamos nuevas
+          const { apiKeys: newKeys, errorApiKeys: insertError } = await insertApiKeys({
+            apiKeysData: { gemini_key: values.gemini_key , user_id: user_id }
+          });
+
+          if (insertError) {
+            console.error('Error al insertar las claves API:', insertError);
+            return;
+          }
+        }
+
+        setOpen(false);
+        router.refresh();
+      } catch (error) {
+        console.error('Error al procesar la solicitud:', error);
+      }
+    });
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

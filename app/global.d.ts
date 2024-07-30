@@ -18,6 +18,9 @@ declare global {
   type PDFDocuments = DB['public']['Tables']['pdf_documents']['Row']
   type PDFDocumentsInsert = DB['public']['Tables']['pdf_documents']['Insert']
   type NotebookInfo = Notebook & {pdf_document: PDFDocuments}
+  type ApiKeys = DB['public']['Tables']['api_keys']['Row']
+  type ApiKeysInsert = DB['public']['Tables']['api_keys']['Insert']
+  type ApiKeysUpdate = DB['public']['Tables']['api_keys']['Update']
 
   type ViewType = 'grid' | 'list' | 'detail' | 'verticalGrid' | 'squareGrid';
   interface ViewProps {
