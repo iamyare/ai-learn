@@ -235,7 +235,7 @@ export default function Chat({ notebookId }: { notebookId: string }) {
         }
       })
     },
-    [messages, history, text, updateChatInDatabase, form]
+    [messages, history, text, updateChatInDatabase, form, apiKeyGemini]
   )
 
   const importantEvents = useCallback(() => {
@@ -245,7 +245,8 @@ export default function Chat({ notebookId }: { notebookId: string }) {
         const { object } = await generateImportantEvents({
           prompt: 'Lista de eventos importantes para la próxima semana',
           transcription: transcript,
-          textPdf: text
+          textPdf: text,
+          apiKey: apiKeyGemini ?? ''
         })
 
         for await (const partialObject of readStreamableValue(object)) {

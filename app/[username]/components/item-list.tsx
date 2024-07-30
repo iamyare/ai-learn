@@ -69,7 +69,7 @@ const ItemList: React.FC<ItemListProps> = ({ items, isLoading }) => {
         <ItemListSkeleton />
       ) : (
         items.length > 0 ? (renderView()):(
-          <div className='flex flex-col items-center justify-center h-64 text-muted-foreground'>
+          <div className='flex flex-col items-center text-center justify-center h-64 text-muted-foreground'>
             <h4 className=' text-lg'>No hay elementos en esta carpeta</h4>
             <p className=' text-sm'>
               Considere crear una nueva carpeta o un nuevo notebook.
