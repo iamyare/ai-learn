@@ -19,7 +19,7 @@ export default function LoginAuth() {
           ¿No tienes una cuenta?{' '}
           <Link
             href='/auth/signup'
-            className=' text-foreground font-medium hover:text-primary'
+            className=' text-foreground font-medium hover:text-primary pointer-events-none opacity-50'
           >
             Regístrate
           </Link>

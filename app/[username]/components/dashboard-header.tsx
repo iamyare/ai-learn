@@ -2,6 +2,7 @@
 import ConfigModal from '@/components/modals/config'
 import CreateFolder from '@/components/modals/create-folder'
 import CreateNotebook from '@/components/modals/create-notebook'
+import LogOut from '@/components/ui/log-out'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 export default function DashboardHeader({ userId }: { userId: string }) {
@@ -12,6 +13,7 @@ export default function DashboardHeader({ userId }: { userId: string }) {
         <div className='flex gap-2 items-center'>
           <ThemeToggle />
           <ConfigModal />
+          <LogOut/>
         </div>
       </div>
       <div className='flex gap-2 items-center'>

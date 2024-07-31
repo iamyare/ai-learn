@@ -63,7 +63,7 @@ export function UserAuthForm () {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input placeholder='Correo electronico' {...field} />
+                      <Input className=' h-12 rounded-full' placeholder='Correo electronico' {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -75,15 +75,15 @@ export function UserAuthForm () {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <Input type='password' placeholder='Contrasena' {...field} />
+                      <Input type='password' className=' h-12 rounded-full' placeholder='Contrasena' {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <Button type='submit'>
-                {isPending ? 'Creando...' : 'Crear'}
+              <Button type='submit' className=' h-12 rounded-full' disabled >
+                Iniciar sesion
               </Button>
           </form>
         </Form>
@@ -91,9 +91,9 @@ export function UserAuthForm () {
         <span className=' text-2xl'>/</span>
 
         <div className='flex flex-col gap-2 w-full'>
-            <GoogleButton size={'icon'} />
-            <GitHubButton size={'icon'} />
-            <FacebookButton size={'icon'} />
+            <GoogleButton className=' h-12 rounded-full  justify-start' />
+            <GitHubButton className=' h-12 rounded-full  justify-start' />
+            <FacebookButton className=' h-12 rounded-full  justify-start' />
         </div>
       </div>
     </>

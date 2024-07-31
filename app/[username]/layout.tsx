@@ -4,6 +4,8 @@ import { UserProvider } from '@/context/useUserContext';
 import UsernameLayoutClient from './components/layout-client';
 import { ApiKeysProvider } from '@/context/useAPIKeysContext';
 import { cookies } from 'next/headers';
+import ErrorPage from '@/components/error-page';
+import { redirect } from 'next/navigation';
 
 export default async function UsernameLayout({
   children,
@@ -16,13 +18,12 @@ export default async function UsernameLayout({
 
   if (!user) {
     // Redirect to login page
-    return <div>Please log in</div>;
+    return <ErrorPage title="Error" message="No se ha encontrado el usuario" />;
   }
 
   if (user.username !== params.username) {
     // Redirect to correct username page
-    // You might want to use redirect() from 'next/navigation' here
-    return <div>Redirecting...</div>;
+    return redirect(`/${user.username}`);
   }
 
   const {apiKeys} = await getApiKeys({ userId: user.id });

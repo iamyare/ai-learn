@@ -8,6 +8,12 @@ export async function getUser() {
   return await supabase.auth.getUser()
 }
 
+//logout
+export async function logout() {
+  const supabase = await createSupabaseServerClient()
+  return await supabase.auth.signOut()
+}
+
 //Obtener usuario y user
 export async function getUserInfo() {
   const { data, error } = await getUser()

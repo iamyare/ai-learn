@@ -17,6 +17,7 @@ import { ChevronLeft } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import ConfigModal from '@/components/modals/config'
+import LogOut from '@/components/ui/log-out'
 
 export default function RenderView({
   notebookInfo
@@ -45,6 +46,7 @@ export default function RenderView({
             <div className=' flex items-center'>
             <ThemeToggle className='h-full ' />
             <ConfigModal/>
+            <LogOut/>
             </div>
               
             </header>
