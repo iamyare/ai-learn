@@ -31,12 +31,13 @@ import { getChat, createChatNotebook, updateChatNotebook } from '@/actions'
 import { Skeleton } from '@/components/ui/skeleton'
 import { toast } from '@/components/ui/use-toast'
 import { useApiKey } from '@/context/useAPIKeysContext'
+import { cn } from '@/lib/utils'
 
 const formSchema = z.object({
   message: z.string()
 })
 
-export default function Chat({ notebookId }: { notebookId: string }) {
+export default function Chat({ notebookId, className }: { notebookId: string,className?: string }) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const [isPending, startTransition] = useTransition()
@@ -296,7 +297,9 @@ export default function Chat({ notebookId }: { notebookId: string }) {
 
   if (isLoading) {
     return (
-      <section className='flex flex-col max-w-full overflow-hidden h-full max-h-full'>
+      <section className={cn('flex flex-col max-w-full w-full overflow-hidden h-full max-h-full',
+        className
+      )}>
         <header className='flex-none w-full py-2 px-4 bg-background'>
           <Skeleton className='h-6 w-24' />
         </header>
@@ -327,7 +330,7 @@ export default function Chat({ notebookId }: { notebookId: string }) {
       </header>
 
       {!apiKeyGemini ? (
-        <div className=' flex justify-center items-center h-full w-full p-4'>
+        <div className={cn(' flex justify-center items-center h-full w-full p-4', className)}>
           <p className=' text-muted-foreground text-center'>
             Considera ingresar el API KEY necesaria en la configuracion
           </p>
