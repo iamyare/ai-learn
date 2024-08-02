@@ -12,11 +12,16 @@ export default function LogOut() {
 
 
   return (
-    <Button variant='ghost' size='icon'>
-      <LogOutIcon className='size-4' onClick={async()=>{
-        logout()
-        router.push('/')
-      }} />
+    <Button
+    variant={'ghost'}
+    className=' w-full font-normal text-foreground justify-start rounded-none'
+    onClick={async()=>{
+      logout()
+      router.push('/')
+    }}
+  >
+      <LogOutIcon className='size-4 mr-2'  />
+      Cerrar sesión
     </Button>
   )
 }

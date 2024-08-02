@@ -1,9 +1,15 @@
-'use client'
+import { getUserInfo } from '@/actions'
 
-export default function Home() {
+import PageClient from './page-client'
+
+export default async function Home() {
+
+  const { user, errorUser } = await getUserInfo()
+  if (errorUser) {
+    console.error(errorUser)
+  }
+
   return (
-    <main className=" h-screen w-screen flex justify-center items-center">
-      <h1 className="text-4xl font-bold">Si, si, ya le are landingpage</h1>
-    </main>
+    <PageClient user={user} />
   )
 }

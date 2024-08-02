@@ -23,6 +23,8 @@ import { SpeechRecognitionProvider } from '@/context/useSpeechRecognitionContext
 import { PDFTextProvider } from '@/context/usePDFTextExtractionContext'
 import { PDFProvider } from '@/context/useCurrentPageContext'
 import { cn } from '@/lib/utils'
+import MenuUser from '@/components/menu-user'
+import { useUser } from '@/context/useUserContext'
 
 export default function RenderView({
   notebookInfo
@@ -32,6 +34,7 @@ export default function RenderView({
   const router = useRouter()
   const [chatOpen, setChatOpen] = useState(false)
   const isDesktop = useMediaQuery('(min-width: 600px)')
+  const {user} = useUser()
 
   const toggleChat = useCallback(() => setChatOpen((prev) => !prev), [])
 
@@ -51,8 +54,7 @@ export default function RenderView({
         </div>
         <div className='flex items-center'>
           <ThemeToggle className='h-full' />
-          <ConfigModal />
-          <LogOut />
+          {user && <MenuUser user={user} />}
         </div>
       </header>
     ),
