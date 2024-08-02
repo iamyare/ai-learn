@@ -33,6 +33,7 @@ export function GoogleButton ({
         'w-full inline-flex justify-center items-center gap-x-2',
         className
       )}
+      disabled
     >
       <Icons.google className='h-4 w-4' />
       {size === 'icon' ? null : 'Google'}
@@ -101,6 +102,7 @@ export function FacebookButton ({
         'w-full inline-flex justify-center items-center gap-x-2',
         className
       )}
+      disabled
     >
       <Icons.facebook className='h-4 w-4' />
       {size === 'icon' ? null : 'Facebook'}

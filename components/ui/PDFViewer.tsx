@@ -1,8 +1,9 @@
 'use client'
-import React, { useEffect } from 'react';
+import React, { useEffect } from 'react'
 import { Worker } from '@react-pdf-viewer/core'
 import { toolbarPlugin } from '@react-pdf-viewer/toolbar'
 import { dropPlugin } from '@react-pdf-viewer/drop'
+import { SpecialZoomLevel } from '@react-pdf-viewer/core'
 import '@react-pdf-viewer/core/lib/styles/index.css'
 import '@react-pdf-viewer/toolbar/lib/styles/index.css'
 import '@react-pdf-viewer/drop/lib/styles/index.css'
@@ -10,23 +11,23 @@ import '@react-pdf-viewer/drop/lib/styles/index.css'
 import usePDFViewer from './usePDFViewer'
 import Toolbar from './viewer/toolbar'
 import LoadingComponent from './loading-component'
-import { usePDFContext } from '@/context/useCurrentPageContext';
-import { usePDFText } from '@/context/usePDFTextExtractionContext';
+import { usePDFContext } from '@/context/useCurrentPageContext'
+import { usePDFText } from '@/context/usePDFTextExtractionContext'
 
 interface PDFViewerProps {
-  initialFileUrl: string;
+  initialFileUrl: string
 }
 
 const PDFViewer: React.FC<PDFViewerProps> = ({ initialFileUrl }) => {
-  const { fileUrl, setFileUrl, setCurrentPage } = usePDFContext();
+  const { fileUrl, setFileUrl, setCurrentPage } = usePDFContext()
 
-  const { isPending:isLoading } = usePDFText()
-  
-  const { 
-    workerSrc, 
-    DynamicViewer, 
-    viewerProps, 
-    pageNavigationPluginInstance,
+  const { isPending: isLoading } = usePDFText()
+
+  const {
+    workerSrc,
+    DynamicViewer,
+    viewerProps,
+    pageNavigationPluginInstance
   } = usePDFViewer(fileUrl || initialFileUrl)
 
   const toolbarPluginInstance = toolbarPlugin()
@@ -41,17 +42,19 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ initialFileUrl }) => {
 
   useEffect(() => {
     if (!fileUrl && initialFileUrl) {
-      setFileUrl(initialFileUrl);
+      setFileUrl(initialFileUrl)
     }
-  }, [initialFileUrl, fileUrl, setFileUrl]);
+  }, [initialFileUrl, fileUrl, setFileUrl])
 
   const handlePageChange = (e: { currentPage: number }) => {
-    setCurrentPage(e.currentPage + 1);
-  };
+    setCurrentPage(e.currentPage + 1)
+  }
+
+
 
   if (!workerSrc) {
     return (
-      <div className=' w-full h-full flex justify-center items-center'>
+      <div className='w-full h-full flex justify-center items-center'>
         <LoadingComponent />
       </div>
     )
@@ -61,20 +64,20 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ initialFileUrl }) => {
     <Worker workerUrl={workerSrc}>
       <div className='relative flex flex-col h-full bg-transparent'>
         <div className='relative flex-grow overflow-hidden'>
-          {
-            isLoading && (
-              <div className='absolute top-0 z-50 left-0 w-full h-full flex justify-center items-center'>
-                <span>se esta cargando el texto</span>
-              </div>
-            )
-          }
+          {isLoading && (
+            <div className='absolute top-0 z-50 left-0 w-full h-full flex justify-center items-center scanner_text'>
+            </div>
+          )}
+
+
           <DynamicViewer
             {...viewerProps}
             plugins={plugins}
             onDocumentLoad={(props) => {
-              setFileUrl(props.file.data as string);
+              setFileUrl(props.file.data as string)
             }}
             onPageChange={handlePageChange}
+            defaultScale={Number(SpecialZoomLevel.PageWidth) - 0.10}
           />
         </div>
         <ToolbarSlot>
@@ -85,4 +88,4 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ initialFileUrl }) => {
   )
 }
 
-export default PDFViewer;
+export default PDFViewer

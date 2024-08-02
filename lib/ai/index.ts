@@ -1,10 +1,10 @@
+
 import { createGoogleGenerativeAI } from '@ai-sdk/google'
 import { streamText } from 'ai'
 
 
-const google = createGoogleGenerativeAI({
-  apiKey: process.env.NEXT_PUBLIC_GEMINI_KEY ?? ''
-})
+
+
 
 interface MessageType {
   role: string
@@ -15,7 +15,8 @@ interface AiStreamParams {
   prompt: string
   transcription?: string
   textPdf?: string
-  messageHistory: MessageType[]
+  messageHistory: MessageType[],
+  apiKey: string
 }
 
 const MAX_MESSAGES = 10
@@ -44,14 +45,13 @@ Eres un asistente educativo diseñado para proporcionar respuestas concisas y di
 ## Formato
 - Usa Markdown para estructura
 - Resalta términos clave en **negrita**
-- Utiliza listas y subtítulos
+- Utiliza listas, subtítulos y titulares.
 
 ## Estilo de Respuesta
 - Comienza con la información más importante
-- Usa frases cortas y precisas
 - Incluye solo detalles esenciales
 - Si es apropiado, usa viñetas para puntos clave (máximo 3)
-- Limita la respuesta a 3-5 frases, a menos que se requiera más detalle
+- Trata de utilizar titulares y subtítulos para organizar la información
 
 Recuerda: El objetivo es proporcionar la información más relevante de la manera más eficiente posible.
 `
@@ -64,6 +64,7 @@ function truncateHistory(history: MessageType[]): MessageType[] {
 
 function buildPrompt(params: AiStreamParams): string {
   const { prompt, transcription, textPdf, messageHistory } = params
+
   let userPrompt = ''
 
   if (transcription) {
@@ -90,6 +91,12 @@ function buildPrompt(params: AiStreamParams): string {
 
 export async function aiStream(params: AiStreamParams): Promise<{ textStream: AsyncIterable<string> }> {
   const userPrompt = buildPrompt(params)
+
+  const { apiKey } = params
+
+  const google = createGoogleGenerativeAI({
+    apiKey: apiKey ?? ''
+  })
 
   const { textStream } = await streamText({
     model: google('models/gemini-1.5-flash-latest'),

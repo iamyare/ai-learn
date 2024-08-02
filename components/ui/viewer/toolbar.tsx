@@ -1,6 +1,4 @@
-'use client'
-
-import React, { useState, useCallback, ReactElement, useRef } from 'react'
+import React, { useState, ReactElement } from 'react'
 import { ToolbarSlot } from '@react-pdf-viewer/toolbar'
 import { RenderZoomInProps, RenderZoomOutProps } from '@react-pdf-viewer/zoom'
 import { RenderGoToPageProps } from '@react-pdf-viewer/page-navigation'
@@ -15,6 +13,12 @@ import {
   TooltipTrigger
 } from '@/components/ui/tooltip'
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
   ChevronLeft,
   ChevronRight,
   Printer,
@@ -23,10 +27,13 @@ import {
   ZoomOutIcon,
   DownloadIcon,
   LucideIcon,
-  ChevronUp
+  ChevronUp,
+  Menu,
+  MoreVertical
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { usePDFContext } from '@/context/useCurrentPageContext'
+import { useMediaQuery } from '@/components/ui/use-media-query'
 
 interface ToolbarProps {
   toolbarSlot: ToolbarSlot
@@ -44,28 +51,38 @@ type RenderProps =
 function ToolbarButton<T extends RenderProps>({
   tooltip,
   icon: Icon,
-  render
+  render,
+  isDesktop
 }: {
   tooltip: string
   icon: LucideIcon
   render: (renderButton: (onClick: () => void) => ReactElement) => ReactElement
+  isDesktop: boolean
 }) {
-  return (
-    <Tooltip delayDuration={500}>
-      <TooltipTrigger>
-        {render((onClick) => (
-          <Button variant='ghost' size='icon' onClick={onClick}>
-            <Icon className='size-4' />
-          </Button>
-        ))}
-      </TooltipTrigger>
-      <TooltipContent>
-        <p>{tooltip}</p>
-      </TooltipContent>
-    </Tooltip>
-  )
-}
+  if (isDesktop) {
+    return (
+      <Tooltip delayDuration={500}>
+        <TooltipTrigger>
+          {render((onClick) => (
+            <Button variant='ghost' size='icon' onClick={onClick}>
+              <Icon className='size-4' />
+            </Button>
+          ))}
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>{tooltip}</p>
+        </TooltipContent>
+      </Tooltip>
+    )
+  }
 
+  return render((onClick) => (
+    <DropdownMenuItem onClick={onClick}>
+      <Icon className='mr-2 h-4 w-4' />
+      <span>{tooltip}</span>
+    </DropdownMenuItem>
+  ))
+}
 
 export default function Toolbar({ toolbarSlot, className }: ToolbarProps) {
   const {
@@ -82,16 +99,68 @@ export default function Toolbar({ toolbarSlot, className }: ToolbarProps) {
 
   const [isOpen, setIsOpen] = useState(true)
   const { currentPage, setCurrentPage } = usePDFContext()
-  const prevPageRef = useRef<number | null>(null)
+  const isDesktop = useMediaQuery('(min-width: 600px)')
 
-  const updateCurrentPage = useCallback(
-    (newPage: number) => {
-      if (prevPageRef.current !== newPage) {
-        setCurrentPage(newPage + 1)
-        prevPageRef.current = newPage
-      }
-    },
-    [setCurrentPage]
+  const zoomButtons = (
+    <>
+      <ToolbarButton<RenderZoomOutProps>
+        tooltip='Zoom Out'
+        icon={ZoomOutIcon}
+        render={(renderButton) => (
+          <ZoomOut>
+            {(props: RenderZoomOutProps) => renderButton(props.onClick)}
+          </ZoomOut>
+        )}
+        isDesktop={isDesktop}
+      />
+      <ToolbarButton<RenderZoomInProps>
+        tooltip='Zoom In'
+        icon={ZoomInIcon}
+        render={(renderButton) => (
+          <ZoomIn>
+            {(props: RenderZoomInProps) => renderButton(props.onClick)}
+          </ZoomIn>
+        )}
+        isDesktop={isDesktop}
+      />
+    </>
+  )
+
+  const otherButtons = (
+    <>
+      <ToolbarButton<RenderEnterFullScreenProps>
+        tooltip='Full Screen'
+        icon={Maximize}
+        render={(renderButton) => (
+          <EnterFullScreen>
+            {(props: RenderEnterFullScreenProps) =>
+              renderButton(props.onClick)
+            }
+          </EnterFullScreen>
+        )}
+        isDesktop={isDesktop}
+      />
+      <ToolbarButton<RenderDownloadProps>
+        tooltip='Download'
+        icon={DownloadIcon}
+        render={(renderButton) => (
+          <Download>
+            {(props: RenderDownloadProps) => renderButton(props.onClick)}
+          </Download>
+        )}
+        isDesktop={isDesktop}
+      />
+      <ToolbarButton<RenderPrintProps>
+        tooltip='Print'
+        icon={Printer}
+        render={(renderButton) => (
+          <Print>
+            {(props: RenderPrintProps) => renderButton(props.onClick)}
+          </Print>
+        )}
+        isDesktop={isDesktop}
+      />
+    </>
   )
 
   return (
@@ -108,106 +177,72 @@ export default function Toolbar({ toolbarSlot, className }: ToolbarProps) {
         <Button
           variant={'secondary'}
           className={cn(
-            ' absolute top-0 -translate-y-1/2  left-1/2 -translate-x-1/2 px-2 py-1 h-fit ',
+            'absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2 px-2 py-1 h-fit',
             isOpen ? '' : ''
           )}
           onClick={() => setIsOpen((prev) => !prev)}
         >
           <ChevronUp
             className={cn(
-              'size-4  transition-transform duration-300',
+              'size-4 transition-transform duration-300',
               isOpen ? 'rotate-180' : ''
             )}
           />
         </Button>
 
-        <ToolbarButton<RenderZoomOutProps>
-          tooltip='Zoom Out'
-          icon={ZoomOutIcon}
-          render={(renderButton) => (
-            <ZoomOut>
-              {(props: RenderZoomOutProps) => renderButton(props.onClick)}
-            </ZoomOut>
-          )}
-        />
+        {isDesktop && zoomButtons}
 
-        <ToolbarButton<RenderZoomInProps>
-          tooltip='Zoom In'
-          icon={ZoomInIcon}
-          render={(renderButton) => (
-            <ZoomIn>
-              {(props: RenderZoomInProps) => renderButton(props.onClick)}
-            </ZoomIn>
-          )}
-        />
-
-        <div className='px-1 flex items-center gap-2'>
-          <ToolbarButton<RenderGoToPageProps>
-            tooltip='Previous Page'
-            icon={ChevronLeft}
-            render={(renderButton) => (
-              <GoToPreviousPage>
-                {(props: RenderGoToPageProps) =>
-                  renderButton(() => {
-                    props.onClick()
-                    setCurrentPage(currentPage - 1)
-                  })
-                }
-              </GoToPreviousPage>
+        <div className='flex items-center gap-2'>
+          <GoToPreviousPage>
+            {(props: RenderGoToPageProps) => (
+              <Button
+                variant='ghost'
+                size='icon'
+                onClick={() => {
+                  props.onClick()
+                  setCurrentPage(currentPage - 1)
+                }}
+              >
+                <ChevronLeft className='size-4' />
+              </Button>
             )}
-          />
+          </GoToPreviousPage>
 
           <CurrentPageInput />
           <span>/</span>
           <NumberOfPages />
 
-          <ToolbarButton<RenderGoToPageProps>
-            tooltip='Next Page'
-            icon={ChevronRight}
-            render={(renderButton) => (
-              <GoToNextPage>
-                {(props: RenderGoToPageProps) =>
-                  renderButton(() => {
-                    props.onClick()
-                    setCurrentPage(currentPage + 1)
-                  })
-                }
-              </GoToNextPage>
+          <GoToNextPage>
+            {(props: RenderGoToPageProps) => (
+              <Button
+                variant='ghost'
+                size='icon'
+                onClick={() => {
+                  props.onClick()
+                  setCurrentPage(currentPage + 1)
+                }}
+              >
+                <ChevronRight className='size-4' />
+              </Button>
             )}
-          />
+          </GoToNextPage>
         </div>
 
-        <ToolbarButton<RenderEnterFullScreenProps>
-          tooltip='Full Screen'
-          icon={Maximize}
-          render={(renderButton) => (
-            <EnterFullScreen>
-              {(props: RenderEnterFullScreenProps) =>
-                renderButton(props.onClick)
-              }
-            </EnterFullScreen>
-          )}
-        />
-
-        <ToolbarButton<RenderDownloadProps>
-          tooltip='Download'
-          icon={DownloadIcon}
-          render={(renderButton) => (
-            <Download>
-              {(props: RenderDownloadProps) => renderButton(props.onClick)}
-            </Download>
-          )}
-        />
-
-        <ToolbarButton<RenderPrintProps>
-          tooltip='Print'
-          icon={Printer}
-          render={(renderButton) => (
-            <Print>
-              {(props: RenderPrintProps) => renderButton(props.onClick)}
-            </Print>
-          )}
-        />
+        {isDesktop ? (
+          otherButtons
+        ) : (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreVertical className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              {zoomButtons}
+              {otherButtons}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
     </TooltipProvider>
   )

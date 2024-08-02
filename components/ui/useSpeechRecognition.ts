@@ -145,6 +145,29 @@ export const useSpeechRecognition = (initialOptions: SpeechRecognitionOptions = 
     }
   }, [])
 
+
+  const startServerSideRecognition = async () => {
+    while (isListening) {
+      try {
+        const audioChunk = await captureAudioChunk()
+        const response = await fetch('/api/speechRecognition', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ audio: audioChunk }),
+        })
+        const data = await response.json()
+        if (data.transcription) {
+          currentTranscriptRef.current += data.transcription + ' '
+          setTranscript(currentTranscriptRef.current)
+          addToHistory(currentTranscriptRef.current, currentPageRef.current)
+          currentTranscriptRef.current = ''
+        }
+      } catch (error) {
+        console.error('Error en el reconocimiento de voz del servidor:', error)
+      }
+    }
+  }
+
   return { 
     isListening, 
     transcript, 
@@ -155,4 +178,36 @@ export const useSpeechRecognition = (initialOptions: SpeechRecognitionOptions = 
     changePage,
     updateOptions
   }
+}
+
+
+async function captureAudioChunk(): Promise<ArrayBuffer> {
+  return new Promise((resolve, reject) => {
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(stream => {
+        const mediaRecorder = new MediaRecorder(stream);
+        const audioChunks: Blob[] = [];
+
+        mediaRecorder.addEventListener("dataavailable", event => {
+          audioChunks.push(event.data);
+        });
+
+        mediaRecorder.addEventListener("stop", () => {
+          const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+          const reader = new FileReader();
+          reader.readAsArrayBuffer(audioBlob);
+          reader.onloadend = () => {
+            resolve(reader.result as ArrayBuffer);
+          };
+        });
+
+        mediaRecorder.start();
+        setTimeout(() => {
+          mediaRecorder.stop();
+        }, 5000); // Capture 5 seconds of audio
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
 }

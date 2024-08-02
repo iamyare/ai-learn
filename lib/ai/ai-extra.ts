@@ -5,20 +5,22 @@ import { streamObject } from 'ai';
 import { createStreamableValue } from 'ai/rsc';
 import { z } from 'zod';
 
-const google = createGoogleGenerativeAI({
-    apiKey: process.env.NEXT_PUBLIC_GEMINI_KEY ?? ''
-  })
-
 export async function generateImportantEvents({
     prompt = 'Lista de cosas importantes',
     transcription,
-    textPdf
+    textPdf,
+    apiKey,
   }: {
     prompt?: string;
     transcription?: string;
     textPdf?: string;
+    apiKey: string;
   }) {
     'use server';
+
+    const google = createGoogleGenerativeAI({
+      apiKey: apiKey ?? ''
+    })
   
     // Inicialización de un valor que puede ser actualizado de manera streamable
     const stream = createStreamableValue();
@@ -61,6 +63,8 @@ export async function generateImportantEvents({
         ),
       });
   
+
+      
     // Procesamiento del stream y actualización del valor streamable
     (async () => {
     const { partialObjectStream } = await streamObject({
