@@ -6,15 +6,17 @@ import Link from "next/link"
 import ConfigModal from "./modals/config"
 import LogOut from "./ui/log-out"
 import { UserIcon } from "lucide-react"
+import { usePathname } from "next/navigation"
 
 export default function MenuUser({ user }: { user: User }) {
+    const pathname = usePathname()
   return (
     <Menu as='div' className='relative'>
     <div>
       <MenuButton className='relative flex rounded-full bg-muted text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'>
         <span className='absolute -inset-1.5' />
         <span className='sr-only'>Open user menu</span>
-        <div className='flex items-center justify-center size-8 rounded-full'>
+        <div className='flex items-center justify-center size-8 rounded-full bg-muted'>
           {user.username[0]}
         </div>
       </MenuButton>
@@ -34,9 +36,13 @@ export default function MenuUser({ user }: { user: User }) {
           Mi perfil</Link>
         </Button>
       </MenuItem>
-      <MenuItem>
-        <ConfigModal />
-      </MenuItem>
+    {
+        pathname === '/' || (
+            <MenuItem>
+            <ConfigModal />
+            </MenuItem>
+        )
+    }
       <MenuItem>
     <LogOut />
       </MenuItem>

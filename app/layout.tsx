@@ -13,8 +13,8 @@ const libreBaskerville = Libre_Baskerville({
 })
 
 export const metadata: Metadata = {
-  title: 'AulaAssist',
-  description: 'Algo se me va a ocurrir'
+  title: 'Stick Note',
+  description: 'Aplicación de Notebooks Inteligentes que integra PDFs, transcripción en tiempo real y chat con IA para mejorar la productividad.'
 }
 
 export default function RootLayout({
