@@ -95,8 +95,12 @@ export default function ConfigModal() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant='ghost' size='icon'>
-          <Settings className='size-4' />
+      <Button
+          variant={'ghost'}
+          className=' w-full font-normal text-foreground justify-start rounded-none'
+        >
+          <Settings className='size-4 mr-2'  />
+          Configuración
         </Button>
       </DialogTrigger>
       <DialogContent className='sm:max-w-[425px]'>

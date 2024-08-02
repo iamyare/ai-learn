@@ -3,15 +3,12 @@ import {
   Disclosure,
   DisclosureButton,
   DisclosurePanel,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuItems
 } from '@headlessui/react'
 import { MenuIcon, XIcon } from 'lucide-react'
 import { ThemeToggle } from './ui/theme-toggle'
-import Link from 'next/link'
 import { Button } from './ui/button'
+import MenuUser from './menu-user'
+import Link from 'next/link'
 
 const navigation = [
   { name: 'Inicio', href: '#', current: true },
@@ -69,58 +66,19 @@ export default function NabarClient({ user }: { user: User | null }) {
               </div>
             </div>
           </div>
-          <div className='absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0'>
+          <div className='absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0 space-x-2'>
             <ThemeToggle />
 
             {/* Profile dropdown */}
             {user ? (
-              <Menu as='div' className='relative ml-3'>
-                <div>
-                  <MenuButton className='relative flex rounded-full bg-muted text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'>
-                    <span className='absolute -inset-1.5' />
-                    <span className='sr-only'>Open user menu</span>
-                    <div className='flex items-center justify-center size-8 rounded-full'>
-                      {user.username[0]}
-                    </div>
-                  </MenuButton>
-                </div>
-                <MenuItems
-                  transition
-                  className='absolute overflow-hidden right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-background  shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in'
-                >
-                  <MenuItem>
-                    <Button
-                      variant={'ghost'}
-                      className=' w-full font-normal text-foreground justify-start rounded-none'
-                      asChild
-                    >
-                      <Link href={user.username}>Mi perfil</Link>
-                    </Button>
-                  </MenuItem>
-                  <MenuItem>
-                    <Link
-                      href='#'
-                      className='block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100'
-                    >
-                      Ajustes
-                    </Link>
-                  </MenuItem>
-                  <MenuItem>
-                    <Link
-                      href='#'
-                      className='block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100'
-                    >
-                      Cerrar sesión
-                    </Link>
-                  </MenuItem>
-                </MenuItems>
-              </Menu>
+<MenuUser user={user}/>
             ) : (
               <Button
-                className='w-fit px-6 py-2 text-lg'
+                className='w-fit '
                 aria-label='Descubre más sobre nuestras funcionalidades'
+                asChild
               >
-                Inicia sesión
+                <Link href={'auth/login'}>Inicia sesión</Link>
               </Button>
             )}
           </div>
