@@ -36,6 +36,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
+    "deepspeech": "^0.9.3",
     "emoji-picker-react": "^4.11.1",
     "eventsource": "^2.0.2",
     "ip": "^2.0.1",
