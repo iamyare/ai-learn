@@ -273,7 +273,7 @@ export default function SpeechRecognition({
               </li>
             ))}
           </ul>
-        ) : (
+        ) : !isListening && (
           <div className='flex justify-center items-center h-full'>
             <p className='text-muted-foreground'>
               No hay transcripciones disponibles. Comienza a hablar para crear

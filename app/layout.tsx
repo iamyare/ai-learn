@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter, Libre_Baskerville } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/components/ui/theme-provider'
@@ -16,6 +16,13 @@ export const metadata: Metadata = {
   title: 'Stick Note',
   description: 'Aplicación de Notebooks Inteligentes que integra PDFs, transcripción en tiempo real y chat con IA para mejorar la productividad.'
 }
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false
+};
 
 export default function RootLayout({
   children
