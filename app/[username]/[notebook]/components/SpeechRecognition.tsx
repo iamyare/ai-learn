@@ -1,4 +1,3 @@
-
 import React, {
   useRef,
   useEffect,
@@ -10,7 +9,14 @@ import { Button } from '@/components/ui/button'
 import { CoursorText } from '@/components/ui/coursor-text'
 import { useSpeechRecognitionContext } from '@/context/useSpeechRecognitionContext'
 import { cn, formatDate } from '@/lib/utils'
-import { Mic, Play, SkipBack, SkipForward, Cloudy, CloudOff } from 'lucide-react'
+import {
+  Mic,
+  Play,
+  SkipBack,
+  SkipForward,
+  Cloudy,
+  CloudOff
+} from 'lucide-react'
 import {
   getTranscriptions,
   createTranscriptNotebook,
@@ -53,7 +59,6 @@ export default function SpeechRecognition({
   const [isLoading, setIsLoading] = useState(true)
   const [isUpdated, setIsUpdated] = useState(false)
   const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null)
-  
 
   const scrollToBottom = useCallback(() => {
     if (shouldAutoScroll && scrollAreaRef.current) {
@@ -111,7 +116,7 @@ export default function SpeechRecognition({
       }
 
       try {
-        console.log("Iniciando actualización de transcripciones...")
+        console.log('Iniciando actualización de transcripciones...')
         const { transcriptions } = await getTranscriptions({ notebookId })
         if (transcriptions) {
           await updateTranscriptNotebook({
@@ -124,23 +129,26 @@ export default function SpeechRecognition({
             notebookId
           })
         }
-        console.log("Transcripciones guardadas, verificando actualización...")
-        
+        console.log('Transcripciones guardadas, verificando actualización...')
+
         // Verificar si la actualización se guardó correctamente
-        const { transcriptions: updatedTranscriptions } = await getTranscriptions({ notebookId })
+        const { transcriptions: updatedTranscriptions } =
+          await getTranscriptions({ notebookId })
         if (updatedTranscriptions && updatedTranscriptions.content) {
-          const parsedContent = JSON.parse(String(updatedTranscriptions.content))
-          
+          const parsedContent = JSON.parse(
+            String(updatedTranscriptions.content)
+          )
+
           if (JSON.stringify(parsedContent) === JSON.stringify(history)) {
-            console.log("Contenido actualizado correctamente")
+            console.log('Contenido actualizado correctamente')
             setIsUpdated(true)
             setLastUpdateTime(new Date(updatedTranscriptions.updated_at))
           } else {
-            console.log("El contenido no coincide con el history actual")
+            console.log('El contenido no coincide con el history actual')
             setIsUpdated(false)
           }
         } else {
-          console.log("No se encontraron transcripciones actualizadas")
+          console.log('No se encontraron transcripciones actualizadas')
           setIsUpdated(false)
         }
       } catch (error) {
@@ -149,8 +157,6 @@ export default function SpeechRecognition({
       }
     })
   }
-
-
 
   return (
     <section className={cn('flex flex-col h-full w-full', classNameContainer)}>
@@ -218,24 +224,24 @@ export default function SpeechRecognition({
             </Tooltip>
           </div>
           <div className='flex items-center gap-2'>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              {isUpdated ? (
-                <Cloudy className='size-4 text-muted-foreground' />
-              ) : (
-                <CloudOff className='size-4 text-muted-foreground' />
-              )}
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>
-                {isUpdated
-                  ? `Última actualización: ${formatDate(
-                      lastUpdateTime || new Date()
-                    )}`
-                  : 'No hay actualizaciones o error al guardar'}
-              </p>
-            </TooltipContent>
-          </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                {isUpdated ? (
+                  <Cloudy className='size-4 text-muted-foreground' />
+                ) : (
+                  <CloudOff className='size-4 text-muted-foreground' />
+                )}
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>
+                  {isUpdated
+                    ? `Última actualización: ${formatDate(
+                        lastUpdateTime || new Date()
+                      )}`
+                    : 'No hay actualizaciones o error al guardar'}
+                </p>
+              </TooltipContent>
+            </Tooltip>
 
             <MoreOptionsTranscript />
           </div>
@@ -253,19 +259,16 @@ export default function SpeechRecognition({
         {isLoading ? (
           <TranscriptionSkeleton />
         ) : history.length !== 0 ? (
-          <ul className=' space-y-1'>
+          <ul className='space-y-1'>
             {history.map((entry, index) => (
               <li key={index} className='flex flex-col'>
                 <span className='ml-2 text-muted-foreground text-sm'>
-                  [{formatDate(
-                    entry.timestamp || new Date(),
-                    'datetime'
-                  )}] - Página {entry.page || 'Unknown'}
+                  [{formatDate(entry.timestamp || new Date(), 'datetime')}] -
+                  Página {entry.page || 'Unknown'}
                 </span>
                 <p>{entry.text}</p>
                 {index === history.length - 1 && isListening && (
                   <span>
-                    {' '}
                     {transcript}
                     <CoursorText />
                   </span>
@@ -273,7 +276,14 @@ export default function SpeechRecognition({
               </li>
             ))}
           </ul>
-        ) : !isListening && (
+        ) : isListening ? (
+          <div className='flex h-full'>
+            <span>
+              {transcript}
+              <CoursorText />
+            </span>
+          </div>
+        ) : (
           <div className='flex justify-center items-center h-full'>
             <p className='text-muted-foreground'>
               No hay transcripciones disponibles. Comienza a hablar para crear

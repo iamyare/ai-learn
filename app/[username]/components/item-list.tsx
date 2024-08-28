@@ -1,7 +1,7 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useFolderNavigation } from '@/context/useFolderNavigationContext'
 import { useView } from '@/context/useViewContext'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import GridView from './views/grid-view'
 import ListView from './views/list-view'
 import DetailView from './views/detail-view'
@@ -11,13 +11,6 @@ import RenderBreadcrumb from './breadcrumb'
 import ViewButtons from './view-buttons'
 import { ItemListSkeleton } from '@/components/skeletons'
 
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger
-} from '@/components/ui/context-menu'
-import { Separator } from '@/components/ui/separator'
 
 interface ItemListProps {
   items: GetFoldersAndNotebooksFunction[]
@@ -29,15 +22,27 @@ const ItemList: React.FC<ItemListProps> = ({ items, isLoading }) => {
   const { currentView, setView } = useView()
   const pathname = usePathname()
   const router = useRouter()
+  const params = useSearchParams()
+
+  useEffect(() => {
+    //cargar la lista de items por los parametros de la URL
+    navigateToFolder(params.get('folder_id') ?? 'root', params.get('folder_name') ?? 'root')
+  }
+  , [navigateToFolder, params])
 
   const handleItemClick = (item: GetFoldersAndNotebooksFunction) => {
     if (item.item_type === 'folder') {
-      navigateToFolder(item.item_id, item.item_name)
+      // Construir la nueva URL con los params sin recargar la página
+      const newParams = new URLSearchParams(params);
+      newParams.set('folder_id', item.item_id);
+      newParams.set('folder_name', item.item_name);
+      const newPath = `${pathname}?${newParams.toString()}`;
+      router.replace(newPath)
     } else {
-      router.push(`${pathname}/${item.item_id}`)
+      router.push(`${pathname}/${item.item_id}`);
     }
-  }
-
+  };
+  
   const renderView = () => {
     const viewProps = { items, onItemClick: handleItemClick }
     switch (currentView) {
