@@ -19,7 +19,7 @@ interface PDFViewerProps {
 }
 
 const PDFViewer: React.FC<PDFViewerProps> = ({ initialFileUrl }) => {
-  const { fileUrl, setFileUrl, setCurrentPage } = usePDFContext()
+  const { fileUrl, setFileUrl, setCurrentPage} = usePDFContext()
 
   const { isPending: isLoading } = usePDFText()
 
@@ -29,6 +29,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ initialFileUrl }) => {
     viewerProps,
     pageNavigationPluginInstance
   } = usePDFViewer(fileUrl || initialFileUrl)
+
 
   const toolbarPluginInstance = toolbarPlugin()
   const { Toolbar: ToolbarSlot } = toolbarPluginInstance

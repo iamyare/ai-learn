@@ -273,7 +273,7 @@ export default function Chat({ notebookId, className }: { notebookId: string,cla
         })
       }
     })
-  }, [history, text, updateChatInDatabase])
+  }, [apiKeyGemini, history, text, updateChatInDatabase])
 
   const renderChatContent = useMemo(
     () => (
