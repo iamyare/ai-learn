@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@ai-sdk/google": "^0.0.27",
+    "@ai-sdk/google": "^0.0.46",
     "@headlessui/react": "^2.1.2",
     "@hookform/resolvers": "^3.9.0",
     "@radix-ui/react-context-menu": "^2.2.1",
@@ -30,7 +30,7 @@
     "@supabase/supabase-js": "^2.44.4",
     "@tsparticles/slim": "^3.5.0",
     "@types/dom-speech-recognition": "^0.0.4",
-    "ai": "^3.2.27",
+    "ai": "^3.3.20",
     "ansi-html": "^0.0.9",
     "braces": "^3.0.3",
     "class-variance-authority": "^0.7.0",

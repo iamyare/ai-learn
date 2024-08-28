@@ -250,19 +250,17 @@ export default function Chat({ notebookId, className }: { notebookId: string,cla
           apiKey: apiKeyGemini ?? ''
         })
 
-        for await (const partialObject of readStreamableValue(object)) {
-          if (partialObject) {
-            const eventMessage: EventMessageType = {
-              events: partialObject.importantEvents,
-              isUser: false,
-              timestamp: new Date().toISOString()
-            }
-            setMessages((prev) => {
-              const updatedMessages = [...prev, eventMessage]
-              updateChatInDatabase(updatedMessages)
-              return updatedMessages
-            })
+        if (object) {
+          const eventMessage: EventMessageType = {
+            events: object,
+            isUser: false,
+            timestamp: new Date().toISOString()
           }
+          setMessages((prev) => {
+            const updatedMessages = [...prev, eventMessage]
+            updateChatInDatabase(updatedMessages)
+            return updatedMessages
+          })
         }
         setShouldAutoScroll(true)
       } catch (error) {
