@@ -6,6 +6,7 @@ interface PDFContextType {
   setFileUrl: (url: string) => void;
   currentPage: number;
   setCurrentPage: (page: number) => void;
+
 }
 
 const PDFContext = createContext<PDFContextType | undefined>(undefined);
