@@ -205,7 +205,7 @@ export default function CreateNotebook({ userId }: { userId: string }) {
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
+          <form onSubmit={form.handleSubmit(onSubmit)} className=' w-full p-1 overflow-hidden space-y-4'>
             <div className='flex flex-col w-full items-center gap-2'>
               <FormField
                 control={form.control}
@@ -227,7 +227,7 @@ export default function CreateNotebook({ userId }: { userId: string }) {
                   field: { onChange, onBlur, value, ref },
                   fieldState: { error }
                 }) => (
-                  <FormItem className='w-full z-[1000]'>
+                  <FormItem className='w-full '>
                     <FormLabel>Archivo PDF</FormLabel>
                     <FormControl>
                       <div

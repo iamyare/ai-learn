@@ -1,12 +1,14 @@
 'use client'
 
-import { Image, ImageOff } from 'lucide-react'
+import { FileTextIcon } from "lucide-react"
+
+
 
 export const DropzoneDisplay = {
   Normal: () => {
     return (
       <div className='flex flex-col gap-4 w-full'>
-        <Image
+        <FileTextIcon
           className='mx-auto h-12 w-12 text-muted-foreground opacity-50'
           aria-hidden='true'
         />
@@ -27,7 +29,7 @@ export const DropzoneDisplay = {
             <p className='ps-1 select-none'>o arrastra y suelta</p>
           </div>
           <p className='text-xs leading-5 text-muted-foreground select-none'>
-            Archivos permitidos PNG, JPG, WEBP hasta 10MB
+            Archivos permitido PDF hasta 10MB
           </p>
         </div>
       </div>
@@ -36,7 +38,7 @@ export const DropzoneDisplay = {
   Accept: () => {
     return (
       <div className='flex flex-col gap-4 w-full'>
-        <Image
+        <FileTextIcon
           className='mx-auto h-12 w-12 text-muted-foreground opacity-50'
           aria-hidden='true'
         />
@@ -80,7 +82,7 @@ export const DropzoneDisplay = {
         className='h-40 w-40 mt-2 mx-auto rounded-full aspect-square object-cover shadow-lg ring-4 ring-white'
       />
     </div>
-    <p className='text-center max-w-md truncate'>Imagen Seleccionada: {file.name}</p>
+    <p className='text-center max-w-md truncate'>PDF Seleccionado: {file.name}</p>
 
   </div>
     )

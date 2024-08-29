@@ -13,6 +13,7 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { getFoldersAndNotebooks } from '@/actions'
 import { useMediaQuery } from './ui/use-media-query'
 import { Tree, Folder, File, TreeViewElement } from '@/components/file-tree'
+import { usePathname } from 'next/navigation'
 
 interface SidebarProps {
   children: React.ReactNode
@@ -24,6 +25,7 @@ export function Sidebar({ children, userId, defaultOpen }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen)
   const [rootItems, setRootItems] = useState<TreeViewElement[]>([])
   const [isHovered, setIsHovered] = useState(false)
+  const pathname = usePathname()
 
   const isDesktop = useMediaQuery('(min-width: 600px)')
 
@@ -38,11 +40,11 @@ export function Sidebar({ children, userId, defaultOpen }: SidebarProps) {
         name: item.item_name,
         isSelectable: true,
         type: item.item_type as 'folder' | 'file',
-        path: item.item_type === 'notebook' ? `/${userId}/notebooks/${item.item_id}` : undefined
+        path: item.item_type === 'notebook' ? `${pathname}/${item.item_id}` : undefined
       }))
     }
     return []
-  }, [userId])
+  }, [pathname, userId])
 
   useEffect(() => {
     loadItems().then(setRootItems)
