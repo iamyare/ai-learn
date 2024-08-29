@@ -5,31 +5,19 @@ import React, {
   useCallback,
   useTransition
 } from 'react'
-import { Button } from '@/components/ui/button'
-import { CoursorText } from '@/components/ui/coursor-text'
+import { cn } from '@/lib/utils'
 import { useSpeechRecognitionContext } from '@/context/useSpeechRecognitionContext'
-import { cn, formatDate } from '@/lib/utils'
-import {
-  Mic,
-  Play,
-  SkipBack,
-  SkipForward,
-  Cloudy,
-  CloudOff
-} from 'lucide-react'
 import {
   getTranscriptions,
   createTranscriptNotebook,
   updateTranscriptNotebook
 } from '@/actions'
 import { TranscriptionSkeleton } from '@/components/skeletons'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger
-} from '@/components/ui/tooltip'
-import { MoreOptionsTranscript } from './more-options'
+import useTextToSpeech from '@/components/ui/useTextToSpeech'
+import TranscriptionHeader from './TranscriptionHeader'
+import TranscriptionControls from './TranscriptionControls'
+import TranscriptionList from './TranscriptionList'
+import { CoursorText } from '@/components/ui/coursor-text'
 
 interface SpeechRecognitionProps {
   classNameContainer?: string
@@ -59,19 +47,29 @@ export default function SpeechRecognition({
   const [isLoading, setIsLoading] = useState(true)
   const [isUpdated, setIsUpdated] = useState(false)
   const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null)
+  const [showPageNumbers, setShowPageNumbers] = useState(true)
+  const [currentPosition, setCurrentPosition] = useState(0)
+  const [lastPlayPosition, setLastPlayPosition] = useState(0)
 
-  const scrollToBottom = useCallback(() => {
-    if (shouldAutoScroll && scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTo({
-        top: scrollAreaRef.current.scrollHeight,
-        behavior: 'smooth'
-      })
-    }
-  }, [shouldAutoScroll])
+  const fullText =
+    history.map((entry) => entry.text).join(' ') + ' ' + transcript
+  const {
+    speak,
+    pause,
+    stop,
+    isPlaying,
+    currentPosition: ttsPosition
+  } = useTextToSpeech({ text: fullText })
 
   useEffect(() => {
-    scrollToBottom()
-  }, [history, transcript, scrollToBottom])
+    setCurrentPosition(ttsPosition)
+  }, [ttsPosition])
+
+  useEffect(() => {
+    if (isPlaying) {
+      setCurrentPosition(ttsPosition + lastPlayPosition)
+    }
+  }, [ttsPosition, isPlaying, lastPlayPosition])
 
   useEffect(() => {
     const loadTranscriptions = async () => {
@@ -107,6 +105,15 @@ export default function SpeechRecognition({
     }
   }
 
+  const handlePositionChange = (newPosition: number) => {
+    setCurrentPosition(newPosition)
+    setLastPlayPosition(newPosition)
+    //Reproducir el texto en la posición actual
+    // if (!isPlaying) {
+    //   speak(newPosition);
+    // }
+  }
+
   const handleAction = async () => {
     startTransition(async () => {
       if (isListening) {
@@ -116,7 +123,6 @@ export default function SpeechRecognition({
       }
 
       try {
-        console.log('Iniciando actualización de transcripciones...')
         const { transcriptions } = await getTranscriptions({ notebookId })
         if (transcriptions) {
           await updateTranscriptNotebook({
@@ -129,16 +135,13 @@ export default function SpeechRecognition({
             notebookId
           })
         }
-        console.log('Transcripciones guardadas, verificando actualización...')
 
-        // Verificar si la actualización se guardó correctamente
         const { transcriptions: updatedTranscriptions } =
           await getTranscriptions({ notebookId })
         if (updatedTranscriptions && updatedTranscriptions.content) {
           const parsedContent = JSON.parse(
             String(updatedTranscriptions.content)
           )
-
           if (JSON.stringify(parsedContent) === JSON.stringify(history)) {
             console.log('Contenido actualizado correctamente')
             setIsUpdated(true)
@@ -158,96 +161,39 @@ export default function SpeechRecognition({
     })
   }
 
+  const handleTTSAction = () => {
+    if (isPlaying) {
+      pause()
+    } else {
+      console.log('currentPosition TTS', currentPosition)
+      setLastPlayPosition(currentPosition)
+      speak(currentPosition) // Always start speaking from 0, but use lastPlayPosition as offset
+    }
+  }
+
+  const togglePageNumbers = () => {
+    setShowPageNumbers(!showPageNumbers)
+  }
+
   return (
     <section className={cn('flex flex-col h-full w-full', classNameContainer)}>
-      <TooltipProvider>
-        <header
-          className={cn(
-            'flex justify-between items-center p-2 w-full',
-            classNameHeader
-          )}
-        >
-          <span></span>
-
-          <div className='flex gap-2 items-center'>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button size={'icon'} variant={'ghost'}>
-                  <SkipBack className='size-4' />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>No disponible</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button size={'icon'} variant={'ghost'}>
-                  <Play className='size-4' />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>No disponible</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  size={'icon'}
-                  variant={'ghost'}
-                  onClick={handleAction}
-                  disabled={isPending}
-                >
-                  {isListening ? (
-                    <Mic className='size-4 text-red-500' />
-                  ) : (
-                    <Mic className='size-4' />
-                  )}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Presiona para comenzar a transcribir</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button size={'icon'} variant={'ghost'}>
-                  <SkipForward className='size-4' />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>No disponible</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-          <div className='flex items-center gap-2'>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                {isUpdated ? (
-                  <Cloudy className='size-4 text-muted-foreground' />
-                ) : (
-                  <CloudOff className='size-4 text-muted-foreground' />
-                )}
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>
-                  {isUpdated
-                    ? `Última actualización: ${formatDate(
-                        lastUpdateTime || new Date()
-                      )}`
-                    : 'No hay actualizaciones o error al guardar'}
-                </p>
-              </TooltipContent>
-            </Tooltip>
-
-            <MoreOptionsTranscript />
-          </div>
-        </header>
-      </TooltipProvider>
-
+      <div className='  flex justify-between items-center'>
+        <span></span>
+        <TranscriptionControls
+          isListening={isListening}
+          isPlaying={isPlaying}
+          isPending={isPending}
+          onMicClick={handleAction}
+          onPlayPauseClick={handleTTSAction}
+          onStopClick={stop}
+          showPageNumbers={showPageNumbers}
+          onTogglePageNumbers={togglePageNumbers}
+        />
+        <TranscriptionHeader
+          isUpdated={isUpdated}
+          lastUpdateTime={lastUpdateTime}
+        />
+      </div>
       <aside
         className={cn(
           'w-full h-full px-4 overflow-y-auto transcript-scroll-area',
@@ -259,23 +205,15 @@ export default function SpeechRecognition({
         {isLoading ? (
           <TranscriptionSkeleton />
         ) : history.length !== 0 ? (
-          <ul className='space-y-1'>
-            {history.map((entry, index) => (
-              <li key={index} className='flex flex-col'>
-                <span className='ml-2 text-muted-foreground text-sm'>
-                  [{formatDate(entry.timestamp || new Date(), 'datetime')}] -
-                  Página {entry.page || 'Unknown'}
-                </span>
-                <p>{entry.text}</p>
-                {index === history.length - 1 && isListening && (
-                  <span>
-                    {transcript}
-                    <CoursorText />
-                  </span>
-                )}
-              </li>
-            ))}
-          </ul>
+          <TranscriptionList
+            history={history}
+            transcript={transcript}
+            isListening={isListening}
+            currentPosition={currentPosition}
+            showPageNumbers={showPageNumbers}
+            isPlaying={isPlaying}
+            onPositionChange={handlePositionChange}
+          />
         ) : isListening ? (
           <div className='flex h-full'>
             <span>

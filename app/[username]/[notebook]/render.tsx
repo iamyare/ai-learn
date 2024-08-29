@@ -7,9 +7,7 @@ import { useMediaQuery } from '@/components/ui/use-media-query'
 import Chat from '@/components/chat'
 import SpeechRecognition from './components/SpeechRecognition'
 import PDFViewer from '@/components/ui/PDFViewer'
-import ConfigModal from '@/components/modals/config'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
-import LogOut from '@/components/ui/log-out'
 
 import {
   ResizableHandle,
@@ -58,7 +56,7 @@ export default function RenderView({
         </div>
       </header>
     ),
-    [notebookInfo.notebook_name, router]
+    [notebookInfo.notebook_name, router, user]
   )
 
   const pdfViewerContent = useMemo(

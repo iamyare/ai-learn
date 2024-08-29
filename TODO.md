@@ -1,4 +1,6 @@
-- [ ] Mejorar el arbol de archivos
-- [ ] Agregar funcionalidad de url con los id de folders
+- [x] Mejorar el arbol de archivos
+- [-] Agregar funcionalidad de url con los id de folders
 - [ ] Funcionalidad de audio a texto
-- [ ] Solucionar IA
+- [x] Solucionar IA
+- [ ] Solucionar modal menu de user
+- [ ] Agregar opciones al modal configuracion

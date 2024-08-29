@@ -7,7 +7,6 @@ import {
   focusedClass,
   rejectClass
 } from './dropzone-display'
-import { uploadPdf } from '@/actions'
 import { useTransition } from 'react'
 import { supabase } from '@/lib/supabase'
 
