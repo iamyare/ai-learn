@@ -184,7 +184,7 @@ export default function CreateNotebook({ userId }: { userId: string }) {
   const getDropzoneClassName = () => {
     let className = 'transition-all duration-300 ease-in-out '
     className +=
-      'h-52 w-full flex text-muted-foreground flex-col justify-center items-center rounded-lg border border-dashed border-muted-foreground/25 p-4 '
+      'h-52 w-full flex text-muted-foreground flex-col justify-center items-center rounded-lg border border-dashed border-muted-foreground/25 overflow-hidden '
     className += getClassName()
     return className
   }
