@@ -26,6 +26,7 @@ export default function Chat({ notebookId, className }: { notebookId: string, cl
   const [isLoading, setIsLoading] = useState(true)
   const [apiKeyGemini, setApiKeyGemini] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const [isImportantEventsPending, startImportantEventsTransition] = useTransition()
 
   const geminiKey = useApiKey('gemini_key')
   const { text, extractTextFromPDF } = usePDFText()
@@ -183,7 +184,7 @@ export default function Chat({ notebookId, className }: { notebookId: string, cl
   }, [messages, history, text, updateChatInDatabase, form, apiKeyGemini])
 
   const handleImportantEvents = useCallback(() => {
-    startTransition(async () => {
+    startImportantEventsTransition(async () => {
       const transcript = history.map((entry) => entry.text).join(' ')
       try {
         const { object } = await generateImportantEvents({
@@ -236,7 +237,9 @@ export default function Chat({ notebookId, className }: { notebookId: string, cl
             form={form}
             onSubmit={handleSubmit}
             onImportantEvents={handleImportantEvents}
-            isPending={isPending}
+            isPending={
+                isPending || isImportantEventsPending
+            }
           />
         </>
       )}
