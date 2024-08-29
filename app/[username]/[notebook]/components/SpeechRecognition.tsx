@@ -39,17 +39,21 @@ export default function SpeechRecognition({
   const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
   const [showPageNumbers, setShowPageNumbers] = useState(true);
   const [currentPosition, setCurrentPosition] = useState(0);
+  const [lastPlayPosition, setLastPlayPosition] = useState(0);
+
 
   const fullText = history.map(entry => entry.text).join(' ') + ' ' + transcript;
-
   const { speak, pause, stop, isPlaying, currentPosition: ttsPosition } = useTextToSpeech({ text: fullText });
-  
+
   useEffect(() => {
     setCurrentPosition(ttsPosition);
   }, [ttsPosition]);
 
-
-
+  useEffect(() => {
+    if (isPlaying) {
+      setCurrentPosition(ttsPosition + lastPlayPosition);
+    }
+  }, [ttsPosition, isPlaying, lastPlayPosition]);
 
 
   useEffect(() => {
@@ -86,10 +90,13 @@ export default function SpeechRecognition({
 
   const handlePositionChange = (newPosition: number) => {
     setCurrentPosition(newPosition);
-    if (!isPlaying) {
-      speak(newPosition);
-    }
+    setLastPlayPosition(newPosition);
+    //Reproducir el texto en la posición actual
+    // if (!isPlaying) {
+    //   speak(newPosition);
+    // }
   };
+
 
 
   const handleAction = async () => {
@@ -140,7 +147,9 @@ export default function SpeechRecognition({
     if (isPlaying) {
       pause();
     } else {
-      speak(currentPosition);
+      console.log('currentPosition TTS', currentPosition);
+      setLastPlayPosition(currentPosition);
+      speak(currentPosition); // Always start speaking from 0, but use lastPlayPosition as offset
     }
   };
 
@@ -176,13 +185,13 @@ export default function SpeechRecognition({
           <TranscriptionSkeleton />
         ) : history.length !== 0 ? (
           <TranscriptionList
-            history={history}
-            transcript={transcript}
-            isListening={isListening}
-            currentPosition={currentPosition}
-            showPageNumbers={showPageNumbers}
-            isPlaying={isPlaying}
-            onPositionChange={handlePositionChange}
+       history={history}
+        transcript={transcript}
+        isListening={isListening}
+        currentPosition={currentPosition}
+        showPageNumbers={showPageNumbers}
+        isPlaying={isPlaying}
+        onPositionChange={handlePositionChange}
           />
         ) : isListening ? (
           <div className='flex h-full'>
