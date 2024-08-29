@@ -8,7 +8,7 @@ interface UseTextToSpeechProps {
 }
 
 interface UseTextToSpeechReturn {
-  speak: () => void;
+  speak: (startIndex?: number) => void;
   pause: () => void;
   stop: () => void;
   isPlaying: boolean;
@@ -32,7 +32,7 @@ const useTextToSpeech = ({
 
   useEffect(() => {
     const synth = window.speechSynthesis;
-    utteranceRef.current = new SpeechSynthesisUtterance(text);
+    utteranceRef.current = new SpeechSynthesisUtterance();
     utteranceRef.current.lang = lang;
     utteranceRef.current.rate = rate;
     utteranceRef.current.pitch = pitch;
@@ -51,16 +51,18 @@ const useTextToSpeech = ({
     return () => {
       synth.cancel();
     };
-  }, [text, lang, rate, pitch]);
+  }, [lang, rate, pitch]);
 
-  const speak = useCallback(() => {
+  const speak = useCallback((startIndex = 0) => {
     const synth = window.speechSynthesis;
     if (utteranceRef.current) {
       if (synth.speaking) {
         synth.cancel();
       }
+      utteranceRef.current.text = textRef.current.slice(startIndex);
       synth.speak(utteranceRef.current);
       setIsPlaying(true);
+      setCurrentPosition(startIndex);
     }
   }, []);
 
