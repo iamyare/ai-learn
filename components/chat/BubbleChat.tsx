@@ -1,12 +1,29 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { MarkdownRenderer } from '@/components/ui/markdown-reader';
 import { Button } from '@/components/ui/button';
-import { Check, Copy } from 'lucide-react';
+import { Check, Copy, Download, ZoomIn, ZoomOut, Move } from 'lucide-react';
 import mermaid from 'mermaid';
+import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
+import { toPng } from 'html-to-image';
 
-// Inicializa mermaid
-mermaid.initialize({ startOnLoad: true });
+// Inicializa mermaid con un tema personalizado
+mermaid.initialize({
+  startOnLoad: true,
+  theme: 'default',
+  themeVariables: {
+    fontFamily: 'Arial, sans-serif',
+    fontSize: '14px',
+    primaryTextColor: 'hsla(var(--foreground)/1)',
+    lineColor: 'hsla(var(--muted-foreground)/1)',
+    mainBkg: 'hsla(var(--muted)/1)',
+    nodeBorder: 'hsla(var(--muted-foreground)/1)',
+    nodeTextColor: 'hsla(var(--foreground)/1)',
+    clusterBkg: 'none',
+    clusterBorder: 'none',
+    titleColor: 'hsla(var(--primary)/1)',
+  }
+});
 
 const MessageContent: React.FC<{ content: string }> = React.memo(({ content }) => {
   const [renderedContent, setRenderedContent] = useState<React.ReactNode>('');
@@ -70,6 +87,7 @@ EventList.displayName = 'EventList';
 
 const MindMap: React.FC<{ mindMap: string }> = React.memo(({ mindMap }) => {
   const [svg, setSvg] = useState<string>('');
+  const mindMapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const renderMindMap = async () => {
@@ -85,8 +103,51 @@ const MindMap: React.FC<{ mindMap: string }> = React.memo(({ mindMap }) => {
     renderMindMap();
   }, [mindMap]);
 
+  const handleDownload = useCallback(() => {
+    if (mindMapRef.current) {
+      toPng(mindMapRef.current, { quality: 1 })
+        .then((dataUrl) => {
+          const link = document.createElement('a');
+          link.download = 'mindmap.png';
+          link.href = dataUrl;
+          link.click();
+        })
+        .catch((err) => {
+          console.error('Error downloading mind map:', err);
+        });
+    }
+  }, []);
+
   return (
-    <div className="mind-map-container" dangerouslySetInnerHTML={{ __html: svg }} />
+    <div className="mind-map-container w-full rounded-md overflow-hidden border relative">
+      <TransformWrapper
+        initialScale={1}
+        initialPositionX={0}
+        initialPositionY={0}
+      >
+        {({ zoomIn, zoomOut, resetTransform }) => (
+          <>
+            <div className="absolute top-2 right-2 z-10 flex gap-2">
+              <Button variant={'ghost'} className=' p-2' size="icon" onClick={() => zoomIn()}>
+                <ZoomIn className="size-4" />
+              </Button>
+              <Button size="icon" onClick={() => zoomOut()}>
+                <ZoomOut className="size-4" />
+              </Button>
+              <Button size="icon" onClick={() => resetTransform()}>
+                <Move className="size-4" />
+              </Button>
+              <Button size="icon" onClick={handleDownload}>
+                <Download className="size-4" />
+              </Button>
+            </div>
+            <TransformComponent wrapperClass="w-full h-full" contentClass="w-full h-full">
+              <div ref={mindMapRef} className="w-full h-full" dangerouslySetInnerHTML={{ __html: svg }} />
+            </TransformComponent>
+          </>
+        )}
+      </TransformWrapper>
+    </div>
   );
 });
 

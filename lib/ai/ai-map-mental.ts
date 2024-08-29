@@ -30,14 +30,23 @@ export async function generateMindMap({
     3. Considera la pregunta o instrucción específica del estudiante.
 
     Reglas para el mapa mental:
-    - Utiliza la sintaxis de Mermaid para flowcharts.
+    - Utiliza la sintaxis de Mermaid para mindmaps.
     - Crea un nodo principal con el tema central.
     - Añade nodos secundarios para subtemas principales.
     - Incluye nodos terciarios para detalles importantes.
     - Limita el mapa a un máximo de 3 niveles de profundidad para mantenerlo claro y conciso.
-    - Utiliza colores para diferenciar niveles o categorías (opcional).
-
-    Si no hay suficiente información para crear un mapa mental completo, genera un mapa simple con el mensaje "Información insuficiente" como nodo principal.
+    - Evita el uso de paréntesis en las fórmulas o el texto interno.
+    - Utiliza iconos y etiquetas HTML cuando sea necesario.
+    - Asegúrate de que el formato sea el siguiente:
+      mindmap
+        root((Tema Principal))
+          direction LR
+          Subtema 1
+            Detalle 1
+            Detalle 2
+          Subtema 2
+            Detalle 1
+            Detalle 2
   `
 
   let userPrompt = prompt + '\n\n'
@@ -66,6 +75,6 @@ export async function generateMindMap({
     return { mindMap: object.mindMap }
   } catch (error) {
     console.error('Error al generar el mapa mental:', error)
-    return { mindMap: 'graph TD\n  A[Información insuficiente]' }
+    return { mindMap: 'mindmap\n  root((Información insuficiente))' }
   }
 }
