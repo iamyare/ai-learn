@@ -7,12 +7,11 @@ import React, {
   useState,
 } from "react";
 import * as AccordionPrimitive from "@radix-ui/react-accordion";
-import { FileIcon, FolderIcon, FolderOpenIcon } from "lucide-react";
 import Link from "next/link";
 
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Icons } from "./icons";
 
 type TreeViewElement = {
   id: string;
@@ -125,7 +124,7 @@ const Tree = forwardRef<HTMLDivElement, TreeViewProps>(
               type="multiple"
               value={expandedItems}
               onValueChange={setExpandedItems}
-              className="flex flex-col gap-1"
+              className="flex flex-col gap-2"
               defaultValue={initialExpandedItems}
             >
               {children}
@@ -234,8 +233,8 @@ const Folder = forwardRef<HTMLDivElement, FolderProps>(
           onClick={handleFolderExpand}
         >
           {isExpanded
-            ? openIcon ?? <FolderOpenIcon className="size-4" />
-            : closeIcon ?? <FolderIcon className="size-4" />}
+            ? openIcon ?? <Icons.folder02Icon className="size-5 text-foreground" />
+            : closeIcon ?? <Icons.folder01Icon className="size-5 text-foreground" />}
           <span>{element}</span>
         </AccordionPrimitive.Trigger>
         <AccordionPrimitive.Content className="text-sm data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden pl-6">
@@ -302,7 +301,7 @@ const File = forwardRef<HTMLButtonElement, FileProps>(
 
     const fileContent = (
       <>
-        {fileIcon ?? <FileIcon className="size-4" />}
+        {fileIcon ?? <Icons.notebookIcon className="size-5 text-foreground" />}
         {children}
       </>
     );
