@@ -3,15 +3,17 @@ import { cn } from '@/lib/utils';
 import { MarkdownRenderer } from '@/components/ui/markdown-reader';
 import { Button } from '@/components/ui/button';
 import { Check, Copy } from 'lucide-react';
+import mermaid from 'mermaid';
 
+// Inicializa mermaid
+mermaid.initialize({ startOnLoad: true });
 
 const MessageContent: React.FC<{ content: string }> = React.memo(({ content }) => {
   const [renderedContent, setRenderedContent] = useState<React.ReactNode>('');
-  const [isCopied, setIsCopied] = useState(false); // Estado para controlar el ícono
+  const [isCopied, setIsCopied] = useState(false);
 
   useEffect(() => {
     const renderContent = async () => {
-      // Simula un renderizado asíncrono del markdown
       const rendered = await new Promise<React.ReactNode>(resolve => 
         setTimeout(() => resolve(<MarkdownRenderer content={content} />), 10)
       );
@@ -22,8 +24,8 @@ const MessageContent: React.FC<{ content: string }> = React.memo(({ content }) =
 
   const handleCopy = useCallback(() => {
     navigator.clipboard.writeText(content);
-    setIsCopied(true); // Cambia al ícono de verificación
-    setTimeout(() => setIsCopied(false), 2000); // Vuelve al estado inicial después de 2 segundos
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
   }, [content]);
 
   return (
@@ -66,6 +68,30 @@ const EventList: React.FC<{ events: ImportantEventType[] }> = React.memo(({ even
 
 EventList.displayName = 'EventList';
 
+const MindMap: React.FC<{ mindMap: string }> = React.memo(({ mindMap }) => {
+  const [svg, setSvg] = useState<string>('');
+
+  useEffect(() => {
+    const renderMindMap = async () => {
+      try {
+        const { svg } = await mermaid.render('mindmap', mindMap);
+        setSvg(svg);
+      } catch (error) {
+        console.error('Error rendering mind map:', error);
+        setSvg('<svg><text>Error rendering mind map</text></svg>');
+      }
+    };
+
+    renderMindMap();
+  }, [mindMap]);
+
+  return (
+    <div className="mind-map-container" dangerouslySetInnerHTML={{ __html: svg }} />
+  );
+});
+
+MindMap.displayName = 'MindMap';
+
 const BubbleChat: React.FC<{ message: ChatMessageType }> = ({ message }) => {
   const messageClass = useMemo(() => 
     cn(
@@ -87,8 +113,10 @@ const BubbleChat: React.FC<{ message: ChatMessageType }> = ({ message }) => {
       ) : (
         <MessageContent content={message.content} />
       );
-    } else {
+    } else if ('events' in message) {
       return <EventList events={message.events} />;
+    } else if ('mindMap' in message) {
+      return <MindMap mindMap={message.mindMap} />;
     }
   }, [message]);
 
