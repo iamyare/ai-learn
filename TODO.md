@@ -1,4 +1,4 @@
 - [ ] Mejorar el arbol de archivos
 - [ ] Agregar funcionalidad de url con los id de folders
 - [ ] Funcionalidad de audio a texto
-- [ ] Solucionar IA
+- [x] Solucionar IA
