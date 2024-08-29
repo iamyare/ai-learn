@@ -12,10 +12,12 @@ import { cn, formatDate } from '@/lib/utils'
 import {
   Mic,
   Play,
+  Pause,
   SkipBack,
   SkipForward,
   Cloudy,
-  CloudOff
+  CloudOff,
+  StopCircle
 } from 'lucide-react'
 import {
   getTranscriptions,
@@ -30,6 +32,7 @@ import {
   TooltipTrigger
 } from '@/components/ui/tooltip'
 import { MoreOptionsTranscript } from './more-options'
+import useTextToSpeech from '@/components/ui/useTextToSpeech'
 
 interface SpeechRecognitionProps {
   classNameContainer?: string
@@ -59,6 +62,9 @@ export default function SpeechRecognition({
   const [isLoading, setIsLoading] = useState(true)
   const [isUpdated, setIsUpdated] = useState(false)
   const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null)
+
+  const fullText = history.map(entry => entry.text).join(' ') + ' ' + transcript
+  const { speak, pause, stop, isPlaying, currentPosition } = useTextToSpeech({ text: fullText })
 
   const scrollToBottom = useCallback(() => {
     if (shouldAutoScroll && scrollAreaRef.current) {
@@ -131,7 +137,6 @@ export default function SpeechRecognition({
         }
         console.log('Transcripciones guardadas, verificando actualización...')
 
-        // Verificar si la actualización se guardó correctamente
         const { transcriptions: updatedTranscriptions } =
           await getTranscriptions({ notebookId })
         if (updatedTranscriptions && updatedTranscriptions.content) {
@@ -156,6 +161,14 @@ export default function SpeechRecognition({
         setIsUpdated(false)
       }
     })
+  }
+
+  const handleTTSAction = () => {
+    if (isPlaying) {
+      pause()
+    } else {
+      speak()
+    }
   }
 
   return (
@@ -183,12 +196,20 @@ export default function SpeechRecognition({
 
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button size={'icon'} variant={'ghost'}>
-                  <Play className='size-4' />
+                <Button 
+                  size={'icon'} 
+                  variant={'ghost'}
+                  onClick={handleTTSAction}
+                >
+                  {isPlaying ? (
+                    <Pause className='size-4' />
+                  ) : (
+                    <Play className='size-4' />
+                  )}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>No disponible</p>
+                <p>{isPlaying ? 'Pausar lectura' : 'Iniciar lectura'}</p>
               </TooltipContent>
             </Tooltip>
 
@@ -209,6 +230,21 @@ export default function SpeechRecognition({
               </TooltipTrigger>
               <TooltipContent>
                 <p>Presiona para comenzar a transcribir</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  size={'icon'} 
+                  variant={'ghost'}
+                  onClick={stop}
+                >
+                  <StopCircle className='size-4' />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Detener lectura</p>
               </TooltipContent>
             </Tooltip>
 
@@ -266,7 +302,18 @@ export default function SpeechRecognition({
                   [{formatDate(entry.timestamp || new Date(), 'datetime')}] -
                   Página {entry.page || 'Unknown'}
                 </span>
-                <p>{entry.text}</p>
+                <p>
+                  {entry.text.split('').map((char, charIndex) => (
+                    <span
+                      key={charIndex}
+                      className={cn(
+                        charIndex < currentPosition ? 'bg-yellow-200 dark:bg-yellow-800' : ''
+                      )}
+                    >
+                      {char}
+                    </span>
+                  ))}
+                </p>
                 {index === history.length - 1 && isListening && (
                   <span>
                     {transcript}
