@@ -48,7 +48,6 @@ const TranscriptionList: React.FC<TranscriptionListProps> = ({
     const { paragraphIndex, wordIndex } = getIndicesFromPosition(currentPosition);
     setCurrentParagraphIndex(paragraphIndex);
     setCurrentWordIndex(wordIndex);
-    console.log('currentPosition', currentPosition, 'paragraphIndex', paragraphIndex, 'wordIndex', wordIndex);
   }, [currentPosition, getIndicesFromPosition]);
 
   const handleWordClick = (paragraphIndex: number, wordIndex: number) => {
@@ -61,7 +60,6 @@ const TranscriptionList: React.FC<TranscriptionListProps> = ({
       newPosition += words[i].length + 1; // +1 for space
     }
     newPosition += words[wordIndex].length; // Ajuste para la palabra actual
-    console.log('newPosition', newPosition);
     onPositionChange(newPosition);
   };
 
