@@ -35,7 +35,7 @@ export async function generateImportantEvents({
       - Consejos prácticos del docente
       - Temas clave o conceptos importantes mencionados
   
-      Si no hay transcripción ni PDF disponibles, se genera un evento diciendo "No hay eventos importantes".
+      Si no hay transcripción ni PDF disponibles, se genera un evento diciendo "No hay eventos importantes", si no se menciona un evento específico en la pregunta del estudiante, se generará un evento diciendo "No hay eventos importantes".
       `
 
   let userPrompt = prompt + '\n\n'

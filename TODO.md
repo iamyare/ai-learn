@@ -4,3 +4,6 @@
 - [x] Solucionar IA
 - [ ] Solucionar modal menu de user
 - [ ] Agregar opciones al modal configuracion
+- [ ] Opciones de visualizacion y copiar transcripcion.
+- [ ] Cambiar input por text area
+- [ ] solucionar reenderizado de markdown del chat

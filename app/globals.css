@@ -69,6 +69,15 @@
   body {
     @apply bg-background text-foreground;
   }
+
+}
+
+
+.textarea {
+  line-height: 1lh;
+  field-sizing: content;
+  min-height: 1lh;
+  max-height: 4lh;
 }
 
 .animated-border {
