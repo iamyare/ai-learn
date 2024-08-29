@@ -60,16 +60,24 @@ const useTextToSpeech = ({
     utteranceRef.current.pitch = pitch;
     utteranceRef.current.volume = volume;
 
+    const userAgent = navigator.userAgent.toLowerCase();
+    const isSafari = userAgent.includes('safari') && !userAgent.includes('chrome');
+
     if (!voice) {
-      const naturalVoice = voices.find(v => v.lang === lang && v.name.includes('Natural'));
-      utteranceRef.current.voice = naturalVoice || voices[0];
+      if (isSafari) {
+        const safariVoice = voices.find(v => v.lang === lang && v.name.includes('Paulina'));
+        utteranceRef.current.voice = safariVoice || voices[0];
+      } else {
+        const naturalVoice = voices.find(v => v.lang === lang && v.name.includes('Natural'));
+        utteranceRef.current.voice = naturalVoice || voices[0];
+      }
     } else {
       utteranceRef.current.voice = voice;
     }
 
     utteranceRef.current.onboundary = (event) => {
       if (event.name === 'word') {
-        setCurrentPosition(event.charIndex);
+        setCurrentPosition(event.charIndex + event.charLength);
       }
     };
 
