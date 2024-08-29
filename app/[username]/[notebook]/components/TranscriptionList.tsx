@@ -9,6 +9,8 @@ interface TranscriptionListProps {
   isListening: boolean;
   currentPosition: number;
   showPageNumbers: boolean;
+  isPlaying: boolean;
+  onPositionChange: (newPosition: number) => void;
 }
 
 const TranscriptionList: React.FC<TranscriptionListProps> = ({
@@ -16,7 +18,9 @@ const TranscriptionList: React.FC<TranscriptionListProps> = ({
   transcript,
   isListening,
   currentPosition,
-  showPageNumbers
+  showPageNumbers,
+  isPlaying,
+  onPositionChange
 }) => {
 
   const getCurrentParagraphAndWordIndex = () => {
@@ -35,6 +39,18 @@ const TranscriptionList: React.FC<TranscriptionListProps> = ({
 
   const { paragraphIndex: currentParagraphIndex, wordIndex: currentWordIndex } = getCurrentParagraphAndWordIndex();
 
+  const handleWordClick = (paragraphIndex: number, wordIndex: number) => {
+    let newPosition = 0;
+    for (let i = 0; i < paragraphIndex; i++) {
+      newPosition += history[i].text.length + 1; // +1 for newline
+    }
+    const words = history[paragraphIndex].text.split(' ');
+    for (let i = 0; i < wordIndex; i++) {
+      newPosition += words[i].length + 1; // +1 for space
+    }
+    onPositionChange(newPosition);
+  };
+
   return (
     <ul className='space-y-1'>
       {history.map((entry, index) => (
@@ -46,12 +62,17 @@ const TranscriptionList: React.FC<TranscriptionListProps> = ({
             </span>
           )}
           <p className={cn(
-            index === currentParagraphIndex ? 'bg-yellow-100 dark:bg-yellow-800' : ''
+            index === currentParagraphIndex && isPlaying ? 'bg-yellow-100 dark:bg-yellow-800' : ''
           )}>
             {entry.text.split(' ').map((word, wordIndex) => (
-              <span key={wordIndex} className={cn(
-                index === currentParagraphIndex && wordIndex === currentWordIndex ? 'bg-red-500' : ''
-              )}>
+              <span 
+                key={wordIndex} 
+                className={cn(
+                  'cursor-pointer',
+                  index === currentParagraphIndex && wordIndex === currentWordIndex && isPlaying ? 'bg-red-500' : ''
+                )}
+                onClick={() => handleWordClick(index, wordIndex)}
+              >
                 {word}{' '}
               </span>
             ))}

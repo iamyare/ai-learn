@@ -38,9 +38,19 @@ export default function SpeechRecognition({
   const [isUpdated, setIsUpdated] = useState(false);
   const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
   const [showPageNumbers, setShowPageNumbers] = useState(true);
+  const [currentPosition, setCurrentPosition] = useState(0);
 
   const fullText = history.map(entry => entry.text).join(' ') + ' ' + transcript;
-  const { speak, pause, stop, isPlaying, currentPosition } = useTextToSpeech({ text: fullText });
+
+  const { speak, pause, stop, isPlaying, currentPosition: ttsPosition } = useTextToSpeech({ text: fullText });
+  
+  useEffect(() => {
+    setCurrentPosition(ttsPosition);
+  }, [ttsPosition]);
+
+
+
+
 
   useEffect(() => {
     const loadTranscriptions = async () => {
@@ -73,6 +83,14 @@ export default function SpeechRecognition({
       setShouldAutoScroll(isScrolledToBottom);
     }
   };
+
+  const handlePositionChange = (newPosition: number) => {
+    setCurrentPosition(newPosition);
+    if (!isPlaying) {
+      speak(newPosition);
+    }
+  };
+
 
   const handleAction = async () => {
     startTransition(async () => {
@@ -143,6 +161,8 @@ export default function SpeechRecognition({
         onMicClick={handleAction}
         onPlayPauseClick={handleTTSAction}
         onStopClick={stop}
+        showPageNumbers={showPageNumbers}
+        onTogglePageNumbers={togglePageNumbers}
       />
       <aside
         className={cn(
@@ -161,6 +181,8 @@ export default function SpeechRecognition({
             isListening={isListening}
             currentPosition={currentPosition}
             showPageNumbers={showPageNumbers}
+            isPlaying={isPlaying}
+            onPositionChange={handlePositionChange}
           />
         ) : isListening ? (
           <div className='flex h-full'>

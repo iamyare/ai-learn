@@ -7,9 +7,11 @@ interface TranscriptionControlsProps {
   isListening: boolean;
   isPlaying: boolean;
   isPending: boolean;
-  onMicClick: () => void;
+  onMicClick: () => Promise<void>;
   onPlayPauseClick: () => void;
   onStopClick: () => void;
+  showPageNumbers: boolean; // Añadir esta línea
+  onTogglePageNumbers: () => void;
 }
 
 const TranscriptionControls: React.FC<TranscriptionControlsProps> = ({
