@@ -12,7 +12,7 @@ interface TranscriptionHeaderProps {
 
 const TranscriptionHeader: React.FC<TranscriptionHeaderProps> = ({ isUpdated, lastUpdateTime }) => {
   return (
-    <header className="flex justify-between items-center p-2 w-full">
+    <header className="flex justify-between items-center p-2 ">
       <span></span>
       <div className='flex items-center gap-2'>
         <TooltipProvider>
