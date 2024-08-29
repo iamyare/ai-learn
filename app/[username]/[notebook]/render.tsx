@@ -4,7 +4,6 @@ import { useState, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useMediaQuery } from '@/components/ui/use-media-query'
 
-import Chat from '@/components/chat'
 import SpeechRecognition from './components/SpeechRecognition'
 import PDFViewer from '@/components/ui/PDFViewer'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
@@ -23,6 +22,7 @@ import { PDFProvider } from '@/context/useCurrentPageContext'
 import { cn } from '@/lib/utils'
 import MenuUser from '@/components/menu-user'
 import { useUser } from '@/context/useUserContext'
+import Chat from '@/components/chat/Chat'
 
 export default function RenderView({
   notebookInfo
