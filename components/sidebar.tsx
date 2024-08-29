@@ -73,7 +73,7 @@ export function Sidebar({ children, userId, defaultOpen }: SidebarProps) {
 
   const renderTree = () => (
     <Tree
-      className="p-2 overflow-hidden rounded-md bg-background"
+      className=" overflow-hidden rounded-md bg-background"
       elements={rootItems}
       onFolderExpand={loadItems}
     >
