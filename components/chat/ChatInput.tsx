@@ -10,6 +10,7 @@ interface ChatInputProps {
   form: UseFormReturn<{ message: string }, any, undefined>
   onSubmit: (values: { message: string }) => void
   onImportantEvents: () => void
+  onMindMap: () => void
   isPending: boolean
 }
 
@@ -17,6 +18,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   form,
   onSubmit,
   onImportantEvents,
+  onMindMap,
   isPending
 }) => {
   return (
@@ -27,7 +29,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
           className='relative h-full w-full flex flex-col gap-2'
         >
           <div className='absolute flex flex-col gap-2 w-full bottom-0 left-0'>
-            <AIFunctions importantEvents={onImportantEvents} isPending={isPending} />
+            <AIFunctions generateMindMap={onMindMap}  importantEvents={onImportantEvents} isPending={isPending} />
 
             <div className='flex space-x-2 relative'>
               <FormField

@@ -16,6 +16,7 @@ import ChatHeader from './ChatHeader'
 import ChatMessages from './ChatMessages'
 import ChatInput from './ChatInput'
 import ChatLoading from './ChatLoading'
+import { generateMindMap } from '@/lib/ai/ai-map-mental'
 
 const formSchema = z.object({
   message: z.string()
@@ -27,6 +28,7 @@ export default function Chat({ notebookId, className }: { notebookId: string, cl
   const [apiKeyGemini, setApiKeyGemini] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
   const [isImportantEventsPending, startImportantEventsTransition] = useTransition()
+    const [isMindMapPending, startMindMapTransition] = useTransition()
 
   const geminiKey = useApiKey('gemini_key')
   const { text, extractTextFromPDF } = usePDFText()
@@ -217,6 +219,40 @@ export default function Chat({ notebookId, className }: { notebookId: string, cl
     })
   }, [apiKeyGemini, history, text, updateChatInDatabase])
 
+  const handleGenerateMindMap = useCallback(() => {
+    startMindMapTransition(async () => {
+      const transcript = history.map((entry) => entry.text).join(' ')
+      try {
+        const { mindMap } = await generateMindMap({
+          prompt: 'Crea un mapa mental del contenido de la clase',
+          transcription: transcript,
+          textPdf: text,
+          apiKey: apiKeyGemini ?? ''
+        })
+
+        if (mindMap) {
+          const mindMapMessage: MindMapMessageType = {
+            mindMap: mindMap,
+            isUser: false,
+            timestamp: new Date().toISOString()
+          }
+          setMessages((prev) => {
+            const updatedMessages = [...prev, mindMapMessage]
+            updateChatInDatabase(updatedMessages)
+            return updatedMessages
+          })
+        }
+      } catch (error) {
+        console.error('Error al generar el mapa mental:', error)
+        toast({
+          title: 'Error',
+          description: 'No se pudo generar el mapa mental. Por favor, inténtalo de nuevo.',
+          variant: 'destructive'
+        })
+      }
+    })
+  }, [apiKeyGemini, history, text, updateChatInDatabase])
+
   if (isLoading) {
     return <ChatLoading className={className} />
   }
@@ -237,6 +273,7 @@ export default function Chat({ notebookId, className }: { notebookId: string, cl
             form={form}
             onSubmit={handleSubmit}
             onImportantEvents={handleImportantEvents}
+            onMindMap={handleGenerateMindMap}
             isPending={
                 isPending || isImportantEventsPending
             }

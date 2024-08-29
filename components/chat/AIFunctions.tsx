@@ -5,11 +5,13 @@ import { Network, Sparkles } from 'lucide-react'
 
 interface AIFunctionsProps {
   importantEvents: () => void
+  generateMindMap: () => void
   isPending: boolean
 }
 
 export default function AIFunctions({
   importantEvents,
+  generateMindMap,
   isPending
 }: AIFunctionsProps) {
   return (
@@ -41,7 +43,7 @@ export default function AIFunctions({
           variant={'outline'}
           className='backdrop-blur-sm bg-background/70 flex-shrink-0'
           disabled={isPending}
-          onClick={importantEvents} // Nota: Deberías crear una función separada para el mapa mental
+          onClick={generateMindMap}
         >
           {isPending ? (
             <div className='relative'>
@@ -54,10 +56,8 @@ export default function AIFunctions({
           )}
           <span className='ml-1'>Mapa mental</span>
         </Button>
-
-        {/* Puedes agregar más botones aquí */}
       </div>
-      <ScrollBar orientation="horizontal" className=' opacity-80 pt-1' />
+      <ScrollBar orientation="horizontal" className='opacity-80 pt-1' />
     </ScrollArea>
   )
 }
