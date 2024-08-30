@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { cn } from '@/lib/utils';
 import { MarkdownRenderer } from '@/components/ui/markdown-reader';
 import { Button } from '@/components/ui/button';
-import { Check, Copy, Download, ZoomIn, ZoomOut, Move } from 'lucide-react';
+import { Check, Copy, Download, ZoomIn, ZoomOut, Maximize } from 'lucide-react';
 import mermaid from 'mermaid';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { toPng } from 'html-to-image';
@@ -105,44 +105,73 @@ const MindMap: React.FC<{ mindMap: string }> = React.memo(({ mindMap }) => {
 
   const handleDownload = useCallback(() => {
     if (mindMapRef.current) {
-      toPng(mindMapRef.current, { quality: 1 })
-        .then((dataUrl) => {
-          const link = document.createElement('a');
-          link.download = 'mindmap.png';
-          link.href = dataUrl;
-          link.click();
+      const svgElement = mindMapRef.current.querySelector('svg');
+      if (svgElement) {
+        const svgWidth = svgElement.width.baseVal.value;
+        const svgHeight = svgElement.height.baseVal.value;
+        const aspectRatio = svgWidth / svgHeight;
+
+        let width, height;
+        if (aspectRatio > 1) {
+          // El mapa es más ancho que alto
+          width = 1080;
+          height = 1080 / aspectRatio;
+        } else {
+          // El mapa es más alto que ancho o cuadrado
+          height = 1080;
+          width = 1080 * aspectRatio;
+        }
+
+        toPng(mindMapRef.current, {
+          width: width,
+          height: height ,
+          style: {
+            transform: 'scale(1)',
+            transformOrigin: 'top left',
+            width: `${svgWidth}px`,
+            height: `${svgHeight}px`,
+          },
+          quality: 1,
+          pixelRatio: 2,
         })
-        .catch((err) => {
-          console.error('Error downloading mind map:', err);
-        });
+          .then((dataUrl) => {
+            const link = document.createElement('a');
+            link.download = 'mindmap.png';
+            link.href = dataUrl;
+            link.click();
+          })
+          .catch((err) => {
+            console.error('Error converting element to image:', err);
+          });
+      }
     }
   }, []);
 
   return (
     <div className="mind-map-container w-full rounded-md overflow-hidden border relative">
       <TransformWrapper
-        initialScale={1}
+        initialScale={2}
         initialPositionX={0}
         initialPositionY={0}
       >
         {({ zoomIn, zoomOut, resetTransform }) => (
           <>
             <div className="absolute top-2 right-2 z-10 flex gap-2">
-              <Button variant={'ghost'} className=' p-2' size="icon" onClick={() => zoomIn()}>
+              <Button variant={'outline'} className='p-2 size-fit border-none bg-muted/80 text-muted-foreground' size="icon" onClick={() => zoomIn()}>
                 <ZoomIn className="size-4" />
               </Button>
-              <Button size="icon" onClick={() => zoomOut()}>
+              <Button variant={'outline'} className='p-2 size-fit border-none bg-muted/80 text-muted-foreground' size="icon" onClick={() => zoomOut()}>
                 <ZoomOut className="size-4" />
               </Button>
-              <Button size="icon" onClick={() => resetTransform()}>
-                <Move className="size-4" />
+              <Button variant={'outline'} className='p-2 size-fit border-none bg-muted/80 text-muted-foreground' size="icon" onClick={() => resetTransform()}>
+                <Maximize className="size-4" />
               </Button>
-              <Button size="icon" onClick={handleDownload}>
+              <Button variant={'outline'} className='p-2 size-fit border-none bg-muted/80 text-muted-foreground' size="icon" onClick={handleDownload}>
                 <Download className="size-4" />
               </Button>
             </div>
             <TransformComponent wrapperClass="w-full h-full" contentClass="w-full h-full">
-              <div ref={mindMapRef} className="w-full h-full" dangerouslySetInnerHTML={{ __html: svg }} />
+              <div ref={mindMapRef} className="w-full h-[200px]" dangerouslySetInnerHTML={{ __html: svg }} />
             </TransformComponent>
           </>
         )}
@@ -161,7 +190,7 @@ const BubbleChat: React.FC<{ message: ChatMessageType }> = ({ message }) => {
     ), [message.isUser]);
 
   const bubbleClass = useMemo(() => 
-    `p-3 relative rounded-2xl ${
+    `p-3 relative w-full rounded-2xl ${
       message.isUser
         ? 'bg-primary rounded-br-[4px] text-primary-foreground ml-auto'
         : 'bg-muted rounded-bl-[4px]'

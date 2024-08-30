@@ -4,6 +4,19 @@ import { createGoogleGenerativeAI } from '@ai-sdk/google'
 import { generateObject } from 'ai'
 import { z } from 'zod'
 
+function removeParentheses(mindMapObject: { mindMap: string }): { mindMap: string } {
+    const lines = mindMapObject.mindMap.split('\n');
+    const modifiedLines = lines.map((line, index) => {
+        if (index === 1) {
+            // Mantener los paréntesis en el nodo root
+            return line;
+        }
+        // Eliminar todos los paréntesis en las demás líneas
+        return line.replace(/[()]/g, '');
+    });
+    return { mindMap: modifiedLines.join('\n') };
+}
+
 export async function generateMindMap({
   prompt = 'Crea un mapa mental',
   transcription,
@@ -35,18 +48,23 @@ export async function generateMindMap({
     - Añade nodos secundarios para subtemas principales.
     - Incluye nodos terciarios para detalles importantes.
     - Limita el mapa a un máximo de 3 niveles de profundidad para mantenerlo claro y conciso.
-    - Evita el uso de paréntesis en las fórmulas o el texto interno.
+    - Solo los root y ::icon puede contener parentesis, en lo demas se deberan de eliminar parentesis, llaves, y demas que perjudique la sintaxis.
+    - La eliminación de parentesis, llaves, debe de ser obligatoria en los nodos.
+    - No seas redundante, utiliza la información más relevante.
+    - No debe de ser demasiado extenso, mantén la información clave.
     - Utiliza iconos y etiquetas HTML cuando sea necesario.
     - Asegúrate de que el formato sea el siguiente:
-      mindmap
-        root((Tema Principal))
-          direction LR
-          Subtema 1
+
+        mindmap
+        root((mindmap))
+            Subtema 1
             Detalle 1
+            ::icon(fa fa-book)
             Detalle 2
-          Subtema 2
-            Detalle 1
-            Detalle 2
+                Detalle 2.1
+            Subtema 2
+                Detalle 1
+                Detalle 2
   `
 
   let userPrompt = prompt + '\n\n'
@@ -71,8 +89,8 @@ export async function generateMindMap({
       schema: schema
     })
 
-    console.log(object)
-    return { mindMap: object.mindMap }
+    const modifiedObject = removeParentheses(object)
+    return { mindMap: modifiedObject.mindMap }
   } catch (error) {
     console.error('Error al generar el mapa mental:', error)
     return { mindMap: 'mindmap\n  root((Información insuficiente))' }
