@@ -15,8 +15,8 @@ export default function AIFunctions({
   isPending
 }: AIFunctionsProps) {
   return (
-    <ScrollArea className="w-full whitespace-nowrap">
-      <div className="flex space-x-4">
+    <ScrollArea className="w-full whitespace-nowrap z-50">
+      <div className="flex space-x-4 ">
         <Button
           type='button'
           size={'sm'}

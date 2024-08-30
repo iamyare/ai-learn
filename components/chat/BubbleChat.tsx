@@ -148,15 +148,15 @@ const MindMap: React.FC<{ mindMap: string }> = React.memo(({ mindMap }) => {
   }, []);
 
   return (
-    <div className="mind-map-container w-full rounded-md overflow-hidden border relative">
+    <div className="mind-map-container w-full rounded-md overflow-hidden border relative max-w-fit">
       <TransformWrapper
-        initialScale={2}
+        initialScale={1.5}
         initialPositionX={0}
         initialPositionY={0}
       >
         {({ zoomIn, zoomOut, resetTransform }) => (
           <>
-            <div className="absolute top-2 right-2 z-10 flex gap-2">
+            <div className="absolute top-2 right-2 z-[1] flex gap-2">
               <Button variant={'outline'} className='p-2 size-fit border-none bg-muted/80 text-muted-foreground' size="icon" onClick={() => zoomIn()}>
                 <ZoomIn className="size-4" />
               </Button>
@@ -171,7 +171,7 @@ const MindMap: React.FC<{ mindMap: string }> = React.memo(({ mindMap }) => {
               </Button>
             </div>
             <TransformComponent wrapperClass="w-full h-full" contentClass="w-full h-full">
-              <div ref={mindMapRef} className="w-full h-[200px]" dangerouslySetInnerHTML={{ __html: svg }} />
+              <div ref={mindMapRef} className=" w-full h-[200px]" dangerouslySetInnerHTML={{ __html: svg }} />
             </TransformComponent>
           </>
         )}
