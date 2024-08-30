@@ -275,7 +275,7 @@ export default function Chat({ notebookId, className }: { notebookId: string, cl
             onImportantEvents={handleImportantEvents}
             onMindMap={handleGenerateMindMap}
             isPending={
-                isPending || isImportantEventsPending
+                isPending || isImportantEventsPending || isMindMapPending
             }
           />
         </>

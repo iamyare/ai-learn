@@ -111,22 +111,24 @@ const MindMap: React.FC<{ mindMap: string }> = React.memo(({ mindMap }) => {
         const svgHeight = svgElement.height.baseVal.value;
         const aspectRatio = svgWidth / svgHeight;
 
-        let width, height;
+        let width, height, scale;
         if (aspectRatio > 1) {
           // El mapa es más ancho que alto
           width = 1080;
-          height = 1080 / aspectRatio;
+          height = Math.round(1080 / aspectRatio);
+          scale = width / svgWidth;
         } else {
           // El mapa es más alto que ancho o cuadrado
           height = 1080;
-          width = 1080 * aspectRatio;
+          width = Math.round(1080 * aspectRatio);
+          scale = height / svgHeight;
         }
 
         toPng(mindMapRef.current, {
           width: width,
-          height: height ,
+          height: height,
           style: {
-            transform: 'scale(1)',
+            transform: `scale(${scale})`,
             transformOrigin: 'top left',
             width: `${svgWidth}px`,
             height: `${svgHeight}px`,
@@ -157,21 +159,21 @@ const MindMap: React.FC<{ mindMap: string }> = React.memo(({ mindMap }) => {
         {({ zoomIn, zoomOut, resetTransform }) => (
           <>
             <div className="absolute top-2 right-2 z-[1] flex gap-2">
-              <Button variant={'outline'} className='p-2 size-fit border-none bg-muted/80 text-muted-foreground' size="icon" onClick={() => zoomIn()}>
+              <Button variant="outline" className="p-2 size-fit border-none bg-muted/80 text-muted-foreground" size="icon" onClick={() => zoomIn()}>
                 <ZoomIn className="size-4" />
               </Button>
-              <Button variant={'outline'} className='p-2 size-fit border-none bg-muted/80 text-muted-foreground' size="icon" onClick={() => zoomOut()}>
+              <Button variant="outline" className="p-2 size-fit border-none bg-muted/80 text-muted-foreground" size="icon" onClick={() => zoomOut()}>
                 <ZoomOut className="size-4" />
               </Button>
-              <Button variant={'outline'} className='p-2 size-fit border-none bg-muted/80 text-muted-foreground' size="icon" onClick={() => resetTransform()}>
+              <Button variant="outline" className="p-2 size-fit border-none bg-muted/80 text-muted-foreground" size="icon" onClick={() => resetTransform()}>
                 <Maximize className="size-4" />
               </Button>
-              <Button variant={'outline'} className='p-2 size-fit border-none bg-muted/80 text-muted-foreground' size="icon" onClick={handleDownload}>
+              <Button variant="outline" className="p-2 size-fit border-none bg-muted/80 text-muted-foreground" size="icon" onClick={handleDownload}>
                 <Download className="size-4" />
               </Button>
             </div>
             <TransformComponent wrapperClass="w-full h-full" contentClass="w-full h-full">
-              <div ref={mindMapRef} className=" w-full h-[200px]" dangerouslySetInnerHTML={{ __html: svg }} />
+              <div ref={mindMapRef} className="w-full h-[200px]" dangerouslySetInnerHTML={{ __html: svg }} />
             </TransformComponent>
           </>
         )}

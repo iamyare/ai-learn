@@ -7,15 +7,16 @@ import { z } from 'zod'
 function removeParentheses(mindMapObject: { mindMap: string }): { mindMap: string } {
     const lines = mindMapObject.mindMap.split('\n');
     const modifiedLines = lines.map((line, index) => {
-        if (index === 1) {
-            // Mantener los paréntesis en el nodo root
+        if (index === 1 || line.includes('::icon')) {
+            // Mantener los paréntesis en el nodo root y en los iconos
             return line;
         }
         // Eliminar todos los paréntesis en las demás líneas
-        return line.replace(/[()]/g, '');
+        return line.replace(/[(){}]/g, '');
     });
     return { mindMap: modifiedLines.join('\n') };
 }
+
 
 export async function generateMindMap({
   prompt = 'Crea un mapa mental',
@@ -52,7 +53,10 @@ export async function generateMindMap({
     - La eliminación de parentesis, llaves, debe de ser obligatoria en los nodos.
     - No seas redundante, utiliza la información más relevante.
     - No debe de ser demasiado extenso, mantén la información clave.
-    - Utiliza iconos y etiquetas HTML cuando sea necesario.
+    - Solo incluye información relevante y significativa, máximo 5 detalles por nodo.
+    - El mapa mental debe ser claro y fácil de entender.
+    - Máximo 5 nodos en total.
+    - en palabras clasves utiliza iconos y el texto para mejorar la visualización y comprensión del mapa mental.
     - Asegúrate de que el formato sea el siguiente:
 
         mindmap
@@ -86,10 +90,12 @@ export async function generateMindMap({
       model: google('models/gemini-1.5-flash-latest'),
       system: systemPrompt,
       prompt: userPrompt,
-      schema: schema
+      schema: schema,
     })
 
+
     const modifiedObject = removeParentheses(object)
+    console.log('Mapa mental generado:', modifiedObject.mindMap)
     return { mindMap: modifiedObject.mindMap }
   } catch (error) {
     console.error('Error al generar el mapa mental:', error)
