@@ -7,10 +7,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Settings } from 'lucide-react'
 import { useState, useTransition } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -33,8 +31,7 @@ const formSchema = z.object({
   user_id: z.string().min(1, 'User id is required')
 })
 
-export default function ConfigModal() {
-  const [open, setOpen] = useState(false)
+export default function ConfigModal({ open, onOpenChange }: { open: boolean, onOpenChange: (open: boolean) => void }) {
   const [isPending, startTransition] = useTransition()
   const { apiKeys, updateApiKeys, user_id } = useApiKeys()
   const router = useRouter()
@@ -48,10 +45,8 @@ export default function ConfigModal() {
   })
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-
     startTransition(async () => {
       try {
-        // Primero, intentamos obtener las claves API existentes
         const { apiKeys, errorApiKeys } = await getApiKeys({ userId: user_id });
 
         if (errorApiKeys) {
@@ -60,7 +55,6 @@ export default function ConfigModal() {
         }
 
         if (apiKeys) {
-          // Si ya existen claves, actualizamos
           const { apiKeys: updatedKeys, errorApiKeys: updateError } = await updateApiKeysBD({
             apiKeysData: { gemini_key: values.gemini_key },
             userId: user_id
@@ -73,7 +67,6 @@ export default function ConfigModal() {
 
           updateApiKeys({ gemini_key: values.gemini_key })
         } else {
-          // Si no existen claves, insertamos nuevas
           const { apiKeys: newKeys, errorApiKeys: insertError } = await insertApiKeys({
             apiKeysData: { gemini_key: values.gemini_key , user_id: user_id }
           });
@@ -84,7 +77,7 @@ export default function ConfigModal() {
           }
         }
 
-        setOpen(false);
+        onOpenChange(false);
         router.refresh();
       } catch (error) {
         console.error('Error al procesar la solicitud:', error);
@@ -93,16 +86,7 @@ export default function ConfigModal() {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-      <Button
-          variant={'ghost'}
-          className=' w-full font-normal text-foreground justify-start rounded-none'
-        >
-          <Settings className='size-4 mr-2'  />
-          Configuración
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className='sm:max-w-[425px]'>
         <DialogHeader>
           <DialogTitle>Configuración</DialogTitle>
