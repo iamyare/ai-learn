@@ -29,7 +29,7 @@ interface MindMapMessageType extends BaseMessageType {
 
 // Definición de ChartData
 interface ChartData {
-  type: 'bar' | 'line' | 'pie' | 'scatter';
+  type: 'bar' | 'line' | 'pie' | 'scatter' | 'area';
   title: string;
   labels: string[];
   datasets: {

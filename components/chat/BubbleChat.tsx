@@ -7,6 +7,7 @@ import Chart from './messages/Chart'
 import Explanation from './messages/Explanation'
 import Translation from './messages/Translation'
 import Note from './messages/Note'
+import { Card } from '../ui/card'
 
 interface BubbleChatProps {
   message: ChatMessageType
@@ -23,7 +24,7 @@ const BubbleChat: React.FC<BubbleChatProps> = ({ message }) => {
       `p-3 relative w-full rounded-2xl ${
         message.isUser
           ? 'bg-primary rounded-br-[4px] text-primary-foreground ml-auto'
-          : 'bg-muted rounded-bl-[4px]'
+          : ' rounded-bl-[4px]'
       }`,
     [message.isUser]
   )
@@ -52,9 +53,9 @@ const BubbleChat: React.FC<BubbleChatProps> = ({ message }) => {
 
   return (
     <div className={messageClass}>
-      <div className={bubbleClass}>
+      <Card className={bubbleClass}>
         <div className='text-sm'>{renderMessageContent()}</div>
-      </div>
+      </Card>
       <span className='text-xs mx-2 mt-1 text-muted-foreground'>
         {new Date(message.timestamp).toLocaleTimeString()}
       </span>
