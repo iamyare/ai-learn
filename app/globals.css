@@ -72,6 +72,11 @@
 
 }
 
+.morph-shadow{
+  box-shadow:  9px 9px 28px rgba(27, 27, 27, 0.5),
+             -9px -9px 28px rgba(186, 186, 186, 0.5);
+}
+
 
 .textarea {
   line-height: 1lh;
