@@ -23,6 +23,7 @@ import { cn } from '@/lib/utils'
 import MenuUser from '@/components/menu-user'
 import { useUser } from '@/context/useUserContext'
 import Chat from '@/components/chat/Chat'
+import { HighlighterProvider } from '@/context/useHighlighterContext'
 
 export default function RenderView({
   notebookInfo
@@ -78,6 +79,7 @@ export default function RenderView({
     <PDFTextProvider>
       <PDFProvider>
         <SpeechRecognitionProvider>
+          <HighlighterProvider>
           <main className='flex relative flex-col w-screen h-screen overflow-hidden'>
             {headerContent}
             <ResizablePanelGroup
@@ -127,6 +129,7 @@ export default function RenderView({
             </ResizablePanelGroup>
             <footer className='w-screen h-5 border-t' />
           </main>
+          </HighlighterProvider>
         </SpeechRecognitionProvider>
       </PDFProvider>
     </PDFTextProvider>
