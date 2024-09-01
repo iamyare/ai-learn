@@ -2,17 +2,12 @@
 
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 
-interface Note {
-  id: string;
-  text: string;
-  timestamp: string;
-}
+export type HighlighterAction = 'note' | 'explain' | 'chart' | 'translate';
 
 interface HighlighterContextType {
   highlightedText: string;
   setHighlightedText: (text: string) => void;
-  addNote: (text: string) => void;
-  notes: Note[];
+  triggerAction: (handler: (action: HighlighterAction) => void) => void;
 }
 
 const HighlighterContext = createContext<HighlighterContextType | undefined>(undefined);
@@ -31,24 +26,24 @@ interface HighlighterProviderProps {
 
 export const HighlighterProvider: React.FC<HighlighterProviderProps> = ({ children }) => {
   const [highlightedText, setHighlightedText] = useState<string>('');
-  const [notes, setNotes] = useState<Note[]>([]);
+  const [actionHandler, setActionHandler] = useState<((action: HighlighterAction) => void) | null>(null);
 
-  const addNote = useCallback((text: string) => {
-    const newNote: Note = {
-      id: Date.now().toString(),
-      text,
-      timestamp: new Date().toISOString()
-    };
-    setNotes(prevNotes => [...prevNotes, newNote]);
+  const triggerAction = useCallback((handler: (action: HighlighterAction) => void) => {
+    setActionHandler(() => handler);
   }, []);
+
+  const handleAction = useCallback((action: HighlighterAction) => {
+    if (actionHandler) {
+      actionHandler(action);
+    }
+  }, [actionHandler]);
 
   return (
     <HighlighterContext.Provider 
       value={{ 
         highlightedText, 
         setHighlightedText, 
-        addNote,
-        notes
+        triggerAction
       }}
     >
       {children}

@@ -8,6 +8,7 @@ import { Button } from '../button'
 import { cn } from '@/lib/utils'
 import { ScrollArea, ScrollBar } from '../scroll-area'
 import { Languages, MessageCircleQuestionIcon, PieChartIcon, X, BookmarkIcon } from 'lucide-react'
+import { HighlighterAction, useHighlighter } from '@/context/useHighlighterContext'
 
 const classNameButton = 'bg-muted size-fit px-3 py-1 text-sm transition-[transform, colors] duration-300 hover:scale-105 shadow-md hover:text-primary'
 
@@ -19,25 +20,21 @@ type HighlightOptionsProps = RenderHighlightContentProps & {
 }
 
 const HighlightOptions: React.FC<HighlightOptionsProps> = (props) => {
-  const addNote = () => {
-    console.log('Añadiendo nota', props)
-    props.cancel()
-  }
+  const { setHighlightedText, triggerAction } = useHighlighter()
 
-  const chart = () => {
-    console.log('Chart IA', props)
-    props.cancel()
-  }
-
-  const explain = () => {
-    console.log('Explicar IA', props)
-    props.cancel()
-  }
-
-  const translate = () => {
-    console.log('Traducir IA', props)
-    props.cancel()
-  }
+  const handleAction = (action: HighlighterAction) => {
+    console.log(`Performing action init: ${action} on text: ${props.selectedText}`);
+    setHighlightedText(props.selectedText);
+    triggerAction((triggeredAction: HighlighterAction) => {
+      console.log(`Performing action second: ${action} on text: ${props.selectedText}`);
+      if (triggeredAction === action) {
+        console.log(`Performing action three: ${action} on text: ${props.selectedText}`);
+        // Here you can add any additional logic you want to perform when the action is triggered
+        // After the action is fully processed, then cancel
+        props.cancel();
+      }
+    });
+  };
 
   return (
     <div
@@ -53,7 +50,7 @@ const HighlightOptions: React.FC<HighlightOptionsProps> = (props) => {
             variant={'ghost'}
             size={'sm'}
             className={classNameButton}
-            onClick={addNote}
+            onClick={() => handleAction('note')}
           >
             <BookmarkIcon className='size-3.5 mr-1' />
             Nota
@@ -62,7 +59,7 @@ const HighlightOptions: React.FC<HighlightOptionsProps> = (props) => {
             variant={'ghost'}
             size={'sm'}
             className={classNameButton}
-            onClick={explain}
+            onClick={() => handleAction('explain')}
           >
             <MessageCircleQuestionIcon className='size-3.5 mr-1' />
             Explicar
@@ -71,7 +68,7 @@ const HighlightOptions: React.FC<HighlightOptionsProps> = (props) => {
             variant={'ghost'}
             size={'sm'}
             className={classNameButton}
-            onClick={chart}
+            onClick={() => handleAction('chart')}
           >
             <PieChartIcon className='size-3.5 mr-1' />
             Chart
@@ -80,7 +77,7 @@ const HighlightOptions: React.FC<HighlightOptionsProps> = (props) => {
             variant={'ghost'}
             size={'sm'}
             className={classNameButton}
-            onClick={translate}
+            onClick={() => handleAction('translate')}
           >
             <Languages className='size-3.5 mr-1' />
             Traducir

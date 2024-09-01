@@ -9,7 +9,7 @@ import { getChat, createChatNotebook, updateChatNotebook } from '@/actions'
 import { usePDFText } from '@/context/usePDFTextExtractionContext'
 import { usePDFContext } from '@/context/useCurrentPageContext'
 import { useSpeechRecognitionContext } from '@/context/useSpeechRecognitionContext'
-import { useHighlighter } from '@/context/useHighlighterContext'
+import { HighlighterProvider, useHighlighter } from '@/context/useHighlighterContext'
 import { aiStream } from '@/lib/ai'
 import { generateImportantEvents } from '@/lib/ai/ai-events'
 import { generateMindMap } from '@/lib/ai/ai-map-mental'
@@ -36,7 +36,7 @@ export default function Chat({ notebookId, className }: { notebookId: string, cl
   const { text, extractTextFromPDF } = usePDFText()
   const { fileUrl } = usePDFContext()
   const { history } = useSpeechRecognitionContext()
-  const { highlightedText, setHighlightedText, addNote } = useHighlighter()
+  const { highlightedText, triggerAction } = useHighlighter()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -257,65 +257,78 @@ export default function Chat({ notebookId, className }: { notebookId: string, cl
   }, [apiKeyGemini, history, text, updateChatInDatabase])
 
 
-  const handleExplainText = useCallback(async () => {
-    if (!apiKeyGemini) {
-      toast({ title: 'Error', description: 'API key not found', variant: 'destructive' })
-      return
-    }
-
-    startTransition(async () => {
-      const explanation = await explainText({
-        highlightedText,
-        apiKey: apiKeyGemini
-      })
-
-      if (explanation) {
-        const explainMessage: ExplanationMessageType = {
-          explanation: explanation.explication,
-          isUser: false,
-          timestamp: new Date().toISOString()
-        }
-        setMessages((prev) => {
-          const updatedMessages = [...prev, explainMessage]
-          updateChatInDatabase(updatedMessages)
-          return updatedMessages
-        })
-      } else {
-        toast({ title: 'Error', description: 'Failed to generate explanation', variant: 'destructive' })
+  useEffect(() => {
+    const handleHighlighterAction = async (action: 'note' | 'explain' | 'chart' | 'translate', text: string) => {
+      if (!apiKeyGemini) {
+        toast({ title: 'Error', description: 'API key not found', variant: 'destructive' })
+        return
       }
-    })
-  }, [apiKeyGemini, highlightedText, updateChatInDatabase])
 
-  const handleTranslateText = useCallback(async () => {
-    if (!apiKeyGemini) {
-      toast({ title: 'Error', description: 'API key not found', variant: 'destructive' })
-      return
-    }
+      startTransition(async () => {
+        try {
+          let result;
+          switch (action) {
+            case 'note':
+              result = { noteText: text };
+              break;
+            case 'explain':
+              result = await explainText({ highlightedText: text, apiKey: apiKeyGemini });
+              break;
+            case 'chart':
+              result = await generateChartFromHighlight({ highlightedText: text, apiKey: apiKeyGemini });
+              break;
+            case 'translate':
+              result = await translateText({ highlightedText: text, apiKey: apiKeyGemini });
+              break;
+          }
 
-    startTransition(async () => {
-      const translation = await translateText({
-        highlightedText,
-        apiKey: apiKeyGemini
-      })
+          if (result) {
+            let newMessage;
+            if ('noteText' in result) {
+              newMessage = { noteText: result.noteText, isUser: false, timestamp: new Date().toISOString() };
+            } else if ('chartData' in result) {
+              newMessage = { chartData: result.chartData, isUser: false, timestamp: new Date().toISOString() };
+            } else if ('explanation' in result) {
+              newMessage = { explanation: result.explanation, isUser: false, timestamp: new Date().toISOString() };
+            } else if ('translation' in result) {
+              newMessage = { translation: result.translation, isUser: false, timestamp: new Date().toISOString() };
+            }
 
-      if (translation) {
-        const translateMessage: TranslationMessageType = {
-          translation: translation.translation,
-          isUser: false,
-          timestamp: new Date().toISOString()
+            if (newMessage) {
+              setMessages((prev) => {
+                const updatedMessages = [...prev, newMessage];
+                updateChatInDatabase(updatedMessages);
+                return updatedMessages;
+              });
+            }
+          }
+        } catch (error) {
+          console.error(`Error al procesar la acción ${action}:`, error);
+          toast({
+            title: 'Error',
+            description: `No se pudo procesar la acción ${action}. Por favor, inténtalo de nuevo.`,
+            variant: 'destructive'
+          });
         }
-        setMessages((prev) => {
-          const updatedMessages = [...prev, translateMessage]
-          updateChatInDatabase(updatedMessages)
-          return updatedMessages
-        })
-      } else {
-        toast({ title: 'Error', description: 'Failed to generate translation', variant: 'destructive' })
+      });
+    };
+
+    // Set up a listener for highlighter actions
+    const handleAction = (action: 'note' | 'explain' | 'chart' | 'translate') => {
+      if (highlightedText) {
+        handleHighlighterAction(action, highlightedText);
       }
-    })
-  }, [apiKeyGemini, highlightedText, updateChatInDatabase])
+    };
 
+    // Register the handler with the triggerAction function
+    triggerAction(handleAction);
 
+    // Cleanup function to remove the handler
+    return () => {
+      // If triggerAction has a way to remove listeners, call it here
+      // triggerAction(null);
+    };
+  }, [apiKeyGemini, highlightedText, triggerAction, updateChatInDatabase]);
   if (isLoading) {
     return <ChatLoading className={className} />
   }
