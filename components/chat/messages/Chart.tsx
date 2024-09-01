@@ -30,75 +30,79 @@ const Chart: React.FC<ChartProps> = ({ chartData }) => {
 
   const adaptDataToChartType = useMemo(() => (type: 'bar' | 'line' | 'pie' | 'scatter') => {
     let newData: ChartData = JSON.parse(JSON.stringify(chartData));
-
-    if (type === 'pie' && chartData.type !== 'pie') {
-      newData.datasets = [{
-        label: 'Values',
-        data: chartData.datasets[0].data
-      }]
-    } else if (type === 'scatter' && chartData.type !== 'scatter') {
-      newData.datasets = [{
-        label: 'Points',
-        data: chartData.datasets[0].data.map(value => value)
-      }]
-    } else if ((type === 'bar' || type === 'line') && (chartData.type === 'pie' || chartData.type === 'scatter')) {
-      newData.labels = chartData.labels
-      newData.datasets = [{
-        label: 'Values',
-        data: chartData.datasets[0].data
-      }]
-    }
-
-    newData.type = type
-    return newData
+    newData.type = type;
+    return newData;
   }, [chartData])
 
   useEffect(() => {
     setAdaptedData(adaptDataToChartType(chartType))
   }, [chartType, adaptDataToChartType])
 
+  const processedData = useMemo(() => {
+    return adaptedData.labels.map((label, index) => {
+      const dataPoint: { [key: string]: string | number } = { name: label };
+      adaptedData.datasets.forEach(dataset => {
+        dataPoint[dataset.label] = dataset.data[index];
+      });
+      return dataPoint;
+    });
+  }, [adaptedData]);
+
   const renderChart = () => {
-    const data = adaptedData.datasets[0].data.map((value, index) => ({
-      name: adaptedData.labels[index],
-      value
-    }))
+    const commonProps = {
+      data: processedData,
+      margin: { top: 5, right: 30, left: 20, bottom: 5 },
+    };
+
+    const renderYAxis = (dataKey: string) => (
+      <YAxis 
+        key={dataKey}
+        yAxisId={dataKey}
+        label={{ value: dataKey, angle: -90, position: 'insideLeft' }}
+        orientation={dataKey === adaptedData.datasets[0].label ? 'left' : 'right'}
+      />
+    );
 
     switch (chartType) {
       case 'bar':
         return (
-          <BarChart data={data}>
+          <BarChart {...commonProps}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
-            <YAxis />
+            {adaptedData.datasets.map(dataset => renderYAxis(dataset.label))}
             <Tooltip />
             <Legend />
-            <Bar dataKey="value" fill="#8884d8" />
+            {adaptedData.datasets.map((dataset, index) => (
+              <Bar key={dataset.label} dataKey={dataset.label} fill={COLORS[index % COLORS.length]} yAxisId={dataset.label} />
+            ))}
           </BarChart>
         )
       case 'line':
         return (
-          <LineChart data={data}>
+          <LineChart {...commonProps}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
-            <YAxis />
+            {adaptedData.datasets.map(dataset => renderYAxis(dataset.label))}
             <Tooltip />
             <Legend />
-            <Line type="monotone" dataKey="value" stroke="#8884d8" />
+            {adaptedData.datasets.map((dataset, index) => (
+              <Line key={dataset.label} type="monotone" dataKey={dataset.label} stroke={COLORS[index % COLORS.length]} yAxisId={dataset.label} />
+            ))}
           </LineChart>
         )
       case 'pie':
         return (
           <PieChart>
             <Pie
-              data={data}
-              dataKey="value"
+              data={processedData}
+              dataKey={adaptedData.datasets[0].label}
               nameKey="name"
               cx="50%"
               cy="50%"
               outerRadius={80}
               label
             >
-              {data.map((entry, index) => (
+              {processedData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
@@ -108,17 +112,17 @@ const Chart: React.FC<ChartProps> = ({ chartData }) => {
         )
       case 'scatter':
         return (
-          <ScatterChart>
+          <ScatterChart {...commonProps}>
             <CartesianGrid />
-            <XAxis type="number" dataKey="name" name="x" />
-            <YAxis type="number" dataKey="value" name="y" />
+            <XAxis type="number" dataKey={adaptedData.datasets[0].label} name={adaptedData.datasets[0].label} />
+            <YAxis type="number" dataKey={adaptedData.datasets[1].label} name={adaptedData.datasets[1].label} />
             <Tooltip cursor={{ strokeDasharray: '3 3' }} />
-            <Scatter name="Values" data={data} fill="#8884d8" />
+            <Legend />
+            <Scatter name="Datos" data={processedData} fill="#8884d8" />
           </ScatterChart>
         )
     }
   }
-
   return (
     <div className="flex flex-col gap-2 w-full h-[350px] overflow-scroll">
       <h3 className="text-lg font-semibold mb-2">{adaptedData.title}</h3>
