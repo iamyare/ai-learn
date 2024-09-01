@@ -9,8 +9,10 @@ import { cn } from '@/lib/utils'
 import { ScrollArea, ScrollBar } from '../scroll-area'
 import { Languages, MessageCircleQuestionIcon, PieChartIcon, X, BookmarkIcon } from 'lucide-react'
 
+const classNameButton = 'bg-muted size-fit px-3 py-1 text-sm transition-[transform, colors] duration-300 hover:scale-105 shadow-md hover:text-primary'
+
 const className =
-  'absolute flex z-10 translate-y-1 morph-shadow shado border bg-background/70 backdrop-blur-sm rounded-md px-2 py-1 overflow-hidden max-w-[300px]'
+        'absolute flex z-10 translate-y-1 px-2 py-3  overflow-hidden max-w-[300px]'
 
 type HighlightOptionsProps = RenderHighlightContentProps & {
   toggle?: () => void;
@@ -45,12 +47,12 @@ const HighlightOptions: React.FC<HighlightOptionsProps> = (props) => {
       }}
       className={cn(className, 'flex-col items-center')}
     >
-      <ScrollArea className='w-full whitespace-nowrap'>
+      <ScrollArea className='w-full m-1 h-full whitespace-nowrap'>
         <div className='flex space-x-2 py-1'>
           <Button
             variant={'ghost'}
             size={'sm'}
-            className='bg-muted size-fit px-3 py-1 text-sm'
+            className={classNameButton}
             onClick={addNote}
           >
             <BookmarkIcon className='size-3.5 mr-1' />
@@ -59,16 +61,7 @@ const HighlightOptions: React.FC<HighlightOptionsProps> = (props) => {
           <Button
             variant={'ghost'}
             size={'sm'}
-            className='bg-muted size-fit px-3 py-1 text-sm'
-            onClick={chart}
-          >
-            <PieChartIcon className='size-3.5 mr-1' />
-            Chart
-          </Button>
-          <Button
-            variant={'ghost'}
-            size={'sm'}
-            className='bg-muted size-fit px-3 py-1 text-sm'
+            className={classNameButton}
             onClick={explain}
           >
             <MessageCircleQuestionIcon className='size-3.5 mr-1' />
@@ -77,23 +70,24 @@ const HighlightOptions: React.FC<HighlightOptionsProps> = (props) => {
           <Button
             variant={'ghost'}
             size={'sm'}
-            className='bg-muted size-fit px-3 py-1 text-sm'
+            className={classNameButton}
+            onClick={chart}
+          >
+            <PieChartIcon className='size-3.5 mr-1' />
+            Chart
+          </Button>
+          <Button
+            variant={'ghost'}
+            size={'sm'}
+            className={classNameButton}
             onClick={translate}
           >
             <Languages className='size-3.5 mr-1' />
             Traducir
           </Button>
         </div>
-        <ScrollBar orientation='horizontal' className='opacity-80 pt-1' />
+        <ScrollBar orientation='horizontal' className='opacity-80 translate-y-0.5 pt-1' />
       </ScrollArea>
-      <Button
-        variant={'ghost'}
-        size={'sm'}
-        className='size-fit p-2 text-sm absolute top-0 right-0'
-        onClick={props.cancel}
-      >
-        <X className='size-3.5' />
-      </Button>
     </div>
   )
 }
