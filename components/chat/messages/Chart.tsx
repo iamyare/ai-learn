@@ -21,6 +21,7 @@ interface ChartProps {
 }
 
 const Chart: React.FC<ChartProps> = ({ chartData }) => {
+  console.log('Received chartData:', chartData)
   const { type, title, labels, datasets, xAxisLabel, yAxisLabel } = chartData
 
   const ChartComponent = {
@@ -38,7 +39,8 @@ const Chart: React.FC<ChartProps> = ({ chartData }) => {
   }[type]
 
   return (
-    <div className='w-full h-64 mt-4'>
+    
+    <div className='w-full h-full '>
       <h3 className='text-lg font-semibold mb-2'>{title}</h3>
       <ResponsiveContainer width='100%' height='100%'>
         <ChartComponent
