@@ -9,7 +9,7 @@ import { getChat, createChatNotebook, updateChatNotebook } from '@/actions'
 import { usePDFText } from '@/context/usePDFTextExtractionContext'
 import { usePDFContext } from '@/context/useCurrentPageContext'
 import { useSpeechRecognitionContext } from '@/context/useSpeechRecognitionContext'
-import { HighlighterProvider, useHighlighter } from '@/context/useHighlighterContext'
+import { HighlighterAction, HighlighterProvider, useHighlighter } from '@/context/useHighlighterContext'
 import { aiStream } from '@/lib/ai'
 import { generateImportantEvents } from '@/lib/ai/ai-events'
 import { generateMindMap } from '@/lib/ai/ai-map-mental'
@@ -36,7 +36,7 @@ export default function Chat({ notebookId, className }: { notebookId: string, cl
   const { text, extractTextFromPDF } = usePDFText()
   const { fileUrl } = usePDFContext()
   const { history } = useSpeechRecognitionContext()
-  const { highlightedText, triggerAction } = useHighlighter()
+  const { setActionHandler } = useHighlighter()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -258,7 +258,7 @@ export default function Chat({ notebookId, className }: { notebookId: string, cl
 
 
   useEffect(() => {
-    const handleHighlighterAction = async (action: 'note' | 'explain' | 'chart' | 'translate', text: string) => {
+    const handleHighlighterAction = async (action: HighlighterAction, text: string) => {
       if (!apiKeyGemini) {
         toast({ title: 'Error', description: 'API key not found', variant: 'destructive' })
         return
@@ -284,6 +284,7 @@ export default function Chat({ notebookId, className }: { notebookId: string, cl
 
           if (result) {
             let newMessage;
+            console.log('Result:', result);
             if ('noteText' in result) {
               newMessage = { noteText: result.noteText, isUser: false, timestamp: new Date().toISOString() };
             } else if ('chartData' in result) {
@@ -313,22 +314,14 @@ export default function Chat({ notebookId, className }: { notebookId: string, cl
       });
     };
 
-    // Set up a listener for highlighter actions
-    const handleAction = (action: 'note' | 'explain' | 'chart' | 'translate') => {
-      if (highlightedText) {
-        handleHighlighterAction(action, highlightedText);
-      }
-    };
+    setActionHandler(handleHighlighterAction);
 
-    // Register the handler with the triggerAction function
-    triggerAction(handleAction);
-
-    // Cleanup function to remove the handler
     return () => {
-      // If triggerAction has a way to remove listeners, call it here
-      // triggerAction(null);
+      setActionHandler(() => {}); // Clean up by setting a no-op function
     };
-  }, [apiKeyGemini, highlightedText, triggerAction, updateChatInDatabase]);
+  }, [apiKeyGemini, setActionHandler, updateChatInDatabase]);
+
+
   if (isLoading) {
     return <ChatLoading className={className} />
   }

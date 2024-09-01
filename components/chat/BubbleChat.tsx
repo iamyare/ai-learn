@@ -259,6 +259,7 @@ const BubbleChat: React.FC<{ message: ChatMessageType }> = ({ message }) => {
     }`, [message.isUser]);
 
   const renderMessageContent = useCallback(() => {
+    console.log(message);
     if ('content' in message) {
       return message.isUser ? (
         <p>{message.content}</p>

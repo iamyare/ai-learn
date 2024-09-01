@@ -19,22 +19,15 @@ type HighlightOptionsProps = RenderHighlightContentProps & {
   toggle?: () => void;
 }
 
-const HighlightOptions: React.FC<HighlightOptionsProps> = (props) => {
-  const { setHighlightedText, triggerAction } = useHighlighter()
 
-  const handleAction = (action: HighlighterAction) => {
-    console.log(`Performing action init: ${action} on text: ${props.selectedText}`);
-    setHighlightedText(props.selectedText);
-    triggerAction((triggeredAction: HighlighterAction) => {
-      console.log(`Performing action second: ${action} on text: ${props.selectedText}`);
-      if (triggeredAction === action) {
-        console.log(`Performing action three: ${action} on text: ${props.selectedText}`);
-        // Here you can add any additional logic you want to perform when the action is triggered
-        // After the action is fully processed, then cancel
-        props.cancel();
-      }
-    });
-  };
+  const HighlightOptions: React.FC<HighlightOptionsProps> = (props) => {
+    const { triggerAction } = useHighlighter();
+  
+    const handleAction = (action: HighlighterAction) => {
+      console.log(`Performing action: ${action} on text: ${props.selectedText}`);
+      triggerAction(action, props.selectedText);
+      props.cancel();
+    };
 
   return (
     <div

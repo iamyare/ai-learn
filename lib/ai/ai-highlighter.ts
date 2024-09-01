@@ -102,7 +102,7 @@ export async function explainText({
       schema: schema
     })
     console.log('Explicación generada:', object.explanation)
-    return {explication: {context: highlightedText, explanation: object.explanation}}
+    return {explanation: {context: highlightedText, explanation: object.explanation}}
   } catch (error) {
     console.error('Error al generar la explicación:', error)
     return null
