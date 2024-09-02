@@ -1,6 +1,8 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react'
-import { cn } from '@/lib/utils'
+import { cn, formatRelativeDate } from '@/lib/utils'
 import BubbleChat from './BubbleChat'
+import { Separator } from '../ui/separator'
+
 
 interface ChatMessagesProps {
   messages: ChatMessageType[]
@@ -29,16 +31,42 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, className }) => {
     }
   }
 
+
+
+
+
+  const groupMessagesByDate = (messages: ChatMessageType[]) => {
+      return messages.reduce((groups, message) => {
+        const date = new Date(message.timestamp).toDateString()
+        if (!groups[date]) {
+          groups[date] = []
+        }
+        groups[date].push(message)
+        return groups
+      }, {} as Record<string, ChatMessageType[]>)
+    }
+  
+    const groupedMessages = groupMessagesByDate(messages)
+
   return (
     <div
       className={cn('flex-grow overflow-y-auto pb-16 px-4', className)}
       ref={chatContainerRef}
       onScroll={handleScroll}
     >
-      <div className='space-y-4'>
-        {messages.length > 0 ? (
-          messages.map((message, index) => (
-            <BubbleChat key={index} message={message} />
+
+        {Object.keys(groupedMessages).length > 0 ? (
+          Object.keys(groupedMessages).map((date) => (
+            <div key={date}>
+              <p className=' text-sm font-medium mx-auto bg-muted rounded-lg size-fit px-6 py-1 shadow-sm my-4'>
+                {formatRelativeDate(date)}
+              </p>
+              <div className='flex flex-col gap-4'>
+              {groupedMessages[date].map((message) => (
+                <BubbleChat key={message.timestamp} message={message} />
+              ))}
+              </div>
+            </div>
           ))
         ) : (
           <p className='text-center text-muted-foreground'>
@@ -46,7 +74,6 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, className }) => {
           </p>
         )}
         <div ref={messagesEndRef} />
-      </div>
     </div>
   )
 }

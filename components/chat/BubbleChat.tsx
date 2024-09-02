@@ -13,8 +13,6 @@ interface BubbleChatProps {
   message: ChatMessageType
 }
 
-
-
 const BubbleChat: React.FC<BubbleChatProps> = ({ message }) => {
   const messageClass = useMemo(
     () => cn('flex flex-col', message.isUser ? 'items-end' : 'items-start'),

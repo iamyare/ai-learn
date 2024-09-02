@@ -1,5 +1,6 @@
 import React from 'react'
 import { format } from '@formkit/tempo'
+import { Calendar } from 'lucide-react'
 
 interface EventListProps {
   events: ImportantEventType[]
@@ -12,13 +13,13 @@ const EventList: React.FC<EventListProps> = ({ events }) => (
       {events.map((event, index) => (
         <li
           key={index}
-          className='bg-muted p-2 rounded-md transform-gpu transition-[box-shadow,transform] duration-300 hover:scale-105 hover:shadow-md'
+          className='bg-muted p-2 rounded-md transition-colors duration-300 cursor-pointer hover:bg-muted-foreground/15'
         >
           <h4 className='font-medium'>{event.title}</h4>
           <p className='text-xs text-muted-foreground'>{event.description}</p>
           <div className='flex justify-between mt-1 text-xs text-muted-foreground'>
-            <span>
-              Fecha:{' '}
+            <p className='flex items-center'>
+              <Calendar className='size-3 mr-1' />
               {(() => {
                 try {
                   console.log(event.date)
@@ -28,7 +29,7 @@ const EventList: React.FC<EventListProps> = ({ events }) => (
                   return event.date.toString()
                 }
               })()}
-            </span>
+            </p>
 
             <span>Prioridad: {event.priority}</span>
           </div>
