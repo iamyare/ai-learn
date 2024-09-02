@@ -5,7 +5,7 @@
 - [ ] Solucionar modal menu de user
 - [ ] Agregar opciones al modal configuracion
 - [ ] Opciones de visualizacion y copiar transcripcion.
-- [ ] Cambiar input por text area
+- [x] Cambiar input por text area
 - [ ] Solucionar reenderizado de markdown del chat
 - [ ] boton para descargar chat
 - [ ] Carga cuando se envia un mensaje

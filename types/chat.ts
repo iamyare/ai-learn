@@ -58,13 +58,19 @@ interface ExplanationMessageType extends BaseMessageType {
   };
 }
 
-// Tipo para mensajes de traducción
-interface TranslationMessageType extends BaseMessageType {
+
+
+interface TranslationProps {
   translation: {
     original: string;
     translated: string;
+    sourceLanguage: string;
+    targetLanguage: string;
   };
 }
+// Tipo para mensajes de traducción
+
+interface TranslationMessageType extends BaseMessageType, TranslationProps {}
 
 // Tipo unión para usar en componentes que manejan todos los tipos de mensajes
 type ChatMessageType = MessageType | EventMessageType | MindMapMessageType | ChartMessageType | NoteMessageType | ExplanationMessageType | TranslationMessageType;

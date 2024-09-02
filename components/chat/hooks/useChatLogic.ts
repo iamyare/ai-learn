@@ -253,12 +253,12 @@ export function useChatLogic(notebookId: string) {
   }, [apiKeyGemini, history, text, updateChatInDatabase])
 
   useEffect(() => {
-    const handleHighlighterAction = async (action: HighlighterAction, text: string) => {
+    const handleHighlighterAction = async (action: HighlighterAction, text: string, options?: { chartType?: string, targetLanguage?: string }) => {
       if (!apiKeyGemini) {
         toast({ title: 'Error', description: 'API key not found', variant: 'destructive' })
         return
       }
-
+    
       startTransition(async () => {
         try {
           let result;
@@ -270,13 +270,22 @@ export function useChatLogic(notebookId: string) {
               result = await explainText({ highlightedText: text, apiKey: apiKeyGemini });
               break;
             case 'chart':
-              result = await generateChartFromHighlight({ highlightedText: text, apiKey: apiKeyGemini });
+              result = await generateChartFromHighlight({ 
+                highlightedText: text, 
+                apiKey: apiKeyGemini,
+                chartType: options?.chartType as 'bar' | 'line' | 'pie' | 'scatter' | 'area' | undefined
+              });
               break;
             case 'translate':
-              result = await translateText({ highlightedText: text, apiKey: apiKeyGemini });
+              console.log('Translating text:', options?.targetLanguage);
+              result = await translateText({ 
+                highlightedText: text, 
+                apiKey: apiKeyGemini,
+                targetLanguage: options?.targetLanguage
+              });
               break;
           }
-
+    
           if (result) {
             let newMessage;
             if ('noteText' in result) {
@@ -288,7 +297,7 @@ export function useChatLogic(notebookId: string) {
             } else if ('translation' in result) {
               newMessage = { translation: result.translation, isUser: false, timestamp: new Date().toISOString() };
             }
-
+    
             if (newMessage) {
               setMessages((prev) => {
                 const updatedMessages = [...prev, newMessage];
