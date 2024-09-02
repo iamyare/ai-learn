@@ -22,7 +22,6 @@ const EventList: React.FC<EventListProps> = ({ events }) => (
               <Calendar className='size-3 mr-1' />
               {(() => {
                 try {
-                  console.log(event.date)
                   const date = new Date(event.date)
                   return format(date, 'DD/MM/YY HH:mm A')
                 } catch (error) {

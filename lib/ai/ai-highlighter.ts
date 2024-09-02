@@ -6,10 +6,12 @@ import { z } from 'zod'
 
 export async function generateChartFromHighlight({
   highlightedText,
-  apiKey
+  apiKey,
+  chartType
 }: {
   highlightedText: string
   apiKey: string
+  chartType?: 'bar' | 'line' | 'pie' | 'scatter' | 'area'
 }) {
   'use server'
 
@@ -27,17 +29,17 @@ export async function generateChartFromHighlight({
     - Genera datos numéricos basados en la información proporcionada.
     - Si no hay datos numéricos explícitos, haz una interpretación razonable basada en el contexto.
     - Proporciona un título descriptivo para el gráfico.
-    - Sugiere el tipo de gráfico más adecuado para representar la información (por ejemplo, barras, líneas, circular, etc.).
+    - Si se especifica un tipo de gráfico, úsalo. Si no, sugiere el tipo de gráfico más adecuado.
     - Genera etiquetas apropiadas para los ejes X e Y (si aplica).
     - Limita los datos a un máximo de 5-7 puntos para mantener el gráfico claro y conciso.
   `
 
-  const userPrompt = `Texto resaltado: ${highlightedText}`
+  const userPrompt = `Texto resaltado: ${highlightedText}${chartType ? ` Tipo de gráfico solicitado: ${chartType}` : ''}`
 
   const schema = z.object({
     chartData: z.object({
       title: z.string().describe('Título descriptivo del gráfico'),
-      type: z.enum(['bar', 'line', 'pie', 'scatter']).describe('Tipo de gráfico sugerido'),
+      type: z.enum(['bar', 'line', 'pie', 'scatter', 'area']).describe('Tipo de gráfico'),
       labels: z.array(z.string()).describe('Etiquetas para los datos (eje X en gráficos de barras o líneas)'),
       datasets: z.array(z.object({
         label: z.string().describe('Etiqueta para el conjunto de datos'),
@@ -62,6 +64,7 @@ export async function generateChartFromHighlight({
     return { chartData: null }
   }
 }
+
 
 export async function explainText({
   highlightedText,
@@ -109,10 +112,12 @@ export async function explainText({
 
 export async function translateText({
   highlightedText,
-  apiKey
+  apiKey,
+  targetLanguage = 'español'
 }: {
   highlightedText: string
   apiKey: string
+  targetLanguage?: string
 }) {
   'use server'
 
@@ -121,18 +126,20 @@ export async function translateText({
   })
 
   const systemPrompt = `
-    Eres un traductor experto. Tu tarea es traducir el texto proporcionado al español.
+    Eres un traductor experto. Tu tarea es detectar automáticamente el idioma del texto proporcionado y traducirlo al idioma de destino especificado.
     
     Reglas para la traducción:
+    - Detecta automáticamente el idioma del texto proporcionado.
     - Mantén el significado y el tono del texto original.
     - Adapta las expresiones idiomáticas si es necesario.
     - Mantén los términos técnicos en su forma original si no tienen una traducción establecida.
   `
 
-  const userPrompt = `Traduce el siguiente texto al español: ${highlightedText}`
+  const userPrompt = `Detecta el idioma del siguiente texto y luego tradúcelo al ${targetLanguage}: ${highlightedText}`
 
   const schema = z.object({
-    translation: z.string().describe('Traducción al español del texto resaltado')
+    translation: z.string().describe(`Traducción al ${targetLanguage} del texto resaltado`),
+    detectedLanguage: z.string().describe('Idioma detectado del texto original. Ejemplo: "inglés", "español", "francés"')
   })
 
   try {
@@ -143,7 +150,14 @@ export async function translateText({
       schema: schema
     })
 
-    return {translation: {original: highlightedText, translated: object.translation}}
+    return {
+      translation: {
+        original: highlightedText,
+        translated: object.translation,
+        sourceLanguage: object.detectedLanguage,
+        targetLanguage
+      }
+    }
   } catch (error) {
     console.error('Error al generar la traducción:', error)
     return null

@@ -48,7 +48,7 @@ const BubbleChat: React.FC<BubbleChatProps> = ({ message }) => {
       return <Explanation explanation={message.explanation} />
     } else if ('translation' in message) {
       return <Translation translation={message.translation} />
-    }
+    } 
   }
 
   return (
@@ -56,6 +56,9 @@ const BubbleChat: React.FC<BubbleChatProps> = ({ message }) => {
       <Card className={bubbleClass}>
         <div className='text-sm'>{renderMessageContent()}</div>
       </Card>
+
+
+
       <span className='text-xs mx-2 mt-1 text-muted-foreground'>
         {new Date(message.timestamp).toLocaleTimeString()}
       </span>

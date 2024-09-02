@@ -13,18 +13,15 @@ export default function Chat({ notebookId, className }: { notebookId: string, cl
     isLoading,
     apiKeyGemini,
     isPending,
-    form,
-    handleSubmit,
     handleImportantEvents,
-    handleGenerateMindMap
+    handleGenerateMindMap,
+    updateChatInDatabase,
+    setMessages
   } = useChatLogic(notebookId)
-
-
 
   if (isLoading) {
     return <ChatLoading className={className} />
   }
-
 
   return (
     <section className='flex flex-col h-full max-h-full relative'>
@@ -37,20 +34,21 @@ export default function Chat({ notebookId, className }: { notebookId: string, cl
         </div>
       ) : (
         <>
-          <ChatMessages messages={messages} className={className} />
+          <ChatMessages messages={messages} className={className} isPending={isPending} />
 
-            <div  className='flex flex-col space-y-2 p-4 absolute bottom-0 left-0 w-full'>
+          <div className='flex flex-col space-y-2 p-4 absolute bottom-0 left-0 w-full'>
             <AIFunctions
               importantEvents={handleImportantEvents}
               generateMindMap={handleGenerateMindMap}
               isPending={isPending}
             />
             <ChatInput
-              form={form}
-              onSubmit={handleSubmit}
-              isPending={isPending}
+              messages={messages}
+              setMessages={setMessages}
+              updateChatInDatabase={updateChatInDatabase}
+              apiKeyGemini={apiKeyGemini}
             />
-            </div>
+          </div>
         </>
       )}
     </section>

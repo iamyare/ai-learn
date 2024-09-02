@@ -1,22 +1,17 @@
 import { useState, useEffect, useCallback, useTransition } from 'react'
 import { toast } from '@/components/ui/use-toast'
-import { useForm } from 'react-hook-form'
-import { z } from 'zod'
-import { zodResolver } from '@hookform/resolvers/zod'
 import { useApiKey } from '@/context/useAPIKeysContext'
 import { usePDFText } from '@/context/usePDFTextExtractionContext'
 import { usePDFContext } from '@/context/useCurrentPageContext'
 import { useSpeechRecognitionContext } from '@/context/useSpeechRecognitionContext'
 import { useHighlighter, HighlighterAction } from '@/context/useHighlighterContext'
 import { getChat, createChatNotebook, updateChatNotebook } from '@/actions'
-import { aiStream } from '@/lib/ai'
 import { generateImportantEvents } from '@/lib/ai/ai-events'
 import { generateMindMap } from '@/lib/ai/ai-map-mental'
 import { generateChartFromHighlight, explainText, translateText } from '@/lib/ai/ai-highlighter'
 
-const formSchema = z.object({
-  message: z.string()
-})
+
+
 
 export function useChatLogic(notebookId: string) {
   const [messages, setMessages] = useState<ChatMessageType[]>([])
@@ -32,10 +27,7 @@ export function useChatLogic(notebookId: string) {
   const { history } = useSpeechRecognitionContext()
   const { setActionHandler } = useHighlighter()
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: { message: '' }
-  })
+
 
   useEffect(() => {
     if (geminiKey) {
@@ -125,64 +117,6 @@ export function useChatLogic(notebookId: string) {
     }
   }, [notebookId])
 
-  const handleSubmit = useCallback(async (values: z.infer<typeof formSchema>) => {
-    const userMessage: MessageType = {
-      content: values.message,
-      isUser: true,
-      timestamp: new Date().toISOString()
-    }
-    setMessages((prev) => [...prev, userMessage])
-    form.reset()
-
-    await updateChatInDatabase([...messages, userMessage])
-
-    const transcript = history.map((entry) => entry.text).join(' ')
-    const messageHistory = messages
-      .filter((msg): msg is MessageType => 'content' in msg)
-      .map((msg) => ({
-        role: msg.isUser ? 'user' : 'assistant',
-        content: msg.content
-      }))
-
-    startTransition(async () => {
-      try {
-        const { textStream } = await aiStream({
-          prompt: values.message ?? 'Realiza un resumen de todo el contenido',
-          transcription: transcript,
-          textPdf: text,
-          messageHistory: messageHistory,
-          apiKey: apiKeyGemini ?? ''
-        })
-
-        let aiResponse = ''
-        for await (const text of textStream) {
-          aiResponse += text
-          setMessages((prev) => {
-            const updatedMessages = [...prev]
-            const lastMessage = updatedMessages[updatedMessages.length - 1]
-            if (!lastMessage.isUser && 'content' in lastMessage) {
-              lastMessage.content = aiResponse
-            } else {
-              updatedMessages.push({
-                content: aiResponse,
-                isUser: false,
-                timestamp: new Date().toISOString()
-              })
-            }
-            updateChatInDatabase(updatedMessages)
-            return updatedMessages
-          })
-        }
-      } catch (err) {
-        console.error('Error en el flujo de AI:', err)
-        toast({
-          title: 'Error',
-          description: 'Hubo un problema al procesar tu mensaje. Por favor, inténtalo de nuevo.',
-          variant: 'destructive'
-        })
-      }
-    })
-  }, [messages, history, text, updateChatInDatabase, form, apiKeyGemini])
 
   const handleImportantEvents = useCallback(() => {
     startImportantEventsTransition(async () => {
@@ -253,12 +187,12 @@ export function useChatLogic(notebookId: string) {
   }, [apiKeyGemini, history, text, updateChatInDatabase])
 
   useEffect(() => {
-    const handleHighlighterAction = async (action: HighlighterAction, text: string) => {
+    const handleHighlighterAction = async (action: HighlighterAction, text: string, options?: { chartType?: string, targetLanguage?: string }) => {
       if (!apiKeyGemini) {
         toast({ title: 'Error', description: 'API key not found', variant: 'destructive' })
         return
       }
-
+    
       startTransition(async () => {
         try {
           let result;
@@ -270,13 +204,22 @@ export function useChatLogic(notebookId: string) {
               result = await explainText({ highlightedText: text, apiKey: apiKeyGemini });
               break;
             case 'chart':
-              result = await generateChartFromHighlight({ highlightedText: text, apiKey: apiKeyGemini });
+              result = await generateChartFromHighlight({ 
+                highlightedText: text, 
+                apiKey: apiKeyGemini,
+                chartType: options?.chartType as 'bar' | 'line' | 'pie' | 'scatter' | 'area' | undefined
+              });
               break;
             case 'translate':
-              result = await translateText({ highlightedText: text, apiKey: apiKeyGemini });
+              console.log('Translating text:', options?.targetLanguage);
+              result = await translateText({ 
+                highlightedText: text, 
+                apiKey: apiKeyGemini,
+                targetLanguage: options?.targetLanguage
+              });
               break;
           }
-
+    
           if (result) {
             let newMessage;
             if ('noteText' in result) {
@@ -288,7 +231,7 @@ export function useChatLogic(notebookId: string) {
             } else if ('translation' in result) {
               newMessage = { translation: result.translation, isUser: false, timestamp: new Date().toISOString() };
             }
-
+    
             if (newMessage) {
               setMessages((prev) => {
                 const updatedMessages = [...prev, newMessage];
@@ -317,12 +260,12 @@ export function useChatLogic(notebookId: string) {
 
   return {
     messages,
+    setMessages,
     isLoading,
     apiKeyGemini,
     isPending: isPending || isImportantEventsPending || isMindMapPending,
-    form,
-    handleSubmit,
     handleImportantEvents,
-    handleGenerateMindMap
+    handleGenerateMindMap,
+    updateChatInDatabase
   }
 }

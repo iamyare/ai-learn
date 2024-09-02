@@ -11,8 +11,6 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  Tooltip,
-  Legend,
   ResponsiveContainer,
   Cell,
   LabelList,
@@ -35,6 +33,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { PieSectorDataItem } from 'recharts/types/polar/Pie'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
 interface ChartProps {
   chartData: ChartData
@@ -51,6 +50,7 @@ const Chart: React.FC<ChartProps> = ({ chartData }) => {
   const [chartType, setChartType] = useState(chartData.type)
   const [adaptedData, setAdaptedData] = useState<ChartData>(chartData)
   const [activeDataset, setActiveDataset] = useState(0)
+  const [error, setError] = useState<string | null>(null)
 
   const adaptDataToChartType = useMemo(
     () => (type: 'bar' | 'line' | 'pie' | 'scatter' | 'area') => {
@@ -63,105 +63,120 @@ const Chart: React.FC<ChartProps> = ({ chartData }) => {
 
   useEffect(() => {
     setAdaptedData(adaptDataToChartType(chartType))
+    setError(null) // Reset error when chart type changes
   }, [chartType, adaptDataToChartType])
 
   const processedData = useMemo(() => {
-    return adaptedData.labels.map((label, index) => {
-      const dataPoint: { [key: string]: string | number } = { name: label }
-      adaptedData.datasets.forEach((dataset) => {
-        dataPoint[dataset.label] = dataset.data[index]
+    try {
+      return adaptedData.labels.map((label, index) => {
+        const dataPoint: { [key: string]: string | number } = { name: label }
+        adaptedData.datasets.forEach((dataset) => {
+          dataPoint[dataset.label] = dataset.data[index]
+        })
+        return dataPoint
       })
-      return dataPoint
-    })
+    } catch (err) {
+      console.error('Error processing chart data:', err)
+      setError('Error al procesar los datos del gráfico.')
+      return []
+    }
   }, [adaptedData])
 
-  const chartConfig: ChartConfig = adaptedData.datasets.reduce(
-    (acc, dataset, index) => {
-      acc[dataset.label] = {
-        label: dataset.label,
-        color: COLORS[index % COLORS.length]
-      }
-      return acc
-    },
-    {} as ChartConfig
-  )
-
-  const renderChart = () => {
-    const commonProps = {
-      data: processedData,
-      margin: { top: 20, right: 30, left: 20, bottom: 5 }
+  const chartConfig: ChartConfig = useMemo(() => {
+    try {
+      return adaptedData.datasets.reduce(
+        (acc, dataset, index) => {
+          acc[dataset.label] = {
+            label: dataset.label,
+            color: COLORS[index % COLORS.length]
+          }
+          return acc
+        },
+        {} as ChartConfig
+      )
+    } catch (err) {
+      console.error('Error creating chart config:', err)
+      setError('Error al configurar el gráfico.')
+      return {}
     }
+  }, [adaptedData])
 
-    switch (chartType) {
-      case 'bar':
-        return (
-          <BarChart accessibilityLayer {...commonProps}>
-            <ChartTooltip content={<ChartTooltipContent />} />
-            <CartesianGrid vertical={false} />
-            <Bar
-              dataKey={adaptedData.datasets[activeDataset].label}
-              fill={`var(--color-${adaptedData.datasets[activeDataset].label})`}
-              radius={8}
-            >
-              <LabelList position='top' offset={12} fontSize={12} />
-            </Bar>
+  const renderChart = (): React.ReactElement | null => {
+    try {
+      const commonProps = {
+        data: processedData,
+        margin: { top: 20, right: 30, left: 20, bottom: 5 }
+      }
 
-            <XAxis dataKey='name' />
-            <YAxis />
-          </BarChart>
-        )
-      case 'line':
-        return (
-          <LineChart {...commonProps}>
-            <CartesianGrid strokeDasharray='3 3' />
-            <XAxis dataKey='name' />
-            <YAxis />
-            <ChartTooltip content={<ChartTooltipContent />} />
-            <Line
-              dataKey={adaptedData.datasets[activeDataset].label}
-              type='monotone'
-              strokeWidth={2}
-              stroke={`var(--color-${adaptedData.datasets[activeDataset].label})`}
-              dot={{
-                fill: `var(--color-${adaptedData.datasets[activeDataset].label})`
-              }}
-              activeDot={{
-                r: 6
-              }}
-            />
-          </LineChart>
-        )
-      case 'pie':
-        return (
-          <PieChart>
-            <Pie
-              data={processedData}
-              dataKey={adaptedData.datasets[activeDataset].label}
-              nameKey='name'
-              innerRadius={60}
-              strokeWidth={5}
-              activeIndex={0}
-              activeShape={({
-                outerRadius = 0,
-                ...props
-              }: PieSectorDataItem) => (
-                <Sector {...props} outerRadius={outerRadius + 10} />
-              )}
-              label
-            >
-              {processedData.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={COLORS[index % COLORS.length]}
-                />
-              ))}
-            </Pie>
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent hideLabel />}
-            />
-          </PieChart>
-        )
+      switch (chartType) {
+        case 'bar':
+          return (
+            <BarChart accessibilityLayer {...commonProps}>
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <CartesianGrid vertical={false} />
+              <Bar
+                dataKey={adaptedData.datasets[activeDataset].label}
+                fill={`var(--color-${adaptedData.datasets[activeDataset].label})`}
+                radius={8}
+              >
+                <LabelList position='top' offset={12} fontSize={12} />
+              </Bar>
+              <XAxis dataKey='name' />
+              <YAxis />
+            </BarChart>
+          )
+        case 'line':
+          return (
+            <LineChart {...commonProps}>
+              <CartesianGrid strokeDasharray='3 3' />
+              <XAxis dataKey='name' />
+              <YAxis />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Line
+                dataKey={adaptedData.datasets[activeDataset].label}
+                type='monotone'
+                strokeWidth={2}
+                stroke={`var(--color-${adaptedData.datasets[activeDataset].label})`}
+                dot={{
+                  fill: `var(--color-${adaptedData.datasets[activeDataset].label})`
+                }}
+                activeDot={{
+                  r: 6
+                }}
+              />
+            </LineChart>
+          )
+        case 'pie':
+          return (
+            <PieChart>
+              <Pie
+                data={processedData}
+                dataKey={adaptedData.datasets[activeDataset].label}
+                nameKey='name'
+                innerRadius={60}
+                strokeWidth={5}
+                activeIndex={0}
+                activeShape={({
+                  outerRadius = 0,
+                  ...props
+                }: PieSectorDataItem) => (
+                  <Sector {...props} outerRadius={outerRadius + 10} />
+                )}
+                label
+              >
+                {processedData.map((_, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
+                ))}
+              </Pie>
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent hideLabel />}
+              />
+            </PieChart>
+          )
         case 'area':
           return (
             <AreaChart {...commonProps}>
@@ -189,27 +204,41 @@ const Chart: React.FC<ChartProps> = ({ chartData }) => {
               ))}
             </AreaChart>
           )
-      case 'scatter':
-        return (
-          <ScatterChart {...commonProps}>
-            <CartesianGrid />
-            <XAxis
-              type='number'
-              dataKey={adaptedData.datasets[0].label}
-              name={adaptedData.datasets[0].label}
-            />
-            <YAxis
-              type='number'
-              dataKey={adaptedData.datasets[1].label}
-              name={adaptedData.datasets[1].label}
-            />
-            <ChartTooltip
-              cursor={{ strokeDasharray: '3 3' }}
-              content={<ChartTooltipContent />}
-            />
-            <Scatter name='Datos' data={processedData} fill={COLORS[0]} />
-          </ScatterChart>
-        )
+        case 'scatter':
+          if (adaptedData.datasets.length < 2) {
+            throw new Error('El gráfico de dispersión requiere al menos dos conjuntos de datos.')
+          }
+          return (
+            <ScatterChart {...commonProps}>
+              <CartesianGrid />
+              <XAxis
+                type='number'
+                dataKey={adaptedData.datasets[0].label}
+                name={adaptedData.datasets[0].label}
+              />
+              <YAxis
+                type='number'
+                dataKey={adaptedData.datasets[1].label}
+                name={adaptedData.datasets[1].label}
+              />
+              <ChartTooltip
+                cursor={{ strokeDasharray: '3 3' }}
+                content={<ChartTooltipContent />}
+              />
+              <Scatter name='Datos' data={processedData} fill={COLORS[0]} />
+            </ScatterChart>
+          )
+        default:
+          throw new Error('Tipo de gráfico no soportado.')
+      }
+    } catch (err) {
+      console.error('Error rendering chart:', err)
+      if (err instanceof Error) {
+        setError(`Error al renderizar el gráfico: ${err.message}`)
+      } else {
+        setError('Error al renderizar el gráfico.')
+      }
+      return null
     }
   }
 
@@ -243,54 +272,61 @@ const Chart: React.FC<ChartProps> = ({ chartData }) => {
         </div>
       </CardHeader>
       <CardContent className='px-2 sm:p-6'>
-        <ChartContainer
-          config={chartConfig}
-          className='aspect-auto h-[350px] w-full'
-        >
-          <ResponsiveContainer width='100%' height='100%'>
-            {renderChart()}
-          </ResponsiveContainer>
-        </ChartContainer>
-          <ScrollArea className=' w-full'>
+        {error ? (
+          <Alert variant="destructive">
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        ) : (
+          <ChartContainer
+            config={chartConfig}
+            className='aspect-auto h-[350px] w-full'
+          >
+            <ResponsiveContainer width='100%' height='100%'>
+              {renderChart() as React.ReactElement}
+            </ResponsiveContainer>
+          </ChartContainer>
+        )}
+        <ScrollArea className=' w-full'>
           <div className='flex items-center justify-center space-x-2 mt-4'>
-          <Button
-            variant='outline'
-            size='sm'
-            onClick={() => setChartType('bar')}
-          >
-            Barra
-          </Button>
-          <Button
-            variant='outline'
-            size='sm'
-            onClick={() => setChartType('line')}
-          >
-            Línea
-          </Button>
-          <Button
-            variant='outline'
-            size='sm'
-            onClick={() => setChartType('pie')}
-          >
-            Pastel
-          </Button>
-          <Button
-            variant='outline'
-            size='sm'
-            onClick={() => setChartType('area')}
-          >
-            Área
-          </Button>
-          <Button
-            variant='outline'
-            size='sm'
-            onClick={() => setChartType('scatter')}
-          >
-            Dispersión
-          </Button>
-        </div>
-        <ScrollBar orientation='horizontal' />
-          </ScrollArea>
+            <Button
+              variant='outline'
+              size='sm'
+              onClick={() => setChartType('bar')}
+            >
+              Barra
+            </Button>
+            <Button
+              variant='outline'
+              size='sm'
+              onClick={() => setChartType('line')}
+            >
+              Línea
+            </Button>
+            <Button
+              variant='outline'
+              size='sm'
+              onClick={() => setChartType('pie')}
+            >
+              Pastel
+            </Button>
+            <Button
+              variant='outline'
+              size='sm'
+              onClick={() => setChartType('area')}
+            >
+              Área
+            </Button>
+            <Button
+              variant='outline'
+              size='sm'
+              onClick={() => setChartType('scatter')}
+            >
+              Dispersión
+            </Button>
+          </div>
+          <ScrollBar orientation='horizontal' />
+        </ScrollArea>
       </CardContent>
     </>
   )

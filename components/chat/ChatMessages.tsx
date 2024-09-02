@@ -1,15 +1,16 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react'
+import React, { useRef, useState, useCallback } from 'react'
 import { cn, formatRelativeDate } from '@/lib/utils'
 import BubbleChat from './BubbleChat'
-import { Separator } from '../ui/separator'
+import MessageLoading from './messages/MessageLoading'
 
 
 interface ChatMessagesProps {
+  isPending?: boolean
   messages: ChatMessageType[]
   className?: string
 }
 
-const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, className }) => {
+const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, className, isPending}) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true)
@@ -20,9 +21,9 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, className }) => {
     }
   }, [shouldAutoScroll])
 
-  useEffect(() => {
-    scrollToBottom()
-  }, [messages, scrollToBottom])
+  // useEffect(() => {
+  //   scrollToBottom()
+  // }, [messages, scrollToBottom])
 
   const handleScroll = () => {
     if (chatContainerRef.current) {
@@ -30,10 +31,6 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, className }) => {
       setShouldAutoScroll(scrollTop + clientHeight >= scrollHeight - 10)
     }
   }
-
-
-
-
 
   const groupMessagesByDate = (messages: ChatMessageType[]) => {
       return messages.reduce((groups, message) => {
@@ -50,9 +47,8 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, className }) => {
 
   return (
     <div
-      className={cn('flex-grow overflow-y-auto pb-16 px-4', className)}
+      className={cn('flex-grow overflow-y-auto pb-[120px] px-4', className)}
       ref={chatContainerRef}
-      onScroll={handleScroll}
     >
 
         {Object.keys(groupedMessages).length > 0 ? (
@@ -73,6 +69,8 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, className }) => {
             No hay mensajes aún. Comienza la conversación.
           </p>
         )}
+
+        {isPending && <MessageLoading/>}
         <div ref={messagesEndRef} />
     </div>
   )

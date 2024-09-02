@@ -2,11 +2,16 @@ import React, { createContext, useContext, useState, useCallback, ReactNode, use
 
 export type HighlighterAction = 'note' | 'explain' | 'chart' | 'translate';
 
+interface HighlighterOptions {
+  chartType?: 'bar' | 'line' | 'pie' | 'scatter' | 'area';
+  targetLanguage?: string;
+}
+
 interface HighlighterContextType {
   highlightedText: string;
   setHighlightedText: (text: string) => void;
-  triggerAction: (action: HighlighterAction, text: string) => void;
-  setActionHandler: (handler: (action: HighlighterAction, text: string) => void) => void;
+  triggerAction: (action: HighlighterAction, text: string, options?: HighlighterOptions) => void;
+  setActionHandler: (handler: (action: HighlighterAction, text: string, options?: HighlighterOptions) => void) => void;
 }
 
 const HighlighterContext = createContext<HighlighterContextType | undefined>(undefined);
@@ -25,15 +30,15 @@ interface HighlighterProviderProps {
 
 export const HighlighterProvider: React.FC<HighlighterProviderProps> = ({ children }) => {
   const [highlightedText, setHighlightedText] = useState<string>('');
-  const actionHandlerRef = useRef<((action: HighlighterAction, text: string) => void) | null>(null);
+  const actionHandlerRef = useRef<((action: HighlighterAction, text: string, options?: HighlighterOptions) => void) | null>(null);
 
-  const setActionHandler = useCallback((handler: (action: HighlighterAction, text: string) => void) => {
+  const setActionHandler = useCallback((handler: (action: HighlighterAction, text: string, options?: HighlighterOptions) => void) => {
     actionHandlerRef.current = handler;
   }, []);
 
-  const triggerAction = useCallback((action: HighlighterAction, text: string) => {
+  const triggerAction = useCallback((action: HighlighterAction, text: string, options?: HighlighterOptions) => {
     if (actionHandlerRef.current) {
-      actionHandlerRef.current(action, text);
+      actionHandlerRef.current(action, text, options);
     } else {
       console.warn('Action handler not set');
     }

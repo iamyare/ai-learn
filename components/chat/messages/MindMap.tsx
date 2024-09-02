@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch'
 import { Button } from '@/components/ui/button'
 import { ZoomIn, ZoomOut, Maximize, Download } from 'lucide-react'
@@ -57,6 +57,29 @@ const MindMap: React.FC<MindMapProps> = ({ mindMap }) => {
     renderMindMap()
   }, [renderMindMap])
 
+  useEffect(() => {
+    const handleResize = () => {
+      if (mindMapRef.current) {
+        const svgElement = mindMapRef.current.querySelector('svg')
+        if (svgElement) {
+          svgElement.setAttribute('width', '100%')
+          svgElement.setAttribute('height', '100%')
+        }
+      }
+    }
+
+    const resizeObserver = new ResizeObserver(handleResize)
+    if (mindMapRef.current) {
+      resizeObserver.observe(mindMapRef.current)
+    }
+
+    return () => {
+      if (mindMapRef.current) {
+        resizeObserver.unobserve(mindMapRef.current)
+      }
+    }
+  }, [])
+
   const handleDownload = useCallback(() => {
     if (mindMapRef.current) {
       const svgElement = mindMapRef.current.querySelector('svg')
@@ -103,62 +126,67 @@ const MindMap: React.FC<MindMapProps> = ({ mindMap }) => {
   }, [])
 
   return (
-    <div className='mind-map-container w-full rounded-md overflow-hidden border relative max-w-fit'>
-      <TransformWrapper
-        initialScale={2}
-        initialPositionX={0}
-        initialPositionY={0}
-      >
-        {({ zoomIn, zoomOut, resetTransform }) => (
-          <>
-            <div className='absolute top-2 right-2 z-[1] flex gap-2'>
-              <Button
-                variant='outline'
-                className='p-2 size-fit border-none bg-muted/80 text-muted-foreground'
-                size='icon'
-                onClick={() => zoomIn()}
+    <div className='mind-map-container flex flex-col gap-2 w-full '>
+      <h2 className='text-xl font-semibold'>Eventos importantes</h2>
+      <div className=' flex flex-col gap-2 w-full overflow-hidden relative'>
+        <TransformWrapper
+          initialScale={1}
+          initialPositionX={0}
+          initialPositionY={0}
+        >
+          {({ zoomIn, zoomOut, resetTransform }) => (
+            <>
+              <div className='absolute top-2 right-2 z-[1] flex gap-2'>
+                <Button
+                  variant='outline'
+                  className='p-2 size-fit border-none bg-muted/80 text-muted-foreground'
+                  size='icon'
+                  onClick={() => zoomIn()}
+                >
+                  <ZoomIn className='size-4' />
+                </Button>
+                <Button
+                  variant='outline'
+                  className='p-2 size-fit border-none bg-muted/80 text-muted-foreground'
+                  size='icon'
+                  onClick={() => zoomOut()}
+                >
+                  <ZoomOut className='size-4' />
+                </Button>
+                <Button
+                  variant='outline'
+                  className='p-2 size-fit border-none bg-muted/80 text-muted-foreground'
+                  size='icon'
+                  onClick={() => resetTransform()}
+                >
+                  <Maximize className='size-4' />
+                </Button>
+                <Button
+                  variant='outline'
+                  className='p-2 size-fit border-none bg-muted/80 text-muted-foreground'
+                  size='icon'
+                  onClick={handleDownload}
+                >
+                  <Download className='size-4' />
+                </Button>
+              </div>
+              <TransformComponent
+                wrapperClass='w-full h-full'
+                contentClass='w-full h-full'
               >
-                <ZoomIn className='size-4' />
-              </Button>
-              <Button
-                variant='outline'
-                className='p-2 size-fit border-none bg-muted/80 text-muted-foreground'
-                size='icon'
-                onClick={() => zoomOut()}
-              >
-                <ZoomOut className='size-4' />
-              </Button>
-              <Button
-                variant='outline'
-                className='p-2 size-fit border-none bg-muted/80 text-muted-foreground'
-                size='icon'
-                onClick={() => resetTransform()}
-              >
-                <Maximize className='size-4' />
-              </Button>
-              <Button
-                variant='outline'
-                className='p-2 size-fit border-none bg-muted/80 text-muted-foreground'
-                size='icon'
-                onClick={handleDownload}
-              >
-                <Download className='size-4' />
-              </Button>
-            </div>
-            <TransformComponent
-              wrapperClass='w-full h-full'
-              contentClass='w-full h-full'
-            >
-              <div
-                ref={mindMapRef}
-                className='w-full h-[200px]'
-                dangerouslySetInnerHTML={{ __html: svg }}
-              />
-            </TransformComponent>
-          </>
+                <div
+                  ref={mindMapRef}
+                  className='w-full h-64'
+                  dangerouslySetInnerHTML={{ __html: svg }}
+                />
+              </TransformComponent>
+            </>
+          )}
+        </TransformWrapper>
+        {error && (
+          <div className='error-message text-red-500 mt-2'>{error}</div>
         )}
-      </TransformWrapper>
-      {error && <div className='error-message text-red-500 mt-2'>{error}</div>}
+      </div>
     </div>
   )
 }
