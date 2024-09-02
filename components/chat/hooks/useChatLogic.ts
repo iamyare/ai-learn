@@ -99,7 +99,9 @@ export function useChatLogic(notebookId: string) {
     loadChat()
   }, [loadChat])
 
+
   const updateChatInDatabase = useCallback(async (updatedMessages: ChatMessageType[]) => {
+
     try {
       const { errorChatUpdate } = await updateChatNotebook({
         content: JSON.stringify(updatedMessages),

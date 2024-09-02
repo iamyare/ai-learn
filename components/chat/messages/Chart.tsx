@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/chart'
 import { Button } from '@/components/ui/button'
 import { PieSectorDataItem } from 'recharts/types/polar/Pie'
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 
 interface ChartProps {
   chartData: ChartData
@@ -250,7 +251,8 @@ const Chart: React.FC<ChartProps> = ({ chartData }) => {
             {renderChart()}
           </ResponsiveContainer>
         </ChartContainer>
-        <div className='flex items-center justify-center space-x-2 mt-4'>
+          <ScrollArea className=' w-full'>
+          <div className='flex items-center justify-center space-x-2 mt-4'>
           <Button
             variant='outline'
             size='sm'
@@ -287,6 +289,8 @@ const Chart: React.FC<ChartProps> = ({ chartData }) => {
             Dispersión
           </Button>
         </div>
+        <ScrollBar orientation='horizontal' />
+          </ScrollArea>
       </CardContent>
     </>
   )

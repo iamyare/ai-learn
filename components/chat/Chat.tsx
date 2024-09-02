@@ -19,6 +19,8 @@ export default function Chat({ notebookId, className }: { notebookId: string, cl
     handleGenerateMindMap
   } = useChatLogic(notebookId)
 
+
+
   if (isLoading) {
     return <ChatLoading className={className} />
   }
@@ -37,7 +39,7 @@ export default function Chat({ notebookId, className }: { notebookId: string, cl
         <>
           <ChatMessages messages={messages} className={className} />
 
-            <div id='input' className='flex flex-col space-y-2 p-4 absolute bottom-0 left-0 w-full'>
+            <div  className='flex flex-col space-y-2 p-4 absolute bottom-0 left-0 w-full'>
             <AIFunctions
               importantEvents={handleImportantEvents}
               generateMindMap={handleGenerateMindMap}

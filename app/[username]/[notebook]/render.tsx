@@ -35,6 +35,7 @@ export default function RenderView({
   const isDesktop = useMediaQuery('(min-width: 600px)')
   const { user } = useUser()
 
+
   const toggleChat = useCallback(() => setChatOpen((prev) => !prev), [])
 
   const headerContent = useMemo(
@@ -75,6 +76,8 @@ export default function RenderView({
     [notebookInfo.notebook_id]
   )
 
+  
+
   return (
     <PDFTextProvider>
       <PDFProvider>
@@ -86,7 +89,7 @@ export default function RenderView({
                 direction='horizontal'
                 className='w-full h-full'
               >
-                <ResizablePanel defaultSize={isDesktop ? 100 : 70}>
+                <ResizablePanel defaultSize={isDesktop ? 100 : 60}>
                   <ResizablePanelGroup direction='vertical'>
                     <ResizablePanel defaultSize={65} minSize={30}>
                       {pdfViewerContent}
@@ -99,7 +102,7 @@ export default function RenderView({
                 </ResizablePanel>
                 <ResizableHandle />
                 {isDesktop ? (
-                  <ResizablePanel defaultSize={30} maxSize={50}>
+                  <ResizablePanel defaultSize={40} maxSize={50}>
                     {chatContent}
                   </ResizablePanel>
                 ) : (
