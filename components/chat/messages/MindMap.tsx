@@ -103,7 +103,8 @@ const MindMap: React.FC<MindMapProps> = ({ mindMap }) => {
   }, [])
 
   return (
-    <div className='mind-map-container w-full rounded-md overflow-hidden border relative max-w-fit'>
+    <div className='mind-map-container flex flex-col gap-2 w-full rounded-md overflow-hidden relative '>
+      <h2 className='text-xl font-semibold'>Eventos importantes</h2>
       <TransformWrapper
         initialScale={2}
         initialPositionX={0}
@@ -151,7 +152,7 @@ const MindMap: React.FC<MindMapProps> = ({ mindMap }) => {
             >
               <div
                 ref={mindMapRef}
-                className='w-full h-[200px]'
+                className=' w-full h-[200px]'
                 dangerouslySetInnerHTML={{ __html: svg }}
               />
             </TransformComponent>
