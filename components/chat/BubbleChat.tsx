@@ -31,6 +31,7 @@ const BubbleChat: React.FC<BubbleChatProps> = ({ message }) => {
 
   const renderMessageContent = () => {
     if ('content' in message) {
+      console.log('message', message.content)
       return message.isUser ? (
         <p>{message.content}</p>
       ) : (

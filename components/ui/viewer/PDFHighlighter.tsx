@@ -40,7 +40,7 @@ const HighlightOptions: React.FC<HighlightOptionsProps> = (props) => {
   const { triggerAction } = useHighlighter()
 
   const handleAction = (action: HighlighterAction, options = {}) => {
-    console.log('Triggering action', action, props.selectedText, options)
+    // console.log('Triggering action', action, props.selectedText, options)
     triggerAction(action, props.selectedText, options)
     props.cancel()
   }

@@ -1,7 +1,6 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { cn, formatRelativeDate } from '@/lib/utils'
 import BubbleChat from './BubbleChat'
-import { Separator } from '../ui/separator'
 
 
 interface ChatMessagesProps {
@@ -20,9 +19,9 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, className }) => {
     }
   }, [shouldAutoScroll])
 
-  useEffect(() => {
-    scrollToBottom()
-  }, [messages, scrollToBottom])
+  // useEffect(() => {
+  //   scrollToBottom()
+  // }, [messages, scrollToBottom])
 
   const handleScroll = () => {
     if (chatContainerRef.current) {
@@ -30,10 +29,6 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, className }) => {
       setShouldAutoScroll(scrollTop + clientHeight >= scrollHeight - 10)
     }
   }
-
-
-
-
 
   const groupMessagesByDate = (messages: ChatMessageType[]) => {
       return messages.reduce((groups, message) => {
@@ -52,7 +47,6 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, className }) => {
     <div
       className={cn('flex-grow overflow-y-auto pb-16 px-4', className)}
       ref={chatContainerRef}
-      onScroll={handleScroll}
     >
 
         {Object.keys(groupedMessages).length > 0 ? (

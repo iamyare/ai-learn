@@ -13,6 +13,7 @@ import { aiStream } from '@/lib/ai'
 import { generateImportantEvents } from '@/lib/ai/ai-events'
 import { generateMindMap } from '@/lib/ai/ai-map-mental'
 import { generateChartFromHighlight, explainText, translateText } from '@/lib/ai/ai-highlighter'
+import { readStreamableValue } from 'ai/rsc'
 
 const formSchema = z.object({
   message: z.string()
@@ -154,17 +155,18 @@ export function useChatLogic(notebookId: string) {
           apiKey: apiKeyGemini ?? ''
         })
 
-        let aiResponse = ''
-        for await (const text of textStream) {
-          aiResponse += text
+        let textContent = '';
+        for await (const delta of readStreamableValue(textStream) ) {
+          textContent = `${textContent}${delta}`;
+          console.log('textContent:', delta);
           setMessages((prev) => {
             const updatedMessages = [...prev]
             const lastMessage = updatedMessages[updatedMessages.length - 1]
             if (!lastMessage.isUser && 'content' in lastMessage) {
-              lastMessage.content = aiResponse
+              lastMessage.content = textContent
             } else {
               updatedMessages.push({
-                content: aiResponse,
+                content: textContent,
                 isUser: false,
                 timestamp: new Date().toISOString()
               })
