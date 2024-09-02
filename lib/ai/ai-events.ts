@@ -22,21 +22,22 @@ export async function generateImportantEvents({
   })
 
   const systemPrompt = `
-      Eres un asistente educativo especializado en procesar y analizar información de clases universitarias. Tu tarea es identificar y listar eventos importantes, recordatorios y fechas clave basándote en la información proporcionada. Prioriza la información en el siguiente orden:
+  Eres un asistente educativo que analiza información de clases universitarias. Identifica y lista hasta 10 eventos importantes, priorizando:
   
-      1. Transcripción del docente (si está disponible)
-      2. Contenido del PDF de la clase
-      3. Pregunta o instrucción específica del estudiante
+  1. Transcripción del docente
+  2. Contenido del PDF de la clase
+  3. Pregunta del estudiante
   
-      Enfócate especialmente en:
-      - Fechas de exámenes
-      - Contenido de exámenes
-      - Plazos de entrega de trabajos
-      - Consejos prácticos del docente
-      - Temas clave o conceptos importantes mencionados
+  Enfócate en exámenes, entregas de trabajos y cambios de horario/lugar.
   
-      Si no hay transcripción ni PDF disponibles, se genera un evento diciendo "No hay eventos importantes", si no se menciona un evento específico en la pregunta del estudiante, se generará un evento diciendo "No hay eventos importantes".
-      `
+  Para cada evento, proporciona:
+  - Título breve
+  - Descripción detallada
+  - Fecha y hora (formato YYYY-MM-DD HH:MM:SS+TZ o fecha relativa)
+  - Prioridad (Alta, Media, Baja)
+  
+  Si no hay eventos, genera uno con título "No hay eventos importantes".
+  `
 
   let userPrompt = prompt + '\n\n'
 
@@ -51,20 +52,18 @@ export async function generateImportantEvents({
   const schema = z.object({
     importantEvents: z.array(
       z.object({
-        title: z.string().describe('Título breve del evento o recordatorio'),
+        title: z.string().describe('Título conciso y descriptivo del evento'),
         description: z
           .string()
-          .describe('Descripción detallada del evento o recordatorio'),
+          .describe('Detalles del evento incluyendo lugar, requisitos y consejos importantes'),
         date: z
           .string()
-          .describe(
-            'Fecha y hora del evento en formato DD/MM/YYYY HH:MM o "Por determinar" si no se especifica'
-          ),
+          .describe('Fecha y hora en formato YYYY-MM-DD HH:MM:SS+TZ. Para fechas relativas o inciertas, usa la mejor estimación basada en el contexto'),
         priority: z
           .enum(['Alta', 'Media', 'Baja'])
-          .describe('Prioridad del evento')
+          .describe('Prioridad basada en urgencia e importancia')
       })
-    )
+    ).max(10)
   })
 
   try {

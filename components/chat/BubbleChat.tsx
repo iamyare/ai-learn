@@ -21,7 +21,7 @@ const BubbleChat: React.FC<BubbleChatProps> = ({ message }) => {
 
   const bubbleClass = useMemo(
     () =>
-      `p-3 relative w-full rounded-2xl ${
+      `p-3 relative w-full rounded-2xl overflow-hidden ${
         message.isUser
           ? 'bg-primary rounded-br-[4px] text-primary-foreground ml-auto'
           : ' rounded-bl-[4px]'

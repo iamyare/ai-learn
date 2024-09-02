@@ -1,4 +1,5 @@
 import React from 'react'
+import { format } from '@formkit/tempo'
 
 interface EventListProps {
   events: ImportantEventType[]
@@ -11,12 +12,24 @@ const EventList: React.FC<EventListProps> = ({ events }) => (
       {events.map((event, index) => (
         <li
           key={index}
-          className='bg-background p-2 rounded-md transform-gpu transition-[box-shadow,transform] duration-300 hover:scale-105 hover:shadow-md'
+          className='bg-muted p-2 rounded-md transform-gpu transition-[box-shadow,transform] duration-300 hover:scale-105 hover:shadow-md'
         >
           <h4 className='font-medium'>{event.title}</h4>
           <p className='text-xs text-muted-foreground'>{event.description}</p>
           <div className='flex justify-between mt-1 text-xs text-muted-foreground'>
-            <span>Fecha: {event.date}</span>
+            <span>
+              Fecha:{' '}
+              {(() => {
+                try {
+                  console.log(event.date)
+                  const date = new Date(event.date)
+                  return format(date, 'DD/MM/YY HH:mm A')
+                } catch (error) {
+                  return event.date.toString()
+                }
+              })()}
+            </span>
+
             <span>Prioridad: {event.priority}</span>
           </div>
         </li>
