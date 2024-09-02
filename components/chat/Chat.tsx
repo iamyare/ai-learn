@@ -13,10 +13,10 @@ export default function Chat({ notebookId, className }: { notebookId: string, cl
     isLoading,
     apiKeyGemini,
     isPending,
-    form,
-    handleSubmit,
     handleImportantEvents,
-    handleGenerateMindMap
+    handleGenerateMindMap,
+    updateChatInDatabase,
+    setMessages
   } = useChatLogic(notebookId)
 
   if (isLoading) {
@@ -43,9 +43,10 @@ export default function Chat({ notebookId, className }: { notebookId: string, cl
               isPending={isPending}
             />
             <ChatInput
-              form={form}
-              onSubmit={handleSubmit}
-              isPending={isPending}
+              messages={messages}
+              setMessages={setMessages}
+              updateChatInDatabase={updateChatInDatabase}
+              apiKeyGemini={apiKeyGemini}
             />
           </div>
         </>
