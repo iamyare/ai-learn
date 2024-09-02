@@ -10,3 +10,4 @@
 - [ ] boton para descargar chat
 - [ ] Carga cuando se envia un mensaje
 - [ ] cuando se hace scrool en el ultimo elemento se cargan nuevamente los componentes
+- [ ] Boton descarga imagen de el chart
