@@ -16,6 +16,7 @@ export default async function Home({params}: {params: {notebook: string}}) {
     return <div>No se eencontro nada</div>
   }
 
+
   return (
     <RenderView notebookInfo={notebookInfo} />
   )

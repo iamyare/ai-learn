@@ -4,7 +4,6 @@ import { useState, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useMediaQuery } from '@/components/ui/use-media-query'
 
-import Chat from '@/components/chat'
 import SpeechRecognition from './components/SpeechRecognition'
 import PDFViewer from '@/components/ui/PDFViewer'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
@@ -23,6 +22,8 @@ import { PDFProvider } from '@/context/useCurrentPageContext'
 import { cn } from '@/lib/utils'
 import MenuUser from '@/components/menu-user'
 import { useUser } from '@/context/useUserContext'
+import Chat from '@/components/chat/Chat'
+import { HighlighterProvider } from '@/context/useHighlighterContext'
 
 export default function RenderView({
   notebookInfo
@@ -32,7 +33,8 @@ export default function RenderView({
   const router = useRouter()
   const [chatOpen, setChatOpen] = useState(false)
   const isDesktop = useMediaQuery('(min-width: 600px)')
-  const {user} = useUser()
+  const { user } = useUser()
+
 
   const toggleChat = useCallback(() => setChatOpen((prev) => !prev), [])
 
@@ -74,59 +76,63 @@ export default function RenderView({
     [notebookInfo.notebook_id]
   )
 
+  
+
   return (
     <PDFTextProvider>
       <PDFProvider>
         <SpeechRecognitionProvider>
-          <main className='flex relative flex-col w-screen h-screen overflow-hidden'>
-            {headerContent}
-            <ResizablePanelGroup
-              direction='horizontal'
-              className='w-full h-full'
-            >
-              <ResizablePanel defaultSize={isDesktop ? 100 : 70}>
-                <ResizablePanelGroup direction='vertical'>
-                  <ResizablePanel defaultSize={65} minSize={30}>
-                    {pdfViewerContent}
-                  </ResizablePanel>
-                  <ResizableHandle />
-                  <ResizablePanel defaultSize={35} minSize={30}>
-                    {speechRecognitionContent}
-                  </ResizablePanel>
-                </ResizablePanelGroup>
-              </ResizablePanel>
-              <ResizableHandle />
-              {isDesktop ? (
-                <ResizablePanel defaultSize={30} maxSize={50}>
-                  {chatContent}
+          <HighlighterProvider>
+            <main className='flex relative flex-col w-screen h-screen overflow-hidden'>
+              {headerContent}
+              <ResizablePanelGroup
+                direction='horizontal'
+                className='w-full h-full'
+              >
+                <ResizablePanel defaultSize={isDesktop ? 100 : 60}>
+                  <ResizablePanelGroup direction='vertical'>
+                    <ResizablePanel defaultSize={65} minSize={30}>
+                      {pdfViewerContent}
+                    </ResizablePanel>
+                    <ResizableHandle />
+                    <ResizablePanel defaultSize={35} minSize={30}>
+                      {speechRecognitionContent}
+                    </ResizablePanel>
+                  </ResizablePanelGroup>
                 </ResizablePanel>
-              ) : (
-                <>
-                  {chatOpen && (
-                    <div className='fixed top-0 left-0 w-full h-full backdrop-blur-sm bg-background/70 z-50'>
-                      {chatContent}
-                    </div>
-                  )}
-                  <Button
-                    size='icon'
-                    className={cn(
-                      'fixed  z-[51]',
-                      chatOpen ? 'top-1 right-2 ' : ' bottom-2 right-2 '
+                <ResizableHandle />
+                {isDesktop ? (
+                  <ResizablePanel defaultSize={40} maxSize={50}>
+                    {chatContent}
+                  </ResizablePanel>
+                ) : (
+                  <>
+                    {chatOpen && (
+                      <div className='fixed top-0 left-0 w-full h-full backdrop-blur-sm bg-background/70 z-50'>
+                        {chatContent}
+                      </div>
                     )}
-                    onClick={toggleChat}
-                    variant={chatOpen ? 'ghost' : 'default'}
-                  >
-                    {chatOpen ? (
-                      <XIcon className='size-4' />
-                    ) : (
-                      <MessageCircle className='size-4' />
-                    )}
-                  </Button>
-                </>
-              )}
-            </ResizablePanelGroup>
-            <footer className='w-screen h-5 border-t' />
-          </main>
+                    <Button
+                      size='icon'
+                      className={cn(
+                        'fixed  z-[51]',
+                        chatOpen ? 'top-1 right-2 ' : ' bottom-2 right-2 '
+                      )}
+                      onClick={toggleChat}
+                      variant={chatOpen ? 'ghost' : 'default'}
+                    >
+                      {chatOpen ? (
+                        <XIcon className='size-4' />
+                      ) : (
+                        <MessageCircle className='size-4' />
+                      )}
+                    </Button>
+                  </>
+                )}
+              </ResizablePanelGroup>
+              <footer className='w-screen h-5 border-t' />
+            </main>
+          </HighlighterProvider>
         </SpeechRecognitionProvider>
       </PDFProvider>
     </PDFTextProvider>

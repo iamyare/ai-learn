@@ -6,14 +6,12 @@ import React, {
   useCallback,
   useMemo
 } from 'react'
-import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import {
   Form,
   FormControl,
   FormField,
-  FormItem,
-  FormMessage
+  FormItem
 } from '@/components/ui/form'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -23,15 +21,15 @@ import { useSpeechRecognitionContext } from '@/context/useSpeechRecognitionConte
 import BubbleChat from './ui/bubble-chat'
 import { usePDFText } from '@/context/usePDFTextExtractionContext'
 import { aiStream } from '@/lib/ai'
-import { readStreamableValue } from 'ai/rsc'
 import { Loader, Send, Sparkles } from 'lucide-react'
-import { generateImportantEvents } from '@/lib/ai/ai-extra'
+import { generateImportantEvents } from '@/lib/ai/ai-events'
 import { usePDFContext } from '@/context/useCurrentPageContext'
 import { getChat, createChatNotebook, updateChatNotebook } from '@/actions'
 import { Skeleton } from '@/components/ui/skeleton'
 import { toast } from '@/components/ui/use-toast'
 import { useApiKey } from '@/context/useAPIKeysContext'
 import { cn } from '@/lib/utils'
+import { Textarea } from './ui/textarea'
 
 const formSchema = z.object({
   message: z.string()
@@ -43,7 +41,6 @@ export default function Chat({ notebookId, className }: { notebookId: string,cla
   const [isPending, startTransition] = useTransition()
   const [messages, setMessages] = useState<ChatMessageType[]>([])
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true)
-  const [chatId, setChatId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   const [apiKeyGemini, setApiKeyGemini] = useState<string | null>(null)
@@ -79,7 +76,6 @@ export default function Chat({ notebookId, className }: { notebookId: string,cla
       const { chat, errorChat } = await getChat(notebookId)
 
       if (chat) {
-        setChatId(chat.chat_id)
         if (chat.content) {
           const parsedContent = JSON.parse(String(chat.content))
           setMessages(Array.isArray(parsedContent) ? parsedContent : [])
@@ -99,7 +95,6 @@ export default function Chat({ notebookId, className }: { notebookId: string,cla
           notebookId
         })
         if (chatInsert) {
-          setChatId(chatInsert.chat_id)
           setMessages([])
         } else if (errorChatInsert) {
           console.error('Error al crear el chat:', errorChatInsert)
@@ -379,10 +374,16 @@ export default function Chat({ notebookId, className }: { notebookId: string,cla
                       render={({ field }) => (
                         <FormItem className='flex-grow relative'>
                           <FormControl>
-                            <Input
-                              className=' backdrop-blur-sm bg-background/70'
+                            <Textarea
+                              className=' backdrop-blur-sm bg-background/70 resize-none textarea'
                               placeholder='Escribe tu mensaje'
                               {...field}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                  e.preventDefault()
+                                  form.handleSubmit(onSubmit)()
+                                }
+                              }}
                             />
                           </FormControl>
                         </FormItem>
