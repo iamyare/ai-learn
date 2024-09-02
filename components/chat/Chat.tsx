@@ -34,7 +34,7 @@ export default function Chat({ notebookId, className }: { notebookId: string, cl
         </div>
       ) : (
         <>
-          <ChatMessages messages={messages} className={className} />
+          <ChatMessages messages={messages} className={className} isPending={isPending} />
 
           <div className='flex flex-col space-y-2 p-4 absolute bottom-0 left-0 w-full'>
             <AIFunctions
