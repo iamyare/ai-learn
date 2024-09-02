@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch'
 import { Button } from '@/components/ui/button'
 import { ZoomIn, ZoomOut, Maximize, Download } from 'lucide-react'
@@ -56,6 +56,29 @@ const MindMap: React.FC<MindMapProps> = ({ mindMap }) => {
   useEffect(() => {
     renderMindMap()
   }, [renderMindMap])
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (mindMapRef.current) {
+        const svgElement = mindMapRef.current.querySelector('svg')
+        if (svgElement) {
+          svgElement.setAttribute('width', '100%')
+          svgElement.setAttribute('height', '100%')
+        }
+      }
+    }
+
+    const resizeObserver = new ResizeObserver(handleResize)
+    if (mindMapRef.current) {
+      resizeObserver.observe(mindMapRef.current)
+    }
+
+    return () => {
+      if (mindMapRef.current) {
+        resizeObserver.unobserve(mindMapRef.current)
+      }
+    }
+  }, [])
 
   const handleDownload = useCallback(() => {
     if (mindMapRef.current) {
@@ -152,7 +175,7 @@ const MindMap: React.FC<MindMapProps> = ({ mindMap }) => {
             >
               <div
                 ref={mindMapRef}
-                className=' w-full h-[200px]'
+                className='w-full h-64'
                 dangerouslySetInnerHTML={{ __html: svg }}
               />
             </TransformComponent>
