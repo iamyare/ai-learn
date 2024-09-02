@@ -3,7 +3,7 @@ import { MarkdownRenderer } from "@/components/ui/markdown-reader"
 import { Check, Copy } from "lucide-react"
 import React, { useCallback, useEffect, useState } from "react"
 
-const MessageContent: React.FC<{ content: string }> = React.memo(
+const MessageContent: React.FC<{ content: string }> = (
     ({ content }) => {
       const [renderedContent, setRenderedContent] = useState<React.ReactNode>('')
       const [isCopied, setIsCopied] = useState(false)

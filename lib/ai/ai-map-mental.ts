@@ -95,7 +95,6 @@ export async function generateMindMap({
 
 
     const modifiedObject = removeParentheses(object)
-    console.log('Mapa mental generado:', modifiedObject.mindMap)
     return { mindMap: modifiedObject.mindMap }
   } catch (error) {
     console.error('Error al generar el mapa mental:', error)

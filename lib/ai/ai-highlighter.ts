@@ -56,7 +56,6 @@ export async function generateChartFromHighlight({
       schema: schema
     })
 
-    console.log('Datos del gráfico generados:', object.chartData)
     return { chartData: object.chartData }
   } catch (error) {
     console.error('Error al generar los datos del gráfico:', error)
@@ -101,7 +100,6 @@ export async function explainText({
       prompt: userPrompt,
       schema: schema
     })
-    console.log('Explicación generada:', object.explanation)
     return {explanation: {context: highlightedText, explanation: object.explanation}}
   } catch (error) {
     console.error('Error al generar la explicación:', error)

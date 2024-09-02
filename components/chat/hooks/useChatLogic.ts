@@ -279,7 +279,6 @@ export function useChatLogic(notebookId: string) {
 
           if (result) {
             let newMessage;
-            console.log('Result:', result);
             if ('noteText' in result) {
               newMessage = { noteText: result.noteText, isUser: false, timestamp: new Date().toISOString() };
             } else if ('chartData' in result) {

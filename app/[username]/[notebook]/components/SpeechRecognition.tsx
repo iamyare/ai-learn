@@ -143,15 +143,12 @@ export default function SpeechRecognition({
             String(updatedTranscriptions.content)
           )
           if (JSON.stringify(parsedContent) === JSON.stringify(history)) {
-            console.log('Contenido actualizado correctamente')
             setIsUpdated(true)
             setLastUpdateTime(new Date(updatedTranscriptions.updated_at))
           } else {
-            console.log('El contenido no coincide con el history actual')
             setIsUpdated(false)
           }
         } else {
-          console.log('No se encontraron transcripciones actualizadas')
           setIsUpdated(false)
         }
       } catch (error) {
@@ -165,7 +162,6 @@ export default function SpeechRecognition({
     if (isPlaying) {
       pause()
     } else {
-      console.log('currentPosition TTS', currentPosition)
       setLastPlayPosition(currentPosition)
       speak(currentPosition) // Always start speaking from 0, but use lastPlayPosition as offset
     }

@@ -24,7 +24,7 @@ type HighlightOptionsProps = RenderHighlightContentProps & {
     const { triggerAction } = useHighlighter();
   
     const handleAction = (action: HighlighterAction) => {
-      console.log(`Performing action: ${action} on text: ${props.selectedText}`);
+      // console.log(`Performing action: ${action} on text: ${props.selectedText}`);
       triggerAction(action, props.selectedText);
       props.cancel();
     };

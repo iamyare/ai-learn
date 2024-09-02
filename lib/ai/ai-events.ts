@@ -74,7 +74,6 @@ export async function generateImportantEvents({
       schema: schema
     })
 
-    console.log(object)
     return { object: object.importantEvents }
   } catch (error) {
     return { object: [] }

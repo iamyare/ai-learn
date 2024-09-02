@@ -49,7 +49,6 @@ export function formatDate(date: string | Date, format: 'date' | 'time' | 'datet
 
 
 export function formatRelativeDate(date: string | Date): string {
-  console.log('dia', date)
   const parsedDate = typeof date === 'string' ? new Date(date) : date;
   const today = new Date();
   const yesterday = new Date(today);
