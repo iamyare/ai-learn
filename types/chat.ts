@@ -27,5 +27,50 @@ interface MindMapMessageType extends BaseMessageType {
   mindMap: string;
 }
 
+// Definición de ChartData
+interface ChartData {
+  type: 'bar' | 'line' | 'pie' | 'scatter' | 'area';
+  title: string;
+  labels: string[];
+  datasets: {
+    label: string;
+    data: number[];
+  }[];
+  xAxisLabel?: string;
+  yAxisLabel?: string;
+}
+
+// Tipo para mensajes de gráficos
+interface ChartMessageType extends BaseMessageType {
+  chartData: ChartData;
+}
+
+// Tipo para mensajes de notas
+interface NoteMessageType extends BaseMessageType {
+  noteText: string;
+}
+
+// Tipo para mensajes de explicación
+interface ExplanationMessageType extends BaseMessageType {
+  explanation: {
+    context: string;
+    explanation: string;
+  };
+}
+
+
+
+interface TranslationProps {
+  translation: {
+    original: string;
+    translated: string;
+    sourceLanguage: string;
+    targetLanguage: string;
+  };
+}
+// Tipo para mensajes de traducción
+
+interface TranslationMessageType extends BaseMessageType, TranslationProps {}
+
 // Tipo unión para usar en componentes que manejan todos los tipos de mensajes
-type ChatMessageType = MessageType | EventMessageType | MindMapMessageType;
+type ChatMessageType = MessageType | EventMessageType | MindMapMessageType | ChartMessageType | NoteMessageType | ExplanationMessageType | TranslationMessageType;

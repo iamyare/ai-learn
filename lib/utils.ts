@@ -1,3 +1,4 @@
+import { format } from "@formkit/tempo";
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 
@@ -47,4 +48,25 @@ export function formatDate(date: string | Date, format: 'date' | 'time' | 'datet
 }
 
 
+export function formatRelativeDate(date: string | Date): string {
+  const parsedDate = typeof date === 'string' ? new Date(date) : date;
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
 
+  if (isNaN(parsedDate.getTime())) {
+    throw new Error('Fecha inválida');
+  }
+
+  if (parsedDate.toDateString() === today.toDateString()) {
+    return 'Hoy';
+  } else if (parsedDate.toDateString() === yesterday.toDateString()) {
+    return 'Ayer';
+  } else if (parsedDate >= new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay()) && parsedDate <= today) {
+    return format(parsedDate, 'dddd', 'es'); // Full day of the week in Spanish
+  } else if (parsedDate.getFullYear() === today.getFullYear()) {
+    return format(parsedDate,  'ddd, DD MMM', 'es'); // Abbreviated day and month in Spanish
+  } else {
+    return format(parsedDate, 'medium', 'es');
+  }
+}

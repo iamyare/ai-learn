@@ -62,13 +62,13 @@ export async function generateMindMap({
         mindmap
         root((mindmap))
             Subtema 1
-            Detalle 1
-            ::icon(fa fa-book)
-            Detalle 2
+              Detalle 1
+              ::icon(fa fa-book)
+              Detalle 2
                 Detalle 2.1
             Subtema 2
-                Detalle 1
-                Detalle 2
+              Detalle 1
+              Detalle 2
   `
 
   let userPrompt = prompt + '\n\n'
@@ -95,7 +95,6 @@ export async function generateMindMap({
 
 
     const modifiedObject = removeParentheses(object)
-    console.log('Mapa mental generado:', modifiedObject.mindMap)
     return { mindMap: modifiedObject.mindMap }
   } catch (error) {
     console.error('Error al generar el mapa mental:', error)
