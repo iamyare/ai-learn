@@ -139,7 +139,7 @@ export async function translateText({
 
   const schema = z.object({
     translation: z.string().describe(`Traducción al ${targetLanguage} del texto resaltado`),
-    detectedLanguage: z.string().describe('Idioma detectado del texto original')
+    detectedLanguage: z.string().describe('Idioma detectado del texto original. Ejemplo: "inglés", "español", "francés"')
   })
 
   try {
