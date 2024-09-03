@@ -203,42 +203,16 @@ export default function SpeechRecognition({
         {isLoading ? (
           <TranscriptionSkeleton />
         ) : history.length !== 0 ? (
-          <ul className='space-y-1'>
-            {history.map((entry, index) => (
-              <li key={index} className='flex flex-col'>
-                {(visualizationOptions.showDate || visualizationOptions.showTime || visualizationOptions.showPage) && (
-                  <p className='ml-2 text-muted-foreground flex text-sm  divide-x'>
-                    {visualizationOptions.showDate && (
-                      <span className='px-2'>
-                        {format(entry.timestamp, 'medium')}
-                      </span>
-                    )}
-                    {visualizationOptions.showTime && (
-                      <span className='px-2'>
-                        {format(entry.timestamp, 'HH:mm')}
-                      </span>
-                    )}
-                    {visualizationOptions.showPage && entry.page && (
-                      <span className='px-2'>
-                        Página {entry.page}
-                      </span>
-                    )}
-                  </p>
-                )}
-                <p>
-                  {entry.text}
-                </p>
-              </li>
-            ))}
-            {isListening && (
-              <li>
-                <span>
-                  {transcript}
-                  <CoursorText />
-                </span>
-              </li>
-            )}
-          </ul>
+          <TranscriptionList
+            history={history}
+            transcript={transcript}
+            isListening={isListening}
+            currentPosition={currentPosition}
+            onPositionChange={handlePositionChange}
+            visualizationOptions={visualizationOptions}
+            showPageNumbers={showPageNumbers}
+            isPlaying={isPlaying}
+          />
         ) : isListening ? (
           <div className='flex h-full'>
             <span>
