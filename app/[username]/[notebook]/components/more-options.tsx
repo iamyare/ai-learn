@@ -1,5 +1,3 @@
-'use client'
-
 import * as React from "react"
 import { Button } from '@/components/ui/button'
 import {
@@ -12,6 +10,8 @@ import {
   DropdownMenuCheckboxItem,
 } from '@/components/ui/dropdown-menu'
 import { MoreVertical } from "lucide-react"
+import { useSpeechRecognitionContext } from '@/context/useSpeechRecognitionContext'
+import { VisualizationOptions } from "@/types/speechRecognition"
 
 const options = [
   { value: 'copy', label: 'Copiar Transcripcion' },
@@ -20,36 +20,59 @@ const options = [
 ]
 
 const hiddenTranscription = [
-  { value: 'date', label: 'Fecha' },
-  { value: 'time', label: 'Hora' },
-  { value: 'page', label: 'Pagina' },
+  { value: 'showDate', label: 'Fecha' },
+  { value: 'showTime', label: 'Hora' },
+  { value: 'showPage', label: 'Pagina' },
 ]
 
-type Checked = string[]
-
 export function MoreOptionsTranscript() {
-  const [checkedItems, setCheckedItems] = React.useState<Checked>(
-    hiddenTranscription.map(option => option.value)
-  )
+  const { history, updateOptions, visualizationOptions, setVisualizationOptions } = useSpeechRecognitionContext()
 
-  const handleChange = (value: string) => {
-    setCheckedItems((prev) =>
-      prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]
-    )
+  const handleChange = (value: keyof VisualizationOptions) => {
+    setVisualizationOptions(prev => ({
+      ...prev,
+      [value]: !prev[value]
+    }))
+  }
+
+  const handleCopy = (withMetadata: boolean) => {
+    const textToCopy = history.map(entry => {
+      let entryText = ''
+      if (withMetadata) {
+        if (visualizationOptions.showDate) entryText += `[${new Date(entry.timestamp).toLocaleDateString()}] `
+        if (visualizationOptions.showTime) entryText += `[${new Date(entry.timestamp).toLocaleTimeString()}] `
+        if (visualizationOptions.showPage && entry.page) entryText += `[Página ${entry.page}] `
+      }
+      entryText += entry.text
+      return entryText
+    }).join('\n')
+
+    navigator.clipboard.writeText(textToCopy)
+  }
+
+  const handleDelete = () => {
+    updateOptions({ history: [] })
   }
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button size={'icon'} variant="ghost">
-          <MoreVertical className=' text-muted-foreground size-4' />
+          <MoreVertical className='text-muted-foreground size-4' />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56">
         <DropdownMenuLabel>Opciones</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {options.map((option) => (
-          <DropdownMenuItem key={option.value}>
+          <DropdownMenuItem 
+            key={option.value}
+            onClick={() => {
+              if (option.value === 'copy') handleCopy(true)
+              if (option.value === 'copy-no-transcript') handleCopy(false)
+              if (option.value === 'delete') handleDelete()
+            }}
+          >
             {option.label}
           </DropdownMenuItem>
         ))}
@@ -58,8 +81,11 @@ export function MoreOptionsTranscript() {
         {hiddenTranscription.map((option) => (
           <DropdownMenuCheckboxItem
             key={option.value}
-            checked={checkedItems.includes(option.value)}
-            onCheckedChange={() => handleChange(option.value)}
+            checked={visualizationOptions[option.value as keyof VisualizationOptions]}
+            onCheckedChange={() => {
+              handleChange(option.value as keyof VisualizationOptions)
+              console.log(`${option.value}: ${!visualizationOptions[option.value as keyof VisualizationOptions]}`)
+            }}
           >
             {option.label}
           </DropdownMenuCheckboxItem>

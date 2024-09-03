@@ -18,6 +18,7 @@ import TranscriptionHeader from './TranscriptionHeader'
 import TranscriptionControls from './TranscriptionControls'
 import TranscriptionList from './TranscriptionList'
 import { CoursorText } from '@/components/ui/coursor-text'
+import { format } from '@formkit/tempo'
 
 interface SpeechRecognitionProps {
   classNameContainer?: string
@@ -38,7 +39,8 @@ export default function SpeechRecognition({
     history,
     startListening,
     stopListening,
-    updateOptions
+    updateOptions,
+    visualizationOptions
   } = useSpeechRecognitionContext()
 
   const [isPending, startTransition] = useTransition()
@@ -201,15 +203,42 @@ export default function SpeechRecognition({
         {isLoading ? (
           <TranscriptionSkeleton />
         ) : history.length !== 0 ? (
-          <TranscriptionList
-            history={history}
-            transcript={transcript}
-            isListening={isListening}
-            currentPosition={currentPosition}
-            showPageNumbers={showPageNumbers}
-            isPlaying={isPlaying}
-            onPositionChange={handlePositionChange}
-          />
+          <ul className='space-y-1'>
+            {history.map((entry, index) => (
+              <li key={index} className='flex flex-col'>
+                {(visualizationOptions.showDate || visualizationOptions.showTime || visualizationOptions.showPage) && (
+                  <p className='ml-2 text-muted-foreground flex text-sm  divide-x'>
+                    {visualizationOptions.showDate && (
+                      <span className='px-2'>
+                        {format(entry.timestamp, 'medium')}
+                      </span>
+                    )}
+                    {visualizationOptions.showTime && (
+                      <span className='px-2'>
+                        {format(entry.timestamp, 'HH:mm')}
+                      </span>
+                    )}
+                    {visualizationOptions.showPage && entry.page && (
+                      <span className='px-2'>
+                        Página {entry.page}
+                      </span>
+                    )}
+                  </p>
+                )}
+                <p>
+                  {entry.text}
+                </p>
+              </li>
+            ))}
+            {isListening && (
+              <li>
+                <span>
+                  {transcript}
+                  <CoursorText />
+                </span>
+              </li>
+            )}
+          </ul>
         ) : isListening ? (
           <div className='flex h-full'>
             <span>
@@ -220,8 +249,7 @@ export default function SpeechRecognition({
         ) : (
           <div className='flex justify-center items-center h-full'>
             <p className='text-muted-foreground'>
-              No hay transcripciones disponibles. Comienza a hablar para crear
-              una.
+              No hay transcripciones disponibles. Comienza a hablar para crear una.
             </p>
           </div>
         )}

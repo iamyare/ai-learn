@@ -15,7 +15,7 @@ export default function MenuUser({ user }: { user: User }) {
     <Menu as='div' className='relative'>
       {({ open }) => (
         <>
-          <Menu.Button className='relative flex rounded-full bg-muted text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'>
+          <Menu.Button className='relative flex rounded-full bg-muted text-sm focus:outline-none focus:ring-2  focus:ring-ring focus:ring-offset-2'>
             <span className='absolute -inset-1.5' />
             <span className='sr-only'>Open user menu</span>
             <div className='flex items-center justify-center size-8 rounded-full bg-muted'>
@@ -24,7 +24,7 @@ export default function MenuUser({ user }: { user: User }) {
           </Menu.Button>
 
           <Menu.Items
-            className='absolute overflow-hidden right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-background shadow-lg ring-1 ring-black ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in'
+            className='absolute overflow-hidden right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-background shadow-lg ring-1  ring-opacity-5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in'
           >
             <Menu.Item>
               {({ active }) => (

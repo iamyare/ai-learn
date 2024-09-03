@@ -2,7 +2,7 @@
 - [-] Agregar funcionalidad de url con los id de folders
 - [ ] Funcionalidad de audio a texto
 - [x] Solucionar IA
-- [ ] Solucionar modal menu de user
+- [x] Solucionar modal menu de user
 - [ ] Agregar opciones al modal configuracion
 - [ ] Opciones de visualizacion y copiar transcripcion.
 - [x] Cambiar input por text area
