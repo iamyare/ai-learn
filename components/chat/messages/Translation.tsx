@@ -1,7 +1,5 @@
 import React from 'react'
-import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Copy } from 'lucide-react'
 import CopyButton from '@/components/ui/copy-button'
 
 
