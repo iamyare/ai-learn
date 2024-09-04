@@ -11,7 +11,6 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  ResponsiveContainer,
   Cell,
   LabelList,
   Sector,
@@ -105,6 +104,8 @@ const Chart: React.FC<ChartProps> = ({ chartData }) => {
     try {
       const commonProps = {
         data: processedData,
+        width: 273,
+        height: 350,
         margin: { top: 20, right: 30, left: 20, bottom: 5 }
       }
 
@@ -121,16 +122,15 @@ const Chart: React.FC<ChartProps> = ({ chartData }) => {
               >
                 <LabelList position='top' offset={12} fontSize={12} />
               </Bar>
-              <XAxis dataKey='name' />
-              <YAxis />
+              <XAxis dataKey={'label'} />
+
             </BarChart>
           )
         case 'line':
           return (
             <LineChart {...commonProps}>
               <CartesianGrid strokeDasharray='3 3' />
-              <XAxis dataKey='name' />
-              <YAxis />
+              <XAxis dataKey={'label'} />
               <ChartTooltip content={<ChartTooltipContent />} />
               <Line
                 dataKey={adaptedData.datasets[activeDataset].label}
@@ -148,7 +148,7 @@ const Chart: React.FC<ChartProps> = ({ chartData }) => {
           )
         case 'pie':
           return (
-            <PieChart>
+            <PieChart width={273} height={350}>
               <Pie
                 data={processedData}
                 dataKey={adaptedData.datasets[activeDataset].label}
@@ -190,8 +190,7 @@ const Chart: React.FC<ChartProps> = ({ chartData }) => {
               </defs>
               <ChartTooltip content={<ChartTooltipContent />} />
               <CartesianGrid vertical={false} />
-              <XAxis dataKey="name" tickMargin={8} />
-              <YAxis />
+              <XAxis dataKey={'label'} />
               {adaptedData.datasets.map((dataset, index) => (
                 <Area
                   key={dataset.label}
@@ -282,9 +281,7 @@ const Chart: React.FC<ChartProps> = ({ chartData }) => {
             config={chartConfig}
             className='aspect-auto h-[350px] w-full'
           >
-            <ResponsiveContainer width='100%' height='100%'>
-              {renderChart() as React.ReactElement}
-            </ResponsiveContainer>
+            {renderChart() as React.ReactElement}
           </ChartContainer>
         )}
         <ScrollArea className=' w-full'>

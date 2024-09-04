@@ -25,7 +25,7 @@ export default function Chat({ notebookId, className }: { notebookId: string, cl
 
   return (
     <section className='flex flex-col h-full max-h-full relative'>
-      <ChatHeader />
+      <ChatHeader chat={messages} />
       {!apiKeyGemini ? (
         <div className={cn('flex justify-center items-center h-full w-full p-4', className)}>
           <p className='text-muted-foreground text-center'>

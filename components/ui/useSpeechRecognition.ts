@@ -1,9 +1,11 @@
-'use client'
 import { DialogEntry, SpeechRecognitionOptions } from "@/types/speechRecognition"
 import { useCallback, useEffect, useRef, useState } from "react"
 
 export const useSpeechRecognition = (initialOptions: SpeechRecognitionOptions = {}) => {
-  const [options, setOptions] = useState<SpeechRecognitionOptions>(initialOptions)
+  const [options, setOptions] = useState<SpeechRecognitionOptions>({
+    groupingInterval: 10000,
+    ...initialOptions
+  })
   const [isListening, setIsListening] = useState(false)
   const [transcript, setTranscript] = useState('')
   const [history, setHistory] = useState<DialogEntry[]>([])
@@ -12,6 +14,7 @@ export const useSpeechRecognition = (initialOptions: SpeechRecognitionOptions = 
   const currentTranscriptRef = useRef('')
   const lastEntryTimestampRef = useRef<number>(0)
   const currentPageRef = useRef<number>(1)
+  const groupIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     currentPageRef.current = currentPage
@@ -21,18 +24,18 @@ export const useSpeechRecognition = (initialOptions: SpeechRecognitionOptions = 
     return date.toISOString()
   }
 
-  const addToHistory = useCallback((text: string, page: number) => {
+  const addToHistory = useCallback((text: string, page: number, forceNewGroup: boolean = false) => {
     if (text.trim() !== '') {
       setHistory((prevHistory) => {
         const now = Date.now()
         const lastEntry = prevHistory[prevHistory.length - 1]
         
-        if (lastEntry && now - lastEntryTimestampRef.current < options.groupingInterval! && lastEntry.page === page) {
-          // Group with the last entry if within the interval and on the same page
+        if (lastEntry && !forceNewGroup && now - lastEntryTimestampRef.current < options.groupingInterval! && lastEntry.page === page) {
+          // Update the last entry
           const updatedHistory = [...prevHistory]
           updatedHistory[updatedHistory.length - 1] = {
             ...lastEntry,
-            text: lastEntry.text + ' ' + text.trim()
+            text: text.trim()
           }
           return updatedHistory
         } else {
@@ -45,6 +48,7 @@ export const useSpeechRecognition = (initialOptions: SpeechRecognitionOptions = 
         }
       })
       setTranscript('')
+      currentTranscriptRef.current = ''
     }
   }, [options.groupingInterval])
 
@@ -74,8 +78,6 @@ export const useSpeechRecognition = (initialOptions: SpeechRecognitionOptions = 
       if (finalTranscript !== '') {
         currentTranscriptRef.current += finalTranscript
         setTranscript(currentTranscriptRef.current)
-        addToHistory(currentTranscriptRef.current, currentPageRef.current)
-        currentTranscriptRef.current = ''
       } else {
         setTranscript(currentTranscriptRef.current + interimTranscript)
       }
@@ -98,11 +100,21 @@ export const useSpeechRecognition = (initialOptions: SpeechRecognitionOptions = 
     recognition.start()
     recognitionRef.current = recognition
 
+    // Start the grouping interval
+    groupIntervalRef.current = setInterval(() => {
+      if (currentTranscriptRef.current.trim()) {
+        addToHistory(currentTranscriptRef.current, currentPageRef.current, true)
+      }
+    }, options.groupingInterval)
+
     return () => {
       recognition.stop()
       setIsListening(false)
+      if (groupIntervalRef.current) {
+        clearInterval(groupIntervalRef.current)
+      }
     }
-  }, [isListening, addToHistory, options.language])
+  }, [isListening, addToHistory, options.language, options.groupingInterval])
 
   const stopListening = useCallback(() => {
     setIsListening(false)
@@ -115,19 +127,22 @@ export const useSpeechRecognition = (initialOptions: SpeechRecognitionOptions = 
     }
     setTranscript('')
     currentTranscriptRef.current = ''
+    if (groupIntervalRef.current) {
+      clearInterval(groupIntervalRef.current)
+    }
   }, [addToHistory])
 
   const changePage = useCallback((newPage: number) => {
     if (newPage !== currentPageRef.current) {
-      if (transcript.trim()) {
-        addToHistory(transcript, currentPageRef.current)
-        setTranscript('')
+      if (currentTranscriptRef.current.trim()) {
+        addToHistory(currentTranscriptRef.current, currentPageRef.current, true)
       }
-      // addToHistory(`[Page changed to ${newPage}]`, newPage)
       setCurrentPage(newPage)
       currentPageRef.current = newPage
+      currentTranscriptRef.current = ''
+      setTranscript('')
     }
-  }, [transcript, addToHistory])
+  }, [addToHistory])
 
   const updateOptions = useCallback((newOptions: Partial<SpeechRecognitionOptions>) => {
     setOptions(prevOptions => ({
@@ -142,31 +157,17 @@ export const useSpeechRecognition = (initialOptions: SpeechRecognitionOptions = 
     }
     if (newOptions.transcript !== undefined) {
       setTranscript(newOptions.transcript)
+      currentTranscriptRef.current = newOptions.transcript
     }
-  }, [])
-
-
-  const startServerSideRecognition = async () => {
-    while (isListening) {
-      try {
-        const audioChunk = await captureAudioChunk()
-        const response = await fetch('/api/speechRecognition', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ audio: audioChunk }),
-        })
-        const data = await response.json()
-        if (data.transcription) {
-          currentTranscriptRef.current += data.transcription + ' '
-          setTranscript(currentTranscriptRef.current)
-          addToHistory(currentTranscriptRef.current, currentPageRef.current)
-          currentTranscriptRef.current = ''
+    if (newOptions.groupingInterval && groupIntervalRef.current) {
+      clearInterval(groupIntervalRef.current)
+      groupIntervalRef.current = setInterval(() => {
+        if (currentTranscriptRef.current.trim()) {
+          addToHistory(currentTranscriptRef.current, currentPageRef.current, true)
         }
-      } catch (error) {
-        console.error('Error en el reconocimiento de voz del servidor:', error)
-      }
+      }, newOptions.groupingInterval)
     }
-  }
+  }, [addToHistory])
 
   return { 
     isListening, 
@@ -178,36 +179,4 @@ export const useSpeechRecognition = (initialOptions: SpeechRecognitionOptions = 
     changePage,
     updateOptions
   }
-}
-
-
-async function captureAudioChunk(): Promise<ArrayBuffer> {
-  return new Promise((resolve, reject) => {
-    navigator.mediaDevices.getUserMedia({ audio: true })
-      .then(stream => {
-        const mediaRecorder = new MediaRecorder(stream);
-        const audioChunks: Blob[] = [];
-
-        mediaRecorder.addEventListener("dataavailable", event => {
-          audioChunks.push(event.data);
-        });
-
-        mediaRecorder.addEventListener("stop", () => {
-          const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-          const reader = new FileReader();
-          reader.readAsArrayBuffer(audioBlob);
-          reader.onloadend = () => {
-            resolve(reader.result as ArrayBuffer);
-          };
-        });
-
-        mediaRecorder.start();
-        setTimeout(() => {
-          mediaRecorder.stop();
-        }, 5000); // Capture 5 seconds of audio
-      })
-      .catch(error => {
-        reject(error);
-      });
-  });
 }
