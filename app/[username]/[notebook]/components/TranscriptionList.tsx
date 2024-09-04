@@ -1,7 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { cn, formatDate } from '@/lib/utils';
 import { CoursorText } from '@/components/ui/coursor-text';
-import { DialogEntry } from '@/types/speechRecognition';
+import { DialogEntry, VisualizationOptions } from '@/types/speechRecognition';
+import { format } from '@formkit/tempo';
+import { Calendar, Clock, FileIcon } from 'lucide-react';
 
 interface TranscriptionListProps {
   history: DialogEntry[];
@@ -11,6 +13,7 @@ interface TranscriptionListProps {
   showPageNumbers: boolean;
   onPositionChange: (newPosition: number) => void;
   isPlaying: boolean;
+  visualizationOptions: VisualizationOptions
 }
 
 const TranscriptionList: React.FC<TranscriptionListProps> = ({
@@ -18,9 +21,8 @@ const TranscriptionList: React.FC<TranscriptionListProps> = ({
   transcript,
   isListening,
   currentPosition,
-  showPageNumbers,
   onPositionChange,
-  isPlaying
+  visualizationOptions
 }) => {
   const [currentParagraphIndex, setCurrentParagraphIndex] = useState(0);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
@@ -64,15 +66,31 @@ const TranscriptionList: React.FC<TranscriptionListProps> = ({
   };
 
   return (
-    <ul className='space-y-1'>
+    <ul className='space-y-4'>
       {history.map((entry, index) => (
         <li key={index} className='flex flex-col'>
-          {showPageNumbers && (
-            <span className='ml-2 text-muted-foreground text-sm'>
-              [{formatDate(entry.timestamp || new Date(), 'datetime')}] -
-              Página {entry.page || 'Unknown'}
-            </span>
-          )}
+                {(visualizationOptions.showDate || visualizationOptions.showTime || visualizationOptions.showPage) && (
+                  <p className='ml-2 text-muted-foreground flex text-sm gap-2'>
+                    {visualizationOptions.showDate && (
+                      <span className='flex items-center'>
+                        <Calendar className=' size-3 mr-1' />
+                        {format(entry.timestamp, 'medium')}
+                      </span>
+                    )}
+                    {visualizationOptions.showTime && (
+                      <span className='flex items-center'>
+                        <Clock className=' size-3 mr-1' />
+                        {format(entry.timestamp, 'HH:mm:ss')}
+                      </span>
+                    )}
+                    {visualizationOptions.showPage && entry.page && (
+                      <span className='flex items-center'>
+                        <FileIcon className=' size-3 mr-1' />
+                        Página {entry.page}
+                      </span>
+                    )}
+                  </p>
+                )}
           <p className={cn(
             index === currentParagraphIndex ? 'bg-primary/5 p-1 rounded w-fit' : ''
           )}>

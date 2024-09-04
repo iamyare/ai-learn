@@ -12,7 +12,15 @@ export interface SpeechRecognitionContextType {
   startListening: () => void;
   stopListening: () => void;
   updateOptions: (newOptions: Partial<SpeechRecognitionOptions>) => void;
+  visualizationOptions: VisualizationOptions;
+  setVisualizationOptions: React.Dispatch<React.SetStateAction<VisualizationOptions>>
   changePage: (newPage: number) => void;
+}
+
+export interface VisualizationOptions {
+  showDate: boolean;
+  showTime: boolean;
+  showPage: boolean;
 }
 
 export interface SpeechRecognitionOptions {

@@ -47,7 +47,8 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, className, isPend
 
   return (
     <div
-      className={cn('flex-grow overflow-y-auto pb-[120px] px-4', className)}
+    id='chat-messages'
+      className={cn('flex-grow overflow-y-auto pb-[120px] pt-[40px] px-4', className)}
       ref={chatContainerRef}
     >
 

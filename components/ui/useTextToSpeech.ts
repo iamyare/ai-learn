@@ -91,7 +91,7 @@ const useTextToSpeech = ({
     };
   }, [lang, rate, pitch, volume, voice, voices]);
 
-  const speak = useCallback((startIndex = 0) => {
+  const speak = useCallback((startIndex = currentPosition) => {
     const synth = window.speechSynthesis;
     if (utteranceRef.current) {
       if (synth.speaking) {
@@ -102,7 +102,7 @@ const useTextToSpeech = ({
       setIsPlaying(true);
       setCurrentPosition(startIndex);
     }
-  }, []);
+  }, [currentPosition]);
 
   const pause = useCallback(() => {
     const synth = window.speechSynthesis;

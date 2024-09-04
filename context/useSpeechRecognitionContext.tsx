@@ -1,16 +1,20 @@
 'use client'
 
-import React, { createContext, useContext, ReactNode, useMemo, useEffect } from 'react'
+import React, { createContext, useContext, ReactNode, useMemo, useEffect, useState } from 'react'
 import { useSpeechRecognition } from '@/components/ui/useSpeechRecognition'
-import { SpeechRecognitionContextType } from '@/types/speechRecognition'
+import { SpeechRecognitionContextType, VisualizationOptions } from '@/types/speechRecognition'
 import { usePDFContext } from '@/context/useCurrentPageContext'
-
 
 const SpeechRecognitionContext = createContext<SpeechRecognitionContextType | undefined>(undefined)
 
 export const SpeechRecognitionProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const speechRecognition = useSpeechRecognition()
   const { currentPage } = usePDFContext()
+  const [visualizationOptions, setVisualizationOptions] = useState<VisualizationOptions>({
+    showDate: true,
+    showTime: true,
+    showPage: true,
+  })
 
   useEffect(() => {
     speechRecognition.changePage(currentPage)
@@ -19,7 +23,9 @@ export const SpeechRecognitionProvider: React.FC<{ children: ReactNode }> = ({ c
   const contextValue = useMemo((): SpeechRecognitionContextType => ({
     ...speechRecognition,
     currentPage,
-  }), [speechRecognition, currentPage])
+    visualizationOptions,
+    setVisualizationOptions,
+  }), [speechRecognition, currentPage, visualizationOptions])
 
   return (
     <SpeechRecognitionContext.Provider value={contextValue}>

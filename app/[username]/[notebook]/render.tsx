@@ -52,8 +52,8 @@ export default function RenderView({
           </Button>
           <h2 className='font-medium'>{notebookInfo.notebook_name}</h2>
         </div>
-        <div className='flex items-center'>
-          <ThemeToggle className='h-full' />
+        <div className='flex items-center gap-4'>
+          <ThemeToggle className=' size-fit p-3' />
           {user && <MenuUser user={user} />}
         </div>
       </header>

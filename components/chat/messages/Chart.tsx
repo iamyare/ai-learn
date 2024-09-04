@@ -11,7 +11,6 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
-  ResponsiveContainer,
   Cell,
   LabelList,
   Sector,
@@ -51,6 +50,20 @@ const Chart: React.FC<ChartProps> = ({ chartData }) => {
   const [adaptedData, setAdaptedData] = useState<ChartData>(chartData)
   const [activeDataset, setActiveDataset] = useState(0)
   const [error, setError] = useState<string | null>(null)
+
+  const formatTickValue = (value: number | string): string => {
+    if (typeof value === 'number') {
+      const isNegative = value < 0;
+      const absoluteValue = Math.abs(value);
+  
+      if (absoluteValue >= 1000000) {
+        return `${isNegative ? '-' : ''}${(absoluteValue / 1000000).toFixed(1)}M`;
+      } else if (absoluteValue >= 1000) {
+        return `${isNegative ? '-' : ''}${(absoluteValue / 1000).toFixed(1)}K`;
+      }
+    }
+    return value.toString();
+  };
 
   const adaptDataToChartType = useMemo(
     () => (type: 'bar' | 'line' | 'pie' | 'scatter' | 'area') => {
@@ -105,7 +118,9 @@ const Chart: React.FC<ChartProps> = ({ chartData }) => {
     try {
       const commonProps = {
         data: processedData,
-        margin: { top: 20, right: 30, left: 20, bottom: 5 }
+        width: 273,
+        height: 350,
+        margin: { top: 10, right: 10, left: 10, bottom: 5 }
       }
 
       switch (chartType) {
@@ -121,16 +136,35 @@ const Chart: React.FC<ChartProps> = ({ chartData }) => {
               >
                 <LabelList position='top' offset={12} fontSize={12} />
               </Bar>
-              <XAxis dataKey='name' />
-              <YAxis />
+              <XAxis dataKey='name'
+               tickLine={false}
+               axisLine={false}
+               tickMargin={2}
+               />
+              <YAxis 
+                tickMargin={2}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={formatTickValue}
+              />
+
             </BarChart>
           )
         case 'line':
           return (
             <LineChart {...commonProps}>
               <CartesianGrid strokeDasharray='3 3' />
-              <XAxis dataKey='name' />
-              <YAxis />
+              <XAxis dataKey='name'
+               tickLine={false}
+               axisLine={false}
+               tickMargin={2}
+               />
+                             <YAxis 
+                tickMargin={2}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={formatTickValue}
+              />
               <ChartTooltip content={<ChartTooltipContent />} />
               <Line
                 dataKey={adaptedData.datasets[activeDataset].label}
@@ -148,7 +182,7 @@ const Chart: React.FC<ChartProps> = ({ chartData }) => {
           )
         case 'pie':
           return (
-            <PieChart>
+            <PieChart width={273} height={350}>
               <Pie
                 data={processedData}
                 dataKey={adaptedData.datasets[activeDataset].label}
@@ -190,8 +224,17 @@ const Chart: React.FC<ChartProps> = ({ chartData }) => {
               </defs>
               <ChartTooltip content={<ChartTooltipContent />} />
               <CartesianGrid vertical={false} />
-              <XAxis dataKey="name" tickMargin={8} />
-              <YAxis />
+              <XAxis dataKey='name'
+               tickLine={false}
+               axisLine={false}
+               tickMargin={2}
+               />
+                             <YAxis 
+                tickMargin={2}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={formatTickValue}
+              />
               {adaptedData.datasets.map((dataset, index) => (
                 <Area
                   key={dataset.label}
@@ -282,9 +325,7 @@ const Chart: React.FC<ChartProps> = ({ chartData }) => {
             config={chartConfig}
             className='aspect-auto h-[350px] w-full'
           >
-            <ResponsiveContainer width='100%' height='100%'>
-              {renderChart() as React.ReactElement}
-            </ResponsiveContainer>
+            {renderChart() as React.ReactElement}
           </ChartContainer>
         )}
         <ScrollArea className=' w-full'>

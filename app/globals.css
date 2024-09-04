@@ -72,6 +72,16 @@
 
 }
 
+/* styles.css */
+@keyframes fadeInOut {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+.copied-animation {
+  animation: fadeInOut 2s ease-in-out;
+}
+
 .morph-shadow{
   box-shadow:  9px 9px 28px rgba(27, 27, 27, 0.5),
              -9px -9px 28px rgba(186, 186, 186, 0.5);
