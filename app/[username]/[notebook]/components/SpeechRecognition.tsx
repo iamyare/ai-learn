@@ -2,7 +2,6 @@ import React, {
   useRef,
   useEffect,
   useState,
-  useCallback,
   useTransition
 } from 'react'
 import { cn } from '@/lib/utils'
@@ -18,7 +17,6 @@ import TranscriptionHeader from './TranscriptionHeader'
 import TranscriptionControls from './TranscriptionControls'
 import TranscriptionList from './TranscriptionList'
 import { CoursorText } from '@/components/ui/coursor-text'
-import { format } from '@formkit/tempo'
 
 interface SpeechRecognitionProps {
   classNameContainer?: string
@@ -29,7 +27,6 @@ interface SpeechRecognitionProps {
 
 export default function SpeechRecognition({
   classNameContainer,
-  classNameHeader,
   classNameTranscript,
   notebookId
 }: SpeechRecognitionProps) {
@@ -45,7 +42,6 @@ export default function SpeechRecognition({
 
   const [isPending, startTransition] = useTransition()
   const scrollAreaRef = useRef<HTMLDivElement>(null)
-  const [shouldAutoScroll, setShouldAutoScroll] = useState(true)
   const [isLoading, setIsLoading] = useState(true)
   const [isUpdated, setIsUpdated] = useState(false)
   const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null)
@@ -99,21 +95,30 @@ export default function SpeechRecognition({
     loadTranscriptions()
   }, [notebookId, updateOptions])
 
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (isListening) {
+        event.preventDefault()
+        event.returnValue = 'Tienes una transcripción en curso. ¿Estás seguro de que quieres salir?'
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+    }
+  }, [isListening])
+
   const handleScroll = () => {
     if (scrollAreaRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = scrollAreaRef.current
       const isScrolledToBottom = scrollTop + clientHeight >= scrollHeight - 10
-      setShouldAutoScroll(isScrolledToBottom)
     }
   }
 
   const handlePositionChange = (newPosition: number) => {
     setCurrentPosition(newPosition)
     setLastPlayPosition(newPosition)
-    //Reproducir el texto en la posición actual
-    // if (!isPlaying) {
-    //   speak(newPosition);
-    // }
   }
 
   const handleAction = async () => {
@@ -165,7 +170,7 @@ export default function SpeechRecognition({
       pause()
     } else {
       setLastPlayPosition(currentPosition)
-      speak(currentPosition) // Always start speaking from 0, but use lastPlayPosition as offset
+      speak(currentPosition)
     }
   }
 
