@@ -51,6 +51,20 @@ const Chart: React.FC<ChartProps> = ({ chartData }) => {
   const [activeDataset, setActiveDataset] = useState(0)
   const [error, setError] = useState<string | null>(null)
 
+  const formatTickValue = (value: number | string): string => {
+    if (typeof value === 'number') {
+      const isNegative = value < 0;
+      const absoluteValue = Math.abs(value);
+  
+      if (absoluteValue >= 1000000) {
+        return `${isNegative ? '-' : ''}${(absoluteValue / 1000000).toFixed(1)}M`;
+      } else if (absoluteValue >= 1000) {
+        return `${isNegative ? '-' : ''}${(absoluteValue / 1000).toFixed(1)}K`;
+      }
+    }
+    return value.toString();
+  };
+
   const adaptDataToChartType = useMemo(
     () => (type: 'bar' | 'line' | 'pie' | 'scatter' | 'area') => {
       let newData: ChartData = JSON.parse(JSON.stringify(chartData))
@@ -106,7 +120,7 @@ const Chart: React.FC<ChartProps> = ({ chartData }) => {
         data: processedData,
         width: 273,
         height: 350,
-        margin: { top: 20, right: 30, left: 20, bottom: 5 }
+        margin: { top: 10, right: 10, left: 10, bottom: 5 }
       }
 
       switch (chartType) {
@@ -122,7 +136,17 @@ const Chart: React.FC<ChartProps> = ({ chartData }) => {
               >
                 <LabelList position='top' offset={12} fontSize={12} />
               </Bar>
-              <XAxis dataKey={'label'} />
+              <XAxis dataKey='name'
+               tickLine={false}
+               axisLine={false}
+               tickMargin={2}
+               />
+              <YAxis 
+                tickMargin={2}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={formatTickValue}
+              />
 
             </BarChart>
           )
@@ -130,7 +154,17 @@ const Chart: React.FC<ChartProps> = ({ chartData }) => {
           return (
             <LineChart {...commonProps}>
               <CartesianGrid strokeDasharray='3 3' />
-              <XAxis dataKey={'label'} />
+              <XAxis dataKey='name'
+               tickLine={false}
+               axisLine={false}
+               tickMargin={2}
+               />
+                             <YAxis 
+                tickMargin={2}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={formatTickValue}
+              />
               <ChartTooltip content={<ChartTooltipContent />} />
               <Line
                 dataKey={adaptedData.datasets[activeDataset].label}
@@ -190,7 +224,17 @@ const Chart: React.FC<ChartProps> = ({ chartData }) => {
               </defs>
               <ChartTooltip content={<ChartTooltipContent />} />
               <CartesianGrid vertical={false} />
-              <XAxis dataKey={'label'} />
+              <XAxis dataKey='name'
+               tickLine={false}
+               axisLine={false}
+               tickMargin={2}
+               />
+                             <YAxis 
+                tickMargin={2}
+                tickLine={false}
+                axisLine={false}
+                tickFormatter={formatTickValue}
+              />
               {adaptedData.datasets.map((dataset, index) => (
                 <Area
                   key={dataset.label}
