@@ -24,12 +24,8 @@ import * as z from 'zod'
 import { cn } from '@/lib/utils'
 
 const formSchema = z.object({
-  microphone: z.string({
-    required_error: 'Please select a microphone.'
-  }),
-  speaker: z.string({
-    required_error: 'Please select a speaker.'
-  })
+  microphone: z.string().optional(),
+  speaker: z.string().optional()
 })
 
 const NUM_VOLUME_BARS = 10
@@ -56,8 +52,9 @@ export default function AudioConfig() {
   })
 
   useEffect(() => {
-    async function getAudioDevices() {
+    async function initializeAudioConfig() {
       try {
+        // Obtener dispositivos de audio
         const devices = await navigator.mediaDevices.enumerateDevices()
         const audioDevices = devices.filter(
           (device) =>
@@ -65,43 +62,29 @@ export default function AudioConfig() {
         )
         setAudioDevices(audioDevices)
 
-        // Get default system microphone
-        const defaultMicrophone = audioDevices.find(
-          (device) => device.kind === 'audioinput' && device.deviceId === 'default'
-        )
-
-        // Load saved devices from localStorage
-        const savedDevices = localStorage.getItem(LOCAL_STORAGE_KEY)
-        if (savedDevices) {
-          const { microphone, speaker } = JSON.parse(savedDevices)
+        // Verificar si existe configuración en localStorage
+        const savedConfig = localStorage.getItem(LOCAL_STORAGE_KEY)
+        if (savedConfig) {
+          const { microphone, speaker } = JSON.parse(savedConfig)
           form.setValue('microphone', microphone)
           form.setValue('speaker', speaker)
-        } else if (defaultMicrophone) {
-          // If no saved devices, set the default system microphone
-          form.setValue('microphone', defaultMicrophone.deviceId)
-        }
-
-        // If no microphone is set (either from localStorage or default), set the first available microphone
-        if (!form.getValues().microphone) {
-          const firstMicrophone = audioDevices.find(device => device.kind === 'audioinput')
-          if (firstMicrophone) {
-            form.setValue('microphone', firstMicrophone.deviceId)
-          }
-        }
-
-        // If no speaker is set, set the first available speaker
-        if (!form.getValues().speaker) {
-          const firstSpeaker = audioDevices.find(device => device.kind === 'audiooutput')
-          if (firstSpeaker) {
-            form.setValue('speaker', firstSpeaker.deviceId)
-          }
+        } else {
+          // Si no hay configuración guardada, usar los primeros dispositivos disponibles
+          const firstMicrophone = audioDevices.find(
+            (device) => device.kind === 'audioinput'
+          )
+          const firstSpeaker = audioDevices.find(
+            (device) => device.kind === 'audiooutput'
+          )
+          if (firstMicrophone) form.setValue('microphone', firstMicrophone.deviceId)
+          if (firstSpeaker) form.setValue('speaker', firstSpeaker.deviceId)
         }
       } catch (error) {
-        console.error('Error getting audio devices:', error)
+        console.error('Error initializing audio config:', error)
       }
     }
 
-    getAudioDevices()
+    initializeAudioConfig()
 
     return () => {
       if (rafId.current) {
@@ -109,10 +92,9 @@ export default function AudioConfig() {
       }
       stopMicrophoneTest()
     }
-  }, [])
+  }, [form])
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // Save selected devices to localStorage
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(values))
     console.log('Audio configuration saved:', values)
   }
@@ -188,7 +170,7 @@ export default function AudioConfig() {
         audioElement.current = new Audio('/path/to/test-sound.mp3') // Replace with actual path to a test sound
         audioElement.current.loop = true
       }
-      audioElement.current.setSinkId(form.getValues().speaker)
+      audioElement.current.setSinkId(form.getValues().speaker ?? '')
       audioElement.current.play()
       setIsSpeakerTesting(true)
     }
@@ -212,21 +194,10 @@ export default function AudioConfig() {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Micrófono</FormLabel>
-                <Select
-                  onValueChange={(value) => {
-                    field.onChange(value)
-                    // Save the selected microphone immediately
-                    const currentValues = form.getValues()
-                    localStorage.setItem(
-                      LOCAL_STORAGE_KEY,
-                      JSON.stringify({ ...currentValues, microphone: value })
-                    )
-                  }}
-                  value={field.value}
-                >
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
-                    <SelectTrigger >
-                      <SelectValue  placeholder='Selecciona un micrófono' />
+                    <SelectTrigger className='text-start'>
+                      <SelectValue placeholder='Selecciona un micrófono' />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -258,12 +229,12 @@ export default function AudioConfig() {
                       ? 'Detener prueba de micrófono'
                       : 'Iniciar prueba de micrófono'}
                   </Button>
-                  <div className=' group flex flex-col justify-center w-fit mx-auto '>
+                  <div className='group flex flex-col justify-center w-fit mx-auto'>
                     <div className='flex items-end space-x-1.5'>
                       {microphoneVolume.map((level, index) => {
                         const length = microphoneVolume.length
                         const yellowThreshold = Math.floor(length * 0.2)
-                        const greenThreshold = Math.floor(length * 0.7) // 20% amarillo + 50% verde = 70%
+                        const greenThreshold = Math.floor(length * 0.7)
                         let colorClass
 
                         if (index < yellowThreshold) {
@@ -285,7 +256,7 @@ export default function AudioConfig() {
                         )
                       })}
                     </div>
-                    <p className=' group-hover:h-4 transition-[height] duration-300 ease-in-out  text-xs text-muted-foreground h-0 overflow-hidden flex items-center justify-between w-full'>
+                    <p className='group-hover:h-4 transition-[height] duration-300 ease-in-out text-xs text-muted-foreground h-0 overflow-hidden flex items-center justify-between w-full'>
                       <span>-80 dB</span>
                       <span>0 dB</span>
                     </p>
@@ -301,20 +272,9 @@ export default function AudioConfig() {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Altavoces</FormLabel>
-                <Select
-                  onValueChange={(value) => {
-                    field.onChange(value)
-                    // Save the selected speaker immediately
-                    const currentValues = form.getValues()
-                    localStorage.setItem(
-                      LOCAL_STORAGE_KEY,
-                      JSON.stringify({ ...currentValues, speaker: value })
-                    )
-                  }}
-                  value={field.value}
-                >
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className='text-start'>
                       <SelectValue placeholder='Selecciona los altavoces' />
                     </SelectTrigger>
                   </FormControl>
@@ -339,17 +299,24 @@ export default function AudioConfig() {
                   Selecciona los altavoces que deseas utilizar.
                 </FormDescription>
                 <FormMessage />
+                <Button
+                  type='button'
+                  variant={'ghost'}
+                  size={'sm'}
+                  disabled
+                  onClick={toggleSpeakerTest}
+                >
+                  {isSpeakerTesting
+                    ? 'Detener prueba de altavoces'
+                    : 'Iniciar prueba de altavoces'}
+                </Button>
               </FormItem>
             )}
           />
-          <div className='space-y-4'>
-            <Button type='button' onClick={toggleSpeakerTest}>
-              {isSpeakerTesting
-                ? 'Detener prueba de altavoces'
-                : 'Iniciar prueba de altavoces'}
-            </Button>
-          </div>
-          <Button type='submit'>Guardar configuración de audio</Button>
+
+          <footer className='flex justify-end'>
+            <Button type='submit'>Guardar configuración de audio</Button>
+          </footer>
         </form>
       </Form>
     </section>

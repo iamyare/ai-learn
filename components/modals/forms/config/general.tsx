@@ -1,34 +1,48 @@
 import React from 'react'
 import { Header } from '../header'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage
+} from '@/components/ui/form'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
 
 const formSchema = z.object({
   username: z.string().min(2, {
-    message: "Username must be at least 2 characters.",
+    message: 'Username must be at least 2 characters.'
   }),
   email: z.string().email({
-    message: "Please enter a valid email.",
+    message: 'Please enter a valid email.'
   }),
   language: z.string({
-    required_error: "Please select a language.",
-  }),
+    required_error: 'Please select a language.'
+  })
 })
 
 export default function GeneralConfig() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: "",
-      email: "",
-      language: "",
-    },
+      username: '',
+      email: '',
+      language: ''
+    }
   })
 
   function onSubmit(values: z.infer<typeof formSchema>) {
@@ -46,15 +60,15 @@ export default function GeneralConfig() {
       </Header.Container>
       <Separator />
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
           <FormField
             control={form.control}
-            name="username"
+            name='username'
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Nombre de usuario</FormLabel>
                 <FormControl>
-                  <Input placeholder="Tu nombre de usuario" {...field} />
+                  <Input placeholder='Tu nombre de usuario' {...field} />
                 </FormControl>
                 <FormDescription>
                   Este es tu nombre público que se mostrará en tu perfil.
@@ -65,12 +79,12 @@ export default function GeneralConfig() {
           />
           <FormField
             control={form.control}
-            name="email"
+            name='email'
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Correo electrónico</FormLabel>
                 <FormControl>
-                  <Input placeholder="tu@ejemplo.com" {...field} />
+                  <Input placeholder='tu@ejemplo.com' {...field} />
                 </FormControl>
                 <FormDescription>
                   Tu dirección de correo electrónico principal.
@@ -81,21 +95,24 @@ export default function GeneralConfig() {
           />
           <FormField
             control={form.control}
-            name="language"
+            name='language'
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Idioma predeterminado para notebooks</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Selecciona un idioma" />
+                      <SelectValue placeholder='Selecciona un idioma' />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="es">🇭🇳 Español</SelectItem>
-                    <SelectItem value="en">🇺🇸 English</SelectItem>
-                    <SelectItem value="fr">🇫🇷 Français</SelectItem>
-                    <SelectItem value="de">🇩🇪 Deutsch</SelectItem>
+                    <SelectItem value='es'>🇭🇳 Español</SelectItem>
+                    <SelectItem value='en'>🇺🇸 English</SelectItem>
+                    <SelectItem value='fr'>🇫🇷 Français</SelectItem>
+                    <SelectItem value='de'>🇩🇪 Deutsch</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormDescription>
@@ -105,7 +122,9 @@ export default function GeneralConfig() {
               </FormItem>
             )}
           />
-          <Button type="submit">Guardar cambios</Button>
+          <footer className=' flex justify-end'>
+            <Button type='submit'>Guardar cambios</Button>
+          </footer>
         </form>
       </Form>
     </section>
