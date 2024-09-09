@@ -1,5 +1,9 @@
 # TODO List para el Proyecto de IA y Gestión de Documentos
 
+## Lector de PDF
+
+- [ ] Cambiar por react-pdf/renderer y investigar pdf-lib
+
 ## Estructura y Navegación
 
 - [x] Mejorar el árbol de archivos
