@@ -32,7 +32,7 @@ const formSchema = z.object({
   })
 })
 
-const NUM_VOLUME_BARS = 8
+const NUM_VOLUME_BARS = 10
 const LOCAL_STORAGE_KEY = 'audioDevices'
 
 export default function AudioConfig() {
@@ -65,12 +65,36 @@ export default function AudioConfig() {
         )
         setAudioDevices(audioDevices)
 
+        // Get default system microphone
+        const defaultMicrophone = audioDevices.find(
+          (device) => device.kind === 'audioinput' && device.deviceId === 'default'
+        )
+
         // Load saved devices from localStorage
         const savedDevices = localStorage.getItem(LOCAL_STORAGE_KEY)
         if (savedDevices) {
           const { microphone, speaker } = JSON.parse(savedDevices)
           form.setValue('microphone', microphone)
           form.setValue('speaker', speaker)
+        } else if (defaultMicrophone) {
+          // If no saved devices, set the default system microphone
+          form.setValue('microphone', defaultMicrophone.deviceId)
+        }
+
+        // If no microphone is set (either from localStorage or default), set the first available microphone
+        if (!form.getValues().microphone) {
+          const firstMicrophone = audioDevices.find(device => device.kind === 'audioinput')
+          if (firstMicrophone) {
+            form.setValue('microphone', firstMicrophone.deviceId)
+          }
+        }
+
+        // If no speaker is set, set the first available speaker
+        if (!form.getValues().speaker) {
+          const firstSpeaker = audioDevices.find(device => device.kind === 'audiooutput')
+          if (firstSpeaker) {
+            form.setValue('speaker', firstSpeaker.deviceId)
+          }
         }
       } catch (error) {
         console.error('Error getting audio devices:', error)
@@ -85,9 +109,7 @@ export default function AudioConfig() {
       }
       stopMicrophoneTest()
     }
-  }, [form])
-
-
+  }, [])
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     // Save selected devices to localStorage
@@ -112,13 +134,15 @@ export default function AudioConfig() {
 
       const updateMicrophoneVolume = () => {
         analyser.getByteFrequencyData(dataArray)
-        const average =
-          dataArray.reduce((acc, val) => acc + val, 0) / bufferLength
+        const sum = dataArray.reduce((acc, val) => acc + val, 0)
+        const average = sum / bufferLength
+        const dB = 20 * Math.log10(average / 255)
+        const normalizedDB = Math.max(-80, Math.min(0, dB))
+        const percentage = (normalizedDB + 80) / 80
+
         const newVolumeBars = new Array(NUM_VOLUME_BARS)
           .fill(0)
-          .map((_, index) =>
-            average > index * (255 / NUM_VOLUME_BARS) ? 1 : 0
-          )
+          .map((_, index) => (percentage > index / NUM_VOLUME_BARS ? 1 : 0))
         setMicrophoneVolume(newVolumeBars)
         rafId.current = requestAnimationFrame(updateMicrophoneVolume)
       }
@@ -193,13 +217,16 @@ export default function AudioConfig() {
                     field.onChange(value)
                     // Save the selected microphone immediately
                     const currentValues = form.getValues()
-                    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({...currentValues, microphone: value}))
+                    localStorage.setItem(
+                      LOCAL_STORAGE_KEY,
+                      JSON.stringify({ ...currentValues, microphone: value })
+                    )
                   }}
                   value={field.value}
                 >
                   <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder='Selecciona un micrófono' />
+                    <SelectTrigger >
+                      <SelectValue  placeholder='Selecciona un micrófono' />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -220,39 +247,50 @@ export default function AudioConfig() {
                   Selecciona el micrófono que deseas utilizar.
                 </FormDescription>
                 <FormMessage />
-                <div className='flex items-center space-x-2'>
-            <Button type='button' variant={'ghost'} size={'sm'} onClick={toggleMicrophoneTest}>
-              {isMicTesting
-                ? 'Detener prueba de micrófono'
-                : 'Iniciar prueba de micrófono'}
-            </Button>
-                       <div className='flex items-end space-x-1'>
-              {microphoneVolume.map((level, index) => {
-                const length = microphoneVolume.length;
-                const yellowThreshold = Math.floor(length * 0.2);
-                const greenThreshold = Math.floor(length * 0.7); // 20% amarillo + 50% verde = 70%
-                let colorClass;
-            
-                if (index < yellowThreshold) {
-                  colorClass = 'bg-yellow-500';
-                } else if (index < greenThreshold) {
-                  colorClass = 'bg-green-500';
-                } else {
-                  colorClass = 'bg-red-500';
-                }
-            
-                return (
-                  <div
-                    key={index}
-                    className={cn(
-                      'w-1.5 h-5 rounded-full shadow-sm',
-                      level ? colorClass : 'bg-muted'
-                    )}
-                  />
-                );
-              })}
-            </div>
-            </div>
+                <div className='flex justify-between gap-2'>
+                  <Button
+                    type='button'
+                    variant={'ghost'}
+                    size={'sm'}
+                    onClick={toggleMicrophoneTest}
+                  >
+                    {isMicTesting
+                      ? 'Detener prueba de micrófono'
+                      : 'Iniciar prueba de micrófono'}
+                  </Button>
+                  <div className=' group flex flex-col justify-center w-fit mx-auto '>
+                    <div className='flex items-end space-x-1.5'>
+                      {microphoneVolume.map((level, index) => {
+                        const length = microphoneVolume.length
+                        const yellowThreshold = Math.floor(length * 0.2)
+                        const greenThreshold = Math.floor(length * 0.7) // 20% amarillo + 50% verde = 70%
+                        let colorClass
+
+                        if (index < yellowThreshold) {
+                          colorClass = 'bg-yellow-500'
+                        } else if (index < greenThreshold) {
+                          colorClass = 'bg-green-500'
+                        } else {
+                          colorClass = 'bg-red-500'
+                        }
+
+                        return (
+                          <div
+                            key={index}
+                            className={cn(
+                              'w-1 h-4 rounded-full shadow-sm',
+                              level ? colorClass : 'bg-muted'
+                            )}
+                          />
+                        )
+                      })}
+                    </div>
+                    <p className=' group-hover:h-4 transition-[height] duration-300 ease-in-out  text-xs text-muted-foreground h-0 overflow-hidden flex items-center justify-between w-full'>
+                      <span>-80 dB</span>
+                      <span>0 dB</span>
+                    </p>
+                  </div>
+                </div>
               </FormItem>
             )}
           />
@@ -268,7 +306,10 @@ export default function AudioConfig() {
                     field.onChange(value)
                     // Save the selected speaker immediately
                     const currentValues = form.getValues()
-                    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({...currentValues, speaker: value}))
+                    localStorage.setItem(
+                      LOCAL_STORAGE_KEY,
+                      JSON.stringify({ ...currentValues, speaker: value })
+                    )
                   }}
                   value={field.value}
                 >

@@ -12,7 +12,7 @@ export default function ConfigModal({ open, onOpenChange }: { open: boolean, onO
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className=' max-w-xl overflow-hidden'>
+      <DialogContent className=' h-[620px] max-w-xl overflow-hidden'>
 
         <TabsConf  />
       </DialogContent>
