@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import GeneralConfig from './general'
 import APIConfig from './api-key'
 import { Separator } from '@/components/ui/separator'
-
+import AudioConfig from './audio-config'
 
 export default function TabsConf() {
   return (
@@ -18,8 +18,8 @@ export default function TabsConf() {
         <TabsTrigger className=' w-full md:justify-start' value='api'>
           API
         </TabsTrigger>
-        <TabsTrigger className=' w-full md:justify-start' value='device'>
-          Dispositivo
+        <TabsTrigger className=' w-full md:justify-start' value='audio'>
+          Audio
         </TabsTrigger>
         <TabsTrigger className=' w-full md:justify-start' value='sessions'>
           Sesiones
@@ -35,6 +35,9 @@ export default function TabsConf() {
         </TabsContent>
         <TabsContent className=' w-full' value='api'>
           <APIConfig />
+        </TabsContent>
+        <TabsContent value='audio'>
+          <AudioConfig />
         </TabsContent>
         <TabsContent value='sessions'>
           <div className='text-muted-foreground'>
