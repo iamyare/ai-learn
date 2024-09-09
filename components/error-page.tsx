@@ -1,5 +1,6 @@
 'use client'
 
+
 export default function ErrorPage({title, message}: {title: string, message: string}) {
   return (
     <div className='flex flex-col items-center justify-center h-screen'>
