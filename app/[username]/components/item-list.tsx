@@ -26,23 +26,25 @@ const ItemList: React.FC<ItemListProps> = ({ items, isLoading }) => {
 
   useEffect(() => {
     //cargar la lista de items por los parametros de la URL
-    navigateToFolder(params.get('folder_id') ?? 'root', params.get('folder_name') ?? 'root')
-  }
-  , [navigateToFolder, params])
+    navigateToFolder(
+      params.get('folder_id') ?? 'root',
+      params.get('folder_name') ?? 'root'
+    )
+  }, [navigateToFolder, params])
 
   const handleItemClick = (item: GetFoldersAndNotebooksFunction) => {
     if (item.item_type === 'folder') {
       // Construir la nueva URL con los params sin recargar la página
-      const newParams = new URLSearchParams(params);
-      newParams.set('folder_id', item.item_id);
-      newParams.set('folder_name', item.item_name);
-      const newPath = `${pathname}?${newParams.toString()}`;
+      const newParams = new URLSearchParams(params)
+      newParams.set('folder_id', item.item_id)
+      newParams.set('folder_name', item.item_name)
+      const newPath = `${pathname}?${newParams.toString()}`
       router.replace(newPath)
     } else {
-      router.push(`${pathname}/${item.item_id}`);
+      router.push(`${pathname}/${item.item_id}`)
     }
-  };
-  
+  }
+
   const renderView = () => {
     const viewProps = { items, onItemClick: handleItemClick }
     switch (currentView) {
@@ -73,14 +75,18 @@ const ItemList: React.FC<ItemListProps> = ({ items, isLoading }) => {
       {isLoading ? (
         <ItemListSkeleton />
       ) : (
-        items.length > 0 ? (renderView()):(
-          <div className='flex flex-col items-center text-center justify-center h-64 text-muted-foreground'>
-            <h4 className=' text-lg'>No hay elementos en esta carpeta</h4>
-            <p className=' text-sm'>
-              Considere crear una nueva carpeta o un nuevo notebook.
-            </p>
-          </div>
-        )
+
+            items.length > 0 ? (
+              renderView()
+            ) : (
+              <div className='flex flex-col items-center text-center justify-center h-64 text-muted-foreground'>
+                <h4 className=' text-lg'>No hay elementos en esta carpeta</h4>
+                <p className=' text-sm'>
+                  Considere crear una nueva carpeta o un nuevo notebook.
+                </p>
+              </div>
+            )
+
       )}
     </section>
   )
