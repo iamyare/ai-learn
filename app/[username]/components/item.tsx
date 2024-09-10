@@ -1,6 +1,7 @@
 import React from 'react';
-import { Folder, FileText, NotebookPen } from 'lucide-react';
+import { Folder, NotebookPen } from 'lucide-react';
 import ReusableContextMenu from './reusable-context-menu';
+
 
 interface ItemProps {
   item: GetFoldersAndNotebooksFunction;

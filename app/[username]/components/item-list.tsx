@@ -10,11 +10,54 @@ import SquareGridView from './views/square-grid-view'
 import RenderBreadcrumb from './breadcrumb'
 import ViewButtons from './view-buttons'
 import { ItemListSkeleton } from '@/components/skeletons'
-
+import { useTransitionRouter } from 'next-view-transitions'
 
 interface ItemListProps {
   items: GetFoldersAndNotebooksFunction[]
   isLoading: boolean
+}
+
+function slideInOut(direction: 'forward' | 'backward') {
+  const oldTransform = direction === 'forward' ? 'translate(-100px, 0)' : 'translate(100px, 0)'
+  const newTransform = direction === 'forward' ? 'translate(100px, 0)' : 'translate(-100px, 0)'
+
+  document.documentElement.animate(
+    [
+      {
+        opacity: 1,
+        transform: 'translate(0, 0)',
+      },
+      {
+        opacity: 0,
+        transform: oldTransform,
+      },
+    ],
+    {
+      duration: 400,
+      easing: 'ease',
+      fill: 'forwards',
+      pseudoElement: '::view-transition-old(root)',
+    }
+  )
+
+  document.documentElement.animate(
+    [
+      {
+        opacity: 0,
+        transform: newTransform,
+      },
+      {
+        opacity: 1,
+        transform: 'translate(0, 0)',
+      },
+    ],
+    {
+      duration: 400,
+      easing: 'ease',
+      fill: 'forwards',
+      pseudoElement: '::view-transition-new(root)',
+    }
+  )
 }
 
 const ItemList: React.FC<ItemListProps> = ({ items, isLoading }) => {
@@ -22,6 +65,7 @@ const ItemList: React.FC<ItemListProps> = ({ items, isLoading }) => {
   const { currentView, setView } = useView()
   const pathname = usePathname()
   const router = useRouter()
+  const routerTransition = useTransitionRouter()
   const params = useSearchParams()
 
   useEffect(() => {
@@ -41,8 +85,16 @@ const ItemList: React.FC<ItemListProps> = ({ items, isLoading }) => {
       const newPath = `${pathname}?${newParams.toString()}`
       router.replace(newPath)
     } else {
-      router.push(`${pathname}/${item.item_id}`)
+      //
+      routerTransition.push(`${pathname}/${item.item_id}`, {
+        onTransitionReady: () => slideInOut('forward'),
+      })
     }
+  }
+
+  const handleBackClick = () => {
+    router.back()
+    slideInOut('backward')
   }
 
   const renderView = () => {
@@ -75,18 +127,16 @@ const ItemList: React.FC<ItemListProps> = ({ items, isLoading }) => {
       {isLoading ? (
         <ItemListSkeleton />
       ) : (
-
-            items.length > 0 ? (
-              renderView()
-            ) : (
-              <div className='flex flex-col items-center text-center justify-center h-64 text-muted-foreground'>
-                <h4 className=' text-lg'>No hay elementos en esta carpeta</h4>
-                <p className=' text-sm'>
-                  Considere crear una nueva carpeta o un nuevo notebook.
-                </p>
-              </div>
-            )
-
+        items.length > 0 ? (
+          renderView()
+        ) : (
+          <div className='flex flex-col items-center text-center justify-center h-64 text-muted-foreground'>
+            <h4 className=' text-lg'>No hay elementos en esta carpeta</h4>
+            <p className=' text-sm'>
+              Considere crear una nueva carpeta o un nuevo notebook.
+            </p>
+          </div>
+        )
       )}
     </section>
   )

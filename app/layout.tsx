@@ -3,6 +3,7 @@ import { Inter, Libre_Baskerville } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/components/ui/theme-provider'
 import { Toaster } from '@/components/ui/toaster'
+import { ViewTransitions } from 'next-view-transitions'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
@@ -31,6 +32,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
+    <ViewTransitions>
+
     <html lang='es' suppressHydrationWarning>
       <head>
         <link rel='manifest' href='/manifest.json' />
@@ -56,5 +59,6 @@ export default function RootLayout({
         </ThemeProvider>
       </body>
     </html>
+    </ViewTransitions>
   )
 }
