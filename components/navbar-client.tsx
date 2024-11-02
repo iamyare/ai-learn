@@ -2,7 +2,7 @@ import { cn } from '@/lib/utils'
 import {
   Disclosure,
   DisclosureButton,
-  DisclosurePanel,
+  DisclosurePanel
 } from '@headlessui/react'
 import { MenuIcon, XIcon } from 'lucide-react'
 import { ThemeToggle } from './ui/theme-toggle'
@@ -11,10 +11,10 @@ import MenuUser from './menu-user'
 import Link from 'next/link'
 
 const navigation = [
-  { name: 'Inicio', href: '#', current: true },
-  { name: 'Team', href: '#', current: false },
-  { name: 'Projects', href: '#', current: false },
-  { name: 'Calendar', href: '#', current: false }
+  { name: 'Inicio', href: '#', current: true }
+  // { name: 'Team', href: '#', current: false },
+  // { name: 'Projects', href: '#', current: false },
+  // { name: 'Calendar', href: '#', current: false }
 ]
 
 export default function NabarClient({ user }: { user: User | null }) {
@@ -71,7 +71,7 @@ export default function NabarClient({ user }: { user: User | null }) {
 
             {/* Profile dropdown */}
             {user ? (
-<MenuUser user={user}/>
+              <MenuUser user={user} />
             ) : (
               <Button
                 className='w-fit '

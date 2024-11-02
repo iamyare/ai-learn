@@ -81,7 +81,7 @@ export default function PageClient({ user }: { user: User | null }) {
         </p>
         <nav aria-label='Enlaces de información adicional'>
           <ul className='flex space-x-4'>
-            <li>
+            {/* <li>
               <a href='#features' className='text-primary hover:underline'>
                 Características
               </a>
@@ -90,7 +90,7 @@ export default function PageClient({ user }: { user: User | null }) {
               <a href='#pricing' className='text-primary hover:underline'>
                 Precios
               </a>
-            </li>
+            </li> */}
             <li>
               <Link
                 href='https://github.com/iamyare'
