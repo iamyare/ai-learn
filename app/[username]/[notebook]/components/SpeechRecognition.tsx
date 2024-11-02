@@ -2,7 +2,8 @@ import React, {
   useRef,
   useEffect,
   useState,
-  useTransition
+  useTransition,
+  useCallback
 } from 'react'
 import { cn } from '@/lib/utils'
 import { useSpeechRecognitionContext } from '@/context/useSpeechRecognitionContext'
@@ -17,6 +18,8 @@ import TranscriptionHeader from './TranscriptionHeader'
 import TranscriptionControls from './TranscriptionControls'
 import TranscriptionList from './TranscriptionList'
 import { CoursorText } from '@/components/ui/coursor-text'
+import DragAndDropAudio from './DragAndDropAudio'
+import { useDropzone } from 'react-dropzone'
 
 interface SpeechRecognitionProps {
   classNameContainer?: string
@@ -48,6 +51,7 @@ export default function SpeechRecognition({
   const [showPageNumbers, setShowPageNumbers] = useState(true)
   const [currentPosition, setCurrentPosition] = useState(0)
   const [lastPlayPosition, setLastPlayPosition] = useState(0)
+  const [audioFile, setAudioFile] = useState<File | null>(null)
 
   const fullText =
     history.map((entry) => entry.text).join(' ') + ' ' + transcript
@@ -99,7 +103,8 @@ export default function SpeechRecognition({
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       if (isListening) {
         event.preventDefault()
-        event.returnValue = 'Tienes una transcripción en curso. ¿Estás seguro de que quieres salir?'
+        event.returnValue =
+          'Tienes una transcripción en curso. ¿Estás seguro de que quieres salir?'
       }
     }
 
@@ -178,6 +183,36 @@ export default function SpeechRecognition({
     setShowPageNumbers(!showPageNumbers)
   }
 
+  const handleFileDrop = (file: File) => {
+    setAudioFile(file)
+    // Aquí puedes agregar la lógica para manejar el archivo de audio cargado
+    console.log('Archivo de audio cargado:', file)
+  }
+
+  const onDrop = useCallback(
+    (acceptedFiles: File[]) => {
+      if (acceptedFiles.length > 0) {
+        handleFileDrop(acceptedFiles[0])
+      }
+    },
+    [handleFileDrop]
+  )
+
+  const {
+    getRootProps,
+    getInputProps,
+    isDragActive,
+    isDragAccept,
+    isDragReject,
+    isFocused
+  } = useDropzone({
+    onDrop,
+    accept: {
+      'audio/*': ['.mp3', '.wav', '.ogg']
+    },
+    multiple: false
+  })
+
   return (
     <section className={cn('flex flex-col h-full w-full', classNameContainer)}>
       <div className='  flex justify-between items-center'>
@@ -199,12 +234,14 @@ export default function SpeechRecognition({
       </div>
       <aside
         className={cn(
-          'w-full h-full px-4 overflow-y-auto transcript-scroll-area',
+          'w-full h-full px-4 overflow-y-auto relative transcript-scroll-area',
           classNameTranscript
         )}
         ref={scrollAreaRef}
         onScroll={handleScroll}
+        {...getRootProps()}
       >
+        <input {...getInputProps()} />
         {isLoading ? (
           <TranscriptionSkeleton />
         ) : history.length !== 0 ? (
@@ -228,9 +265,13 @@ export default function SpeechRecognition({
         ) : (
           <div className='flex justify-center items-center h-full'>
             <p className='text-muted-foreground'>
-              No hay transcripciones disponibles. Comienza a hablar para crear una.
+              No hay transcripciones disponibles. Comienza a hablar para crear
+              una.
             </p>
           </div>
+        )}
+        {!isLoading && !isListening && isDragActive && (
+          <DragAndDropAudio onFileDrop={handleFileDrop} />
         )}
       </aside>
     </section>
