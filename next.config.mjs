@@ -18,5 +18,5 @@ export default withPwa({
     dest: 'public',
     register: true,
     skipWaiting: true,
-    // disable: isDev, // Deshabilitar PWA en modo desarrollo
+    disable: isDev, // Deshabilitar PWA en modo desarrollo
 })(nextConfig);

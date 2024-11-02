@@ -107,7 +107,7 @@ export default function CreateFolder({userId}:{userId: string}) {
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <EmojiPicker getValue={field.onChange}>
+                      <EmojiPicker getValue={field.onChange} >
                         {field.value}
                       </EmojiPicker>
                     </FormControl>

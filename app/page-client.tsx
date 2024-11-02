@@ -1,15 +1,15 @@
 'use client'
 import NabarClient from '@/components/navbar-client'
 import { Button } from '@/components/ui/button'
-import { useMediaQuery } from "@/components/ui/use-media-query"
-import { useTheme } from "next-themes"
+import { useMediaQuery } from '@/components/ui/use-media-query'
+import { useTheme } from 'next-themes'
 import Link from 'next/link'
 
-export default function PageClient({user}:{user: User | null}) {
-    const isDesktop = useMediaQuery('(min-width: 768px)')
-    //obtenr el valor de la variable isDarkMode con next-themes
-    const isDarkMode = useTheme().resolvedTheme === 'dark'
-  
+export default function PageClient({ user }: { user: User | null }) {
+  const isDesktop = useMediaQuery('(min-width: 768px)')
+  //obtenr el valor de la variable isDarkMode con next-themes
+  const isDarkMode = useTheme().resolvedTheme === 'dark'
+
   return (
     <main className='relative overflow-hidden flex flex-col justify-between min-h-screen w-screen px-4 md:px-8'>
       <header className='h-12 mb-2'>
@@ -81,7 +81,7 @@ export default function PageClient({user}:{user: User | null}) {
         </p>
         <nav aria-label='Enlaces de información adicional'>
           <ul className='flex space-x-4'>
-            <li>
+            {/* <li>
               <a href='#features' className='text-primary hover:underline'>
                 Características
               </a>
@@ -90,11 +90,15 @@ export default function PageClient({user}:{user: User | null}) {
               <a href='#pricing' className='text-primary hover:underline'>
                 Precios
               </a>
-            </li>
+            </li> */}
             <li>
-              <a href='#contact' className='text-primary hover:underline'>
+              <Link
+                href='https://github.com/iamyare'
+                target='_blank'
+                className='text-primary hover:underline'
+              >
                 Contacto
-              </a>
+              </Link>
             </li>
           </ul>
         </nav>

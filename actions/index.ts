@@ -265,7 +265,7 @@ export async function getChat(notebookId: string) {
 export async function createChatNotebook({ notebookId }: { notebookId: string }) {
   const { data: chatInsert, error: errorChatInsert } = await supabase
     .from('chats')
-    .insert({ notebook_id: notebookId })
+    .insert({ 'notebook_id': notebookId })
     .select('*')
     .single()
 

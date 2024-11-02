@@ -1,8 +1,8 @@
-import React, { useRef, useState, useCallback } from 'react'
+import React, { useRef, useState, useCallback, useEffect } from 'react'
 import { cn, formatRelativeDate } from '@/lib/utils'
 import BubbleChat from './BubbleChat'
 import MessageLoading from './messages/MessageLoading'
-
+import { usePresence } from 'framer-motion'
 
 interface ChatMessagesProps {
   isPending?: boolean
@@ -10,20 +10,47 @@ interface ChatMessagesProps {
   className?: string
 }
 
-const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, className, isPending}) => {
+const AnimatedMessage: React.FC<{ message: ChatMessageType }> = ({
+  message
+}) => {
+  const [isPresent, safeToRemove] = usePresence()
+
+  useEffect(() => {
+    if (!isPresent) {
+      // Add any cleanup logic here if needed
+      safeToRemove()
+    }
+  }, [isPresent, safeToRemove])
+
+  return (
+    <div
+      style={{
+        animation: isPresent ? 'slideIn 0.3s ease-out' : 'slideOut 0.3s ease-in'
+      }}
+    >
+      <BubbleChat message={message} />
+    </div>
+  )
+}
+
+const ChatMessages: React.FC<ChatMessagesProps> = ({
+  messages,
+  className,
+  isPending
+}) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true)
 
   const scrollToBottom = useCallback(() => {
-    if (shouldAutoScroll && messagesEndRef.current) {
+    if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
     }
-  }, [shouldAutoScroll])
+  }, [])
 
-  // useEffect(() => {
-  //   scrollToBottom()
-  // }, [messages, scrollToBottom])
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages, scrollToBottom])
 
   const handleScroll = () => {
     if (chatContainerRef.current) {
@@ -33,46 +60,50 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ messages, className, isPend
   }
 
   const groupMessagesByDate = (messages: ChatMessageType[]) => {
-      return messages.reduce((groups, message) => {
-        const date = new Date(message.timestamp).toDateString()
-        if (!groups[date]) {
-          groups[date] = []
-        }
-        groups[date].push(message)
-        return groups
-      }, {} as Record<string, ChatMessageType[]>)
-    }
-  
-    const groupedMessages = groupMessagesByDate(messages)
+    return messages.reduce((groups, message) => {
+      const date = new Date(message.timestamp).toDateString()
+      if (!groups[date]) {
+        groups[date] = []
+      }
+      groups[date].push(message)
+      return groups
+    }, {} as Record<string, ChatMessageType[]>)
+  }
+
+  const groupedMessages = groupMessagesByDate(messages)
 
   return (
     <div
-    id='chat-messages'
-      className={cn('flex-grow overflow-y-auto pb-[120px] pt-[40px] px-4', className)}
+      id='chat-messages'
+      className={cn(
+        'flex-grow overflow-y-auto pb-[120px] pt-[40px] px-4',
+        className
+      )}
       ref={chatContainerRef}
+      onScroll={handleScroll}
     >
+      {Object.keys(groupedMessages).length > 0 ? (
+        Object.keys(groupedMessages).map((date) => (
+          <div key={date}>
+            <p className='text-sm font-medium mx-auto bg-muted rounded-lg size-fit px-6 py-1 shadow-sm my-4'>
+              {formatRelativeDate(date)}
+            </p>
 
-        {Object.keys(groupedMessages).length > 0 ? (
-          Object.keys(groupedMessages).map((date) => (
-            <div key={date}>
-              <p className=' text-sm font-medium mx-auto bg-muted rounded-lg size-fit px-6 py-1 shadow-sm my-4'>
-                {formatRelativeDate(date)}
-              </p>
-              <div className='flex flex-col gap-4'>
+            <div className='flex flex-col gap-4'>
               {groupedMessages[date].map((message) => (
-                <BubbleChat key={message.timestamp} message={message} />
+                <AnimatedMessage key={message.timestamp} message={message} />
               ))}
-              </div>
             </div>
-          ))
-        ) : (
-          <p className='text-center text-muted-foreground'>
-            No hay mensajes aún. Comienza la conversación.
-          </p>
-        )}
+          </div>
+        ))
+      ) : (
+        <p className='text-center text-muted-foreground'>
+          No hay mensajes aún. Comienza la conversación.
+        </p>
+      )}
 
-        {isPending && <MessageLoading/>}
-        <div ref={messagesEndRef} />
+      {isPending && <MessageLoading />}
+      <div ref={messagesEndRef} />
     </div>
   )
 }

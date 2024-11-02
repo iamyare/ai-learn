@@ -1,0 +1,23 @@
+
+
+.picker-custom h2 {
+    @apply text-muted-foreground bg-transparent font-semibold text-sm;
+}
+
+.picker-custom input {
+    @apply flex h-10 w-full rounded-md border border-input bg-background pl-8 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:bg-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+.picker-custom button {
+    @apply text-muted-foreground hover:text-primary hover:bg-primary/20 active:bg-primary focus:bg-primary/10;
+}
+
+.picker-custom .epr_l33asz {
+    @apply bg-background ;
+}
+
+
+
+.picker-custom .epr_-j7gyxp:focus {
+    @apply ring-offset-background ring-2 ring-primary;
+}

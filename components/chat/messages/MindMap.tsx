@@ -42,11 +42,7 @@ const MindMap: React.FC<MindMapProps> = ({ mindMap }) => {
       setError(null)
     } catch (error) {
       console.error('Error rendering mind map:', error)
-      setError(
-        `Error rendering mind map: ${
-          error instanceof Error ? error.message : String(error)
-        }`
-      )
+      setError('Error rendering mind map')
       setSvg(
         '<svg width="100%" height="100%"><text x="10" y="20" fill="red">Error rendering mind map</text></svg>'
       )
@@ -69,13 +65,14 @@ const MindMap: React.FC<MindMapProps> = ({ mindMap }) => {
     }
 
     const resizeObserver = new ResizeObserver(handleResize)
-    if (mindMapRef.current) {
-      resizeObserver.observe(mindMapRef.current)
+    const currentRef = mindMapRef.current
+    if (currentRef) {
+      resizeObserver.observe(currentRef)
     }
 
     return () => {
-      if (mindMapRef.current) {
-        resizeObserver.unobserve(mindMapRef.current)
+      if (currentRef) {
+        resizeObserver.unobserve(currentRef)
       }
     }
   }, [])
@@ -115,11 +112,7 @@ const MindMap: React.FC<MindMapProps> = ({ mindMap }) => {
           })
           .catch((err) => {
             console.error('Error converting mind map to image:', err)
-            setError(
-              `Error converting mind map to image: ${
-                err instanceof Error ? err.message : String(err)
-              }`
-            )
+            setError('Error converting mind map to image')
           })
       }
     }

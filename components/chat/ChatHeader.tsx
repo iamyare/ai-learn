@@ -8,7 +8,6 @@ interface ChatHeaderProps {
   chat: ChatMessageType[]
 }
 
-
 const ChatHeader: React.FC<ChatHeaderProps> = ({ chat }) => {
   //Descargar el chat
   // const downloadChat = () => {
@@ -28,8 +27,8 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ chat }) => {
   // }
 
   return (
-    <header className='flex w-full py-2 px-4 justify-between items-center absolute top-0 left-0 z-10 bg-background/70 backdrop-blur-sm'>
-      <h2 className='text-lg font-semibold'>Chat</h2>
+    <header className='flex w-full py-2 px-4 justify-between items-center absolute top-0 left-0 z-[1] bg-background/70 backdrop-blur-sm'>
+      <h2 className='text-lg font-semibold'>Chats</h2>
 
       {/* <div className='flex items-center gap-4'>
         <Button onClick={downloadChat} size='icon' variant='ghost' className='p-1'>

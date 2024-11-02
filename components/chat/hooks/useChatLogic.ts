@@ -64,15 +64,18 @@ export function useChatLogic(notebookId: string) {
         })
       } else {
         const { chatInsert, errorChatInsert } = await createChatNotebook({ notebookId })
-        if (chatInsert) {
-          setMessages([])
-        } else if (errorChatInsert) {
+
+        if (errorChatInsert) {
           console.error('Error al crear el chat:', errorChatInsert)
-          toast({
+          return toast({
             title: 'Error',
             description: 'No se pudo crear el chat. Por favor, inténtalo de nuevo más tarde.',
             variant: 'destructive'
           })
+        }
+
+        if (chatInsert) {
+          setMessages([])
         }
       }
     } catch (error) {
