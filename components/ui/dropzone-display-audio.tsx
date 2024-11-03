@@ -9,7 +9,7 @@ import {
   XCircleIcon,
   XIcon
 } from 'lucide-react'
-import { useEffect, useState, useTransition } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from './button'
 import { DialogEntry } from '@/types/speechRecognition'
 import { transcribeAudio } from '@/lib/ai/ai-transcribe'

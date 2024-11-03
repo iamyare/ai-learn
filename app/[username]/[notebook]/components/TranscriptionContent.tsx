@@ -26,7 +26,7 @@ export const TranscriptionContent = ({
   isPlaying
 }: TranscriptionContentProps) => {
   if (isLoading) return <TranscriptionSkeleton />
-  
+
   if (history.length !== 0) {
     return (
       <TranscriptionList
@@ -44,7 +44,7 @@ export const TranscriptionContent = ({
 
   if (isListening) {
     return (
-      <div className="flex h-full">
+      <div className='flex h-full'>
         <span>
           {transcript}
           <CoursorText />
@@ -54,8 +54,8 @@ export const TranscriptionContent = ({
   }
 
   return (
-    <div className="flex justify-center items-center h-full">
-      <p className="text-muted-foreground">
+    <div className='flex justify-center items-center h-full'>
+      <p className='text-muted-foreground'>
         No hay transcripciones disponibles. Comienza a hablar para crear una.
       </p>
     </div>
