@@ -2,7 +2,7 @@
 
 import { useDropzone } from 'react-dropzone'
 import { useCallback, useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import {
   DropzoneDisplay,
   acceptClassAudio,

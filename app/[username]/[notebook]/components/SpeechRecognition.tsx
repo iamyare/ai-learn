@@ -5,6 +5,7 @@ import React, {
   useTransition,
   useCallback
 } from 'react'
+import { AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { useSpeechRecognitionContext } from '@/context/useSpeechRecognitionContext'
 import {
@@ -277,7 +278,9 @@ export default function SpeechRecognition({
             isPendingTranscription={isPendingTranscription}
           />
         )}
-        {isPendingTranscription && <TranscriptionLoadingOverlay />}
+        <AnimatePresence>
+          {isPendingTranscription && <TranscriptionLoadingOverlay />}
+        </AnimatePresence>
       </aside>
     </section>
   )
