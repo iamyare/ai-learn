@@ -5,7 +5,7 @@ import { MusicIcon, RefreshCcw, Sparkles, XCircleIcon } from 'lucide-react'
 import { useEffect, useState, useTransition } from 'react'
 import { Button } from './button'
 import { DialogEntry } from '@/types/speechRecognition'
-import { TranscriptionService } from '@/lib/ai/ai-transcribe'
+import { transcribeAudio } from '@/lib/ai/ai-transcribe'
 
 export const DropzoneDisplay = {
   Normal: () => {
@@ -76,9 +76,6 @@ export const DropzoneDisplay = {
     const [audioSrc, setAudioSrc] = useState<string | null>(null)
     const [isPending, startTransition] = useTransition()
     const [transcription, setTranscription] = useState<DialogEntry[]>([])
-    const transcriptionService = new TranscriptionService(
-      'AIzaSyAeIyoeiEyba6Ss2e_y5_MfsFKGJRIjpOM'
-    )
 
     useEffect(() => {
       const objectUrl = URL.createObjectURL(file)
@@ -92,14 +89,12 @@ export const DropzoneDisplay = {
     async function handleTranscribe() {
       startTransition(async () => {
         try {
-          const response = await transcriptionService.transcribeAudio(file)
-
-          if (response.status === 'success' && response.data) {
-            setTranscription(response.data)
-            console.log('Transcripción exitosa:', response.data)
-          } else {
-            console.error('Error en transcripción:', response.error)
-          }
+          const result = await transcribeAudio({
+            audioFile: file,
+            apiKey: 'AIzaSyAeIyoeiEyba6Ss2e_y5_MfsFKGJRIjpOM'
+          })
+          // setTranscription(result)
+          console.log('Transcripción:', result)
         } catch (error) {
           console.error('Error al transcribir el audio:', error)
         }

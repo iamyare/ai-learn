@@ -1,11 +1,41 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import { z } from 'zod';
+import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
 
 interface DialogEntry {
   timestamp: string;
   text: string;
   page?: number;
 }
+
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  const uint8Array = new Uint8Array(buffer);
+  let binary = '';
+  uint8Array.forEach(byte => binary += String.fromCharCode(byte));
+  return btoa(binary);
+}
+
+// Schema para Gemini
+const geminiSchema = {
+  type: SchemaType.ARRAY,
+  items: {
+    type: SchemaType.OBJECT,
+    properties: {
+      timestamp: {
+        type: SchemaType.STRING,
+        description: "Timestamp in HH:MM:SS format"
+      },
+      text: {
+        type: SchemaType.STRING,
+        description: "Transcribed text"
+      },
+      page: {
+        type: SchemaType.NUMBER,
+        description: "Page number (optional)",
+        optional: true
+      }
+    },
+    required: ["timestamp", "text"]
+  }
+};
 
 export async function transcribeAudio({
   audioFile,
@@ -15,48 +45,34 @@ export async function transcribeAudio({
   apiKey: string;
 }): Promise<DialogEntry[]> {
   try {
-    // Inicializar el cliente de Gemini
     const genAI = new GoogleGenerativeAI(apiKey);
     
-    // Configurar el modelo
     const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
+      model: "gemini-1.5-pro",
+      generationConfig: {
+        responseMimeType: "application/json",
+        responseSchema: geminiSchema
+      }
     });
 
-    // Preparar el archivo y el prompt
-    const fileData = {
-      mimeType: audioFile.type,
-      data: await audioFile.arrayBuffer()
-    };
+    const audioData = await audioFile.arrayBuffer();
+    const base64Audio = arrayBufferToBase64(audioData);
 
-    const prompt = "Por favor, transcribe este audio y genera una lista de entradas de diálogo. " +
-                  "Cada entrada debe incluir una marca de tiempo en formato HH:MM:SS y el texto transcrito.";
+    const prompt = "Transcribe este audio y devuelve un array de objetos JSON. " +
+                  "Cada objeto debe tener 'timestamp' en formato HH:MM:SS y 'text' con el texto transcrito.";
 
-    // Generar la transcripción
     const result = await model.generateContent([
       {
-        fileData: fileData
+        inlineData: {
+          mimeType: audioFile.type,
+          data: base64Audio
+        }
       },
       { text: prompt }
     ]);
 
-    const transcription = await result.response.text();
-
-    // Procesar la respuesta en formato DialogEntry
-    const entries = transcription.split('\n')
-      .filter(line => line.trim())
-      .map(line => {
-        const timestampMatch = line.match(/(\d{2}:\d{2}:\d{2})/);
-        const timestamp = timestampMatch ? timestampMatch[0] : "00:00:00";
-        const text = line.replace(timestamp, '').trim();
-        
-        return {
-          timestamp,
-          text
-        } as DialogEntry;
-      });
-
-    return entries;
+    const responseText = result.response.text();
+    return JSON.parse(responseText) as DialogEntry[];
 
   } catch (error) {
     console.error('Error al transcribir el audio:', error);
