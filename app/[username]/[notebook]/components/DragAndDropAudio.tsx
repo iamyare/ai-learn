@@ -2,7 +2,7 @@
 
 import { useDropzone } from 'react-dropzone'
 import { useCallback, useState, useEffect } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { motion } from 'framer-motion'
 import {
   DropzoneDisplay,
   acceptClassAudio,
@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils'
 import { DialogEntry } from '@/types/speechRecognition'
 import { useSpeechRecognitionContext } from '@/context/useSpeechRecognitionContext'
 import { TextSparkles } from '@/components/ui/text-sparkles'
+import { updateTranscriptNotebook } from '@/actions'
 
 interface DragAndDropAudioProps {
   onFileDrop: (file: File) => void
@@ -22,7 +23,8 @@ interface DragAndDropAudioProps {
   selectedFile?: File | null
   onFileDelete?: () => void
   onTranscriptionComplete?: (transcription: DialogEntry[]) => void
-  onHide?: () => void // Nueva prop para manejar la visibilidad
+  onHide?: () => void
+  notebookId: string
 }
 
 export default function DragAndDropAudio({
@@ -32,7 +34,8 @@ export default function DragAndDropAudio({
   selectedFile,
   onFileDelete,
   onTranscriptionComplete,
-  onHide
+  onHide,
+  notebookId
 }: DragAndDropAudioProps) {
   const [acceptedFile, setAcceptedFile] = useState<File | null>(
     selectedFile || null
@@ -66,26 +69,37 @@ export default function DragAndDropAudio({
 
   const handleTranscriptionComplete = useCallback(
     async (transcription: DialogEntry[]) => {
-      startTransitionTranscription(true)
       try {
         // Actualizar el contexto con la nueva transcripción
+        startTransitionTranscription(true)
         updateOptions({
           history: [...history, ...transcription]
         })
+        await updateTranscriptNotebook({
+          transcriptHistory: [...history, ...transcription],
+          notebookId
+        })
         onTranscriptionComplete?.(transcription)
-        // Ocultar el componente después de la transcripción exitosa
-        setTimeout(() => {
-          setIsVisible(false)
-          onHide?.()
-        }, 1000) // Pequeño delay para mostrar el estado de éxito
+        startTransitionTranscription(false)
       } catch (error) {
         console.error('Error en la transcripción:', error)
       } finally {
-        startTransitionTranscription(false)
+        startTransitionTranscription(false) // Asegurarse de que se desactive la transición
       }
     },
-    [history, updateOptions, onTranscriptionComplete, onHide]
+    [
+      startTransitionTranscription,
+      updateOptions,
+      history,
+      notebookId,
+      onTranscriptionComplete
+    ]
   )
+
+  function handleHide() {
+    setIsVisible(false)
+    onHide?.()
+  }
 
   const {
     getRootProps,
@@ -167,8 +181,9 @@ export default function DragAndDropAudio({
               file={acceptedFile}
               onDelete={handleDelete}
               onTranscriptionComplete={handleTranscriptionComplete}
-              startTransitionTranscription={startTransitionTranscription}
               isPendingTranscription={isPendingTranscription}
+              startTransitionTranscription={startTransitionTranscription}
+              hiddenComponent={handleHide}
             />
           )}
           {!acceptedFile && <DropzoneDisplay.Normal />}

@@ -1,5 +1,4 @@
-// hooks/useSpeechRecognitionState.ts
-import { useState, useTransition, useRef, useEffect } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import { getTranscriptions, createTranscriptNotebook, updateTranscriptNotebook } from '@/actions'
 import { useSpeechRecognitionContext } from '@/context/useSpeechRecognitionContext'
 

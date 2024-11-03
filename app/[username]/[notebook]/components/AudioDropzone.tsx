@@ -1,14 +1,17 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
-import DragAndDropAudio, { TranscriptionLoadingOverlay } from './DragAndDropAudio'
+import DragAndDropAudio, {
+  TranscriptionLoadingOverlay
+} from './DragAndDropAudio'
 import { AnimatePresence } from 'framer-motion'
 
 interface AudioDropzoneProps {
   isLoading: boolean
   isListening: boolean
   children: React.ReactNode
-  onTranscriptionStart: () => void
+  onTranscriptionStart: (isPendingTranscription: boolean) => void
   isPendingTranscription: boolean
+  notebookId: string
 }
 
 export const AudioDropzone = ({
@@ -16,9 +19,15 @@ export const AudioDropzone = ({
   isListening,
   children,
   onTranscriptionStart,
-  isPendingTranscription
+  isPendingTranscription,
+  notebookId
 }: AudioDropzoneProps) => {
   const [audioFile, setAudioFile] = useState<File | null>(null)
+
+  useEffect(() => {
+    console.log('isPendingTranscription', isPendingTranscription),
+      [isPendingTranscription]
+  })
 
   const handleFileDrop = useCallback((file: File) => {
     setAudioFile(file)
@@ -53,6 +62,7 @@ export const AudioDropzone = ({
           onHide={() => setAudioFile(null)}
           startTransitionTranscription={onTranscriptionStart}
           isPendingTranscription={isPendingTranscription}
+          notebookId={notebookId}
         />
       )}
       <AnimatePresence>

@@ -83,14 +83,16 @@ export const DropzoneDisplay = {
     file,
     onDelete,
     onTranscriptionComplete,
+    isPendingTranscription,
     startTransitionTranscription,
-    isPendingTranscription
+    hiddenComponent
   }: {
     file: File
     onDelete?: () => void
     onTranscriptionComplete?: (transcription: DialogEntry[]) => void
-    startTransitionTranscription: (isPendingTranscription: boolean) => void
     isPendingTranscription: boolean
+    startTransitionTranscription: (isPendingTranscription: boolean) => void
+    hiddenComponent: () => void
   }) => {
     const [audioSrc, setAudioSrc] = useState<string | null>(null)
 
@@ -106,20 +108,24 @@ export const DropzoneDisplay = {
     const handleTranscribe = async (e: React.MouseEvent) => {
       e.stopPropagation()
 
+      startTransitionTranscription(true)
+      hiddenComponent()
+
       try {
-        startTransitionTranscription(true)
         const result = await transcribeAudio({
           audioFile: file,
           apiKey: 'AIzaSyAeIyoeiEyba6Ss2e_y5_MfsFKGJRIjpOM'
         })
+
         onTranscriptionComplete?.(result)
         startTransitionTranscription(false)
       } catch (error) {
         console.error('Error al transcribir el audio:', error)
+        startTransitionTranscription(false)
       }
     }
 
-    if (isPendingTranscription) null
+    if (isPendingTranscription) return null
 
     return (
       <div className='flex flex-col gap-2 w-full overflow-hidden relative'>
