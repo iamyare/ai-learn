@@ -18,25 +18,27 @@ interface ItemListProps {
 }
 
 function slideInOut(direction: 'forward' | 'backward') {
-  const oldTransform = direction === 'forward' ? 'translate(-100px, 0)' : 'translate(100px, 0)'
-  const newTransform = direction === 'forward' ? 'translate(100px, 0)' : 'translate(-100px, 0)'
+  const oldTransform =
+    direction === 'forward' ? 'translate(-100px, 0)' : 'translate(100px, 0)'
+  const newTransform =
+    direction === 'forward' ? 'translate(100px, 0)' : 'translate(-100px, 0)'
 
   document.documentElement.animate(
     [
       {
         opacity: 1,
-        transform: 'translate(0, 0)',
+        transform: 'translate(0, 0)'
       },
       {
         opacity: 0,
-        transform: oldTransform,
-      },
+        transform: oldTransform
+      }
     ],
     {
       duration: 400,
       easing: 'ease',
       fill: 'forwards',
-      pseudoElement: '::view-transition-old(root)',
+      pseudoElement: '::view-transition-old(root)'
     }
   )
 
@@ -44,18 +46,18 @@ function slideInOut(direction: 'forward' | 'backward') {
     [
       {
         opacity: 0,
-        transform: newTransform,
+        transform: newTransform
       },
       {
         opacity: 1,
-        transform: 'translate(0, 0)',
-      },
+        transform: 'translate(0, 0)'
+      }
     ],
     {
       duration: 400,
       easing: 'ease',
       fill: 'forwards',
-      pseudoElement: '::view-transition-new(root)',
+      pseudoElement: '::view-transition-new(root)'
     }
   )
 }
@@ -87,7 +89,7 @@ const ItemList: React.FC<ItemListProps> = ({ items, isLoading }) => {
     } else {
       //
       routerTransition.push(`${pathname}/${item.item_id}`, {
-        onTransitionReady: () => slideInOut('forward'),
+        onTransitionReady: () => slideInOut('forward')
       })
     }
   }
@@ -126,17 +128,15 @@ const ItemList: React.FC<ItemListProps> = ({ items, isLoading }) => {
       </div>
       {isLoading ? (
         <ItemListSkeleton />
+      ) : items.length > 0 ? (
+        renderView()
       ) : (
-        items.length > 0 ? (
-          renderView()
-        ) : (
-          <div className='flex flex-col items-center text-center justify-center h-64 text-muted-foreground'>
-            <h4 className=' text-lg'>No hay elementos en esta carpeta</h4>
-            <p className=' text-sm'>
-              Considere crear una nueva carpeta o un nuevo notebook.
-            </p>
-          </div>
-        )
+        <div className='flex flex-col items-center text-center justify-center h-64 text-muted-foreground'>
+          <h4 className=' text-lg'>No hay elementos en esta carpeta</h4>
+          <p className=' text-sm'>
+            Considere crear una nueva carpeta o un nuevo notebook.
+          </p>
+        </div>
       )}
     </section>
   )

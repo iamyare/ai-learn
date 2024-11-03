@@ -1,12 +1,11 @@
 'use client'
 import React, { useState, useEffect, useCallback } from 'react'
+import { ChevronRight, ChevronLeft, MenuIcon, XIcon } from 'lucide-react'
 import {
-  ChevronRight,
-  ChevronLeft,
-  MenuIcon,
-  XIcon
-} from 'lucide-react'
-import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/react'
+  Disclosure,
+  DisclosureButton,
+  DisclosurePanel
+} from '@headlessui/react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -14,6 +13,7 @@ import { getFoldersAndNotebooks } from '@/actions'
 import { useMediaQuery } from './ui/use-media-query'
 import { Tree, Folder, File, TreeViewElement } from '@/components/file-tree'
 import { usePathname } from 'next/navigation'
+import { ScrollArea, ScrollBar } from './ui/scroll-area'
 
 interface SidebarProps {
   children: React.ReactNode
@@ -29,22 +29,30 @@ export function Sidebar({ children, userId, defaultOpen }: SidebarProps) {
 
   const isDesktop = useMediaQuery('(min-width: 600px)')
 
-  const loadItems = useCallback(async (parentFolderId?: string) => {
-    const { folders, errorFolders } = await getFoldersAndNotebooks({
-      userId,
-      parentFolderId
-    })
-    if (folders && !errorFolders) {
-      return folders.map((item): TreeViewElement => ({
-        id: item.item_id,
-        name: item.item_name,
-        isSelectable: true,
-        type: item.item_type as 'folder' | 'file',
-        path: item.item_type === 'notebook' ? `${pathname}/${item.item_id}` : undefined
-      }))
-    }
-    return []
-  }, [pathname, userId])
+  const loadItems = useCallback(
+    async (parentFolderId?: string) => {
+      const { folders, errorFolders } = await getFoldersAndNotebooks({
+        userId,
+        parentFolderId
+      })
+      if (folders && !errorFolders) {
+        return folders.map(
+          (item): TreeViewElement => ({
+            id: item.item_id,
+            name: item.item_name,
+            isSelectable: true,
+            type: item.item_type as 'folder' | 'file',
+            path:
+              item.item_type === 'notebook'
+                ? `${pathname}/${item.item_id}`
+                : undefined
+          })
+        )
+      }
+      return []
+    },
+    [pathname, userId]
+  )
 
   useEffect(() => {
     loadItems().then(setRootItems)
@@ -73,7 +81,7 @@ export function Sidebar({ children, userId, defaultOpen }: SidebarProps) {
 
   const renderTree = () => (
     <Tree
-      className=" overflow-hidden rounded-md bg-background"
+      className=' overflow-hidden'
       elements={rootItems}
       onFolderExpand={loadItems}
     >
@@ -92,46 +100,48 @@ export function Sidebar({ children, userId, defaultOpen }: SidebarProps) {
   if (!isDesktop) {
     return (
       <>
-        <Disclosure as="nav" className="bg-background">
-          <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
-            <div className="relative flex h-16 items-center justify-between">
-              <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
+        <Disclosure as='nav' className='bg-background'>
+          <div className='mx-auto max-w-7xl px-2 sm:px-6 lg:px-8'>
+            <div className='relative flex h-16 items-center justify-between'>
+              <div className='absolute inset-y-0 left-0 flex items-center sm:hidden'>
                 <DisclosureButton>
-                  <span className="absolute -inset-0.5" />
-                  <span className="sr-only">Open main menu</span>
+                  <span className='absolute -inset-0.5' />
+                  <span className='sr-only'>Open main menu</span>
                   <Button size={'icon'} variant={'ghost'}>
-                    <MenuIcon aria-hidden="true" className="block h-6 w-6 group-data-[open]:hidden" />
-                    <XIcon aria-hidden="true" className="hidden h-6 w-6 group-data-[open]:block" />
+                    <MenuIcon
+                      aria-hidden='true'
+                      className='block h-6 w-6 group-data-[open]:hidden'
+                    />
+                    <XIcon
+                      aria-hidden='true'
+                      className='hidden h-6 w-6 group-data-[open]:block'
+                    />
                   </Button>
                 </DisclosureButton>
               </div>
-              <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-                <div className="flex flex-shrink-0 items-center">
-                  <span className="text-2xl font-medium">Stick Note</span>
+              <div className='flex flex-1 items-center justify-center sm:items-stretch sm:justify-start'>
+                <div className='flex flex-shrink-0 items-center'>
+                  <span className='text-2xl font-medium'>Stick Note</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <DisclosurePanel className="sm:hidden absolute w-full z-50 pb-2 backdrop-blur-sm bg-background/70 border-b">
-            <div className='flex-grow overflow-auto'>
-              {renderTree()}
-            </div>
+          <DisclosurePanel className='sm:hidden absolute w-full z-50 pb-2 backdrop-blur-sm bg-background/70 border-b'>
+            <div className='flex-grow overflow-auto'>{renderTree()}</div>
           </DisclosurePanel>
         </Disclosure>
-        <main className={cn('flex-1 p-2', !isOpen && 'ml-2')}>
-          {children}
-        </main>
+        <main className={cn('flex-1 p-2', !isOpen && 'ml-2')}>{children}</main>
       </>
     )
   }
 
   return (
     <TooltipProvider delayDuration={0}>
-      <div className='flex h-full min-h-screen items-stretch'>
+      <div className='flex h-screen min-h-screen overflow-hidden items-stretch'>
         <div
           className={cn(
-            'transition-all duration-300 ease-in-out',
+            'transition-all z-50 duration-300 ease-in-out',
             isOpen ? 'w-[250px]' : isHovered ? 'w-[250px]' : 'w-0',
             !isOpen && 'absolute left-0 top-0 bottom-0'
           )}
@@ -140,7 +150,7 @@ export function Sidebar({ children, userId, defaultOpen }: SidebarProps) {
         >
           <div
             className={cn(
-              'flex flex-col relative py-2 px-4 border-r  transition-transform h-full bg-background/50 backdrop-blur-sm',
+              'flex flex-col relative py-2 px-2 border-r  transition-transform h-full bg-background/50 backdrop-blur-sm',
               !isOpen && isHovered && 'w-[250px] translate-x-0',
               !isOpen && !isHovered && ' -translate-x-52'
             )}
@@ -161,13 +171,11 @@ export function Sidebar({ children, userId, defaultOpen }: SidebarProps) {
                 <ChevronRight className='h-4 w-4' />
               )}
             </Button>
-            <span className='text-2xl font-medium mb-4 mt-2'>
+            <span className='text-2xl font-medium mb-4 mt-2 px-2'>
               Stick Note
             </span>
 
-            <div className='flex-grow overflow-auto'>
-              {renderTree()}
-            </div>
+            <div className='flex-grow overflow-auto'>{renderTree()}</div>
           </div>
 
           <Button
@@ -191,7 +199,10 @@ export function Sidebar({ children, userId, defaultOpen }: SidebarProps) {
         </div>
 
         <main className={cn('flex-1 p-5', !isOpen && 'ml-2')}>
-          {children}
+          <ScrollArea className=' h-full'>
+            {children}
+            <ScrollBar />
+          </ScrollArea>
         </main>
       </div>
     </TooltipProvider>
