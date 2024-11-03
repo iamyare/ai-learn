@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { TranscriptionContent } from './TranscriptionContent'
 import TranscriptionControls from './TranscriptionControls'
@@ -6,6 +6,7 @@ import TranscriptionHeader from './TranscriptionHeader'
 import { useSpeechRecognitionState } from './useSpeechRecognitionState'
 import { useAudioControl } from './useAudioControl'
 import { AudioDropzone } from './AudioDropZone'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 interface SpeechRecognitionProps {
   classNameContainer?: string
@@ -19,6 +20,9 @@ export default function SpeechRecognition({
   classNameTranscript,
   notebookId
 }: SpeechRecognitionProps) {
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const [shouldAutoScroll, setShouldAutoScroll] = useState(true)
+  
   const {
     isListening,
     transcript,
@@ -44,17 +48,26 @@ export default function SpeechRecognition({
     handleTTSAction
   } = useAudioControl(fullText)
 
-  const scrollAreaRef = useRef<HTMLDivElement>(null)
-
-  const handleScroll = () => {
-    if (scrollAreaRef.current) {
-      const { scrollTop, scrollHeight, clientHeight } = scrollAreaRef.current
-      // Lógica de scroll si es necesaria
+  const scrollToBottom = useCallback(() => {
+    if (scrollRef.current && shouldAutoScroll) {
+      const scrollElement = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]')
+      if (scrollElement) {
+        scrollElement.scrollTo({
+          top: scrollElement.scrollHeight,
+          behavior: 'smooth'
+        })
+      }
     }
-  }
+  }, [shouldAutoScroll])
+
+  useEffect(() => {
+    if (isListening || isPlaying) {
+      scrollToBottom()
+    }
+  }, [isListening, isPlaying, transcript, currentPosition, scrollToBottom])
 
   return (
-    <section className={cn('flex flex-col h-full w-full', classNameContainer)}>
+    <section className={cn('flex flex-col h-full w-full overflow-hidden', classNameContainer)}>
       <div className="flex justify-between items-center">
         <span></span>
         <TranscriptionControls
@@ -72,33 +85,36 @@ export default function SpeechRecognition({
           lastUpdateTime={lastUpdateTime}
         />
       </div>
-      <AudioDropzone
-        isLoading={isLoading}
-        isListening={isListening}
-        onTranscriptionStart={() => setIsPendingTranscription(true)}
-        isPendingTranscription={isPendingTranscription}
+      <aside
+        className={cn(
+          'w-full h-full px-4 flex overflow-hidden relative',
+          classNameTranscript
+        )}
       >
-        <aside
-          className={cn(
-            'w-full h-full px-4 overflow-y-auto relative transcript-scroll-area',
-            classNameTranscript
-          )}
-          ref={scrollAreaRef}
-          onScroll={handleScroll}
+        <AudioDropzone
+          isLoading={isLoading}
+          isListening={isListening}
+          onTranscriptionStart={() => setIsPendingTranscription(true)}
+          isPendingTranscription={isPendingTranscription}
         >
-          <TranscriptionContent
-            isLoading={isLoading}
-            history={history}
-            transcript={transcript}
-            isListening={isListening}
-            currentPosition={currentPosition}
-            onPositionChange={handlePositionChange}
-            visualizationOptions={visualizationOptions}
-            showPageNumbers={showPageNumbers}
-            isPlaying={isPlaying}
-          />
-        </aside>
-      </AudioDropzone>
+          <ScrollArea
+            className='max-h-full h-full'
+            ref={scrollRef}
+          >
+            <TranscriptionContent
+              isLoading={isLoading}
+              history={history}
+              transcript={transcript}
+              isListening={isListening}
+              currentPosition={currentPosition}
+              onPositionChange={handlePositionChange}
+              visualizationOptions={visualizationOptions}
+              showPageNumbers={showPageNumbers}
+              isPlaying={isPlaying}
+            />
+          </ScrollArea>
+        </AudioDropzone>
+      </aside>
     </section>
   )
 }
