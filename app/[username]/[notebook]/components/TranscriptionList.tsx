@@ -91,22 +91,29 @@ const TranscriptionList: React.FC<TranscriptionListProps> = ({
                     )}
                   </p>
                 )}
-          <p className={cn(
-            index === currentParagraphIndex ? 'bg-primary/5 p-1 rounded w-fit' : ''
-          )}>
-            {entry.text.split(' ').map((word, wordIndex) => (
-              <span 
-                key={wordIndex} 
-                className={cn(
-                  'cursor-pointer',
-                  index === currentParagraphIndex && wordIndex === currentWordIndex ? 'bg-primary/20 px-1 py-0.5 rounded text-primary' : ''
-                )}
-                onClick={() => handleWordClick(index, wordIndex)}
-              >
-                {word}{' '}
-              </span>
-            ))}
-          </p>
+<p className={cn(
+  index === currentParagraphIndex ? 'bg-primary/5 p-1 rounded w-fit' : ''
+)}>
+  {entry.text.split(' ').map((word, wordIndex) => (
+    <span 
+      key={wordIndex}
+      // Solo asignar ID si es la palabra activa actual
+      {...(index === currentParagraphIndex && wordIndex === currentWordIndex 
+        ? { id: `active-word` } 
+        : {})}
+      className={cn(
+        'cursor-pointer',
+        index === currentParagraphIndex && wordIndex === currentWordIndex 
+          ? 'bg-primary/20 px-1 py-0.5 rounded text-primary' 
+          : ''
+      )}
+      onClick={() => handleWordClick(index, wordIndex)}
+    >
+      {word}{' '}
+    </span>
+  ))}
+</p>
+
           {index === history.length - 1 && isListening && (
             <span>
               {transcript}
