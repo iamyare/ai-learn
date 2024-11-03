@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import DragAndDropAudio, {
   TranscriptionLoadingOverlay
@@ -24,11 +24,6 @@ export const AudioDropzone = ({
 }: AudioDropzoneProps) => {
   const [audioFile, setAudioFile] = useState<File | null>(null)
 
-  useEffect(() => {
-    console.log('isPendingTranscription', isPendingTranscription),
-      [isPendingTranscription]
-  })
-
   const handleFileDrop = useCallback((file: File) => {
     setAudioFile(file)
   }, [])
@@ -47,7 +42,8 @@ export const AudioDropzone = ({
     accept: {
       'audio/*': ['.mp3', '.wav', '.ogg']
     },
-    multiple: false
+    multiple: false,
+    noClick: isPendingTranscription || isLoading || !audioFile
   })
 
   return (

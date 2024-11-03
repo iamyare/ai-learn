@@ -123,10 +123,6 @@ export default function DragAndDropAudio({
     return normalClassAudio
   }
 
-  if (!isVisible) {
-    return null
-  }
-
   return (
     <div
       {...getRootProps()}
