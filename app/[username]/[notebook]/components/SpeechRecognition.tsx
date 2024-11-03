@@ -198,14 +198,7 @@ export default function SpeechRecognition({
     [handleFileDrop]
   )
 
-  const {
-    getRootProps,
-    getInputProps,
-    isDragActive,
-    isDragAccept,
-    isDragReject,
-    isFocused
-  } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
       'audio/*': ['.mp3', '.wav', '.ogg']
@@ -270,7 +263,7 @@ export default function SpeechRecognition({
             </p>
           </div>
         )}
-        {!isLoading && !isListening && isDragActive && (
+        {!isLoading && !isListening && (
           <DragAndDropAudio onFileDrop={handleFileDrop} />
         )}
       </aside>

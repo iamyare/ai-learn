@@ -1,7 +1,15 @@
 'use client'
 
 import { useDropzone } from 'react-dropzone'
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
+import { motion } from 'framer-motion'
+import {
+  DropzoneDisplay,
+  acceptClassAudio,
+  focusedClassAudio,
+  rejectClassAudio
+} from '@/components/ui/dropzone-display-audio'
+import { cn } from '@/lib/utils'
 
 interface DragAndDropAudioProps {
   onFileDrop: (file: File) => void
@@ -10,9 +18,12 @@ interface DragAndDropAudioProps {
 export default function DragAndDropAudio({
   onFileDrop
 }: DragAndDropAudioProps) {
+  const [acceptedFile, setAcceptedFile] = useState<File | null>(null)
+
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       if (acceptedFiles.length > 0) {
+        setAcceptedFile(acceptedFiles[0])
         onFileDrop(acceptedFiles[0])
       }
     },
@@ -35,29 +46,63 @@ export default function DragAndDropAudio({
   })
 
   const getClassName = () => {
-    if (isDragReject) return 'bg-red-500 border-red-500 text-white'
-    if (isDragAccept) return 'bg-green-500 border-green-500 text-white'
-    if (isFocused) return 'bg-blue-500 border-blue-500 text-white'
+    if (isDragReject) return rejectClassAudio
+    if (isDragAccept) return acceptClassAudio
+    if (isFocused) return focusedClassAudio
     return 'bg-gray-200 border-gray-400 text-gray-700'
   }
 
   return (
     <div
       {...getRootProps()}
-      className={`flex absolute inset-0 justify-center items-center border-2 border-dashed ${getClassName()}`}
+      className={cn(
+        'flex absolute inset-0 justify-center items-center border-2 border-dashed rounded-lg m-2',
+        getClassName()
+      )}
     >
       <input {...getInputProps()} />
       {isDragActive ? (
         isDragAccept ? (
-          <p>Suelta el archivo aquí...</p>
+          <motion.div
+            key='accept'
+            initial={{ scale: 1.1, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{
+              type: 'spring',
+              stiffness: 260,
+              damping: 50
+            }}
+          >
+            <DropzoneDisplay.Accept />
+          </motion.div>
         ) : (
-          <p>Archivo no permitido</p>
+          <motion.div
+            key='reject'
+            initial={{ scale: 1.1, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{
+              type: 'spring',
+              stiffness: 260,
+              damping: 50
+            }}
+          >
+            <DropzoneDisplay.Reject />
+          </motion.div>
         )
       ) : (
-        <p>
-          Arrastra y suelta un archivo de audio aquí, o haz clic para
-          seleccionar uno
-        </p>
+        <motion.div
+          key='normal'
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{
+            type: 'spring',
+            stiffness: 260,
+            damping: 20
+          }}
+        >
+          {acceptedFile && <DropzoneDisplay.Info file={acceptedFile} />}
+          {!acceptedFile && <DropzoneDisplay.Normal />}
+        </motion.div>
       )}
     </div>
   )
