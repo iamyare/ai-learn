@@ -1,7 +1,14 @@
 /* eslint-disable @next/next/no-img-element */
 'use client'
 
-import { MusicIcon, RefreshCcw, Sparkles, XCircleIcon } from 'lucide-react'
+import {
+  MusicIcon,
+  RefreshCcw,
+  Sparkles,
+  Trash,
+  XCircleIcon,
+  XIcon
+} from 'lucide-react'
 import { useEffect, useState, useTransition } from 'react'
 import { Button } from './button'
 import { DialogEntry } from '@/types/speechRecognition'
@@ -72,10 +79,20 @@ export const DropzoneDisplay = {
       </div>
     )
   },
-  Info: ({ file }: { file: File }) => {
+  Info: ({
+    file,
+    onDelete,
+    onTranscriptionComplete,
+    startTransitionTranscription,
+    isPendingTranscription
+  }: {
+    file: File
+    onDelete?: () => void
+    onTranscriptionComplete?: (transcription: DialogEntry[]) => void
+    startTransitionTranscription: (isPendingTranscription: boolean) => void
+    isPendingTranscription: boolean
+  }) => {
     const [audioSrc, setAudioSrc] = useState<string | null>(null)
-    const [isPending, startTransition] = useTransition()
-    const [transcription, setTranscription] = useState<DialogEntry[]>([])
 
     useEffect(() => {
       const objectUrl = URL.createObjectURL(file)
@@ -86,26 +103,33 @@ export const DropzoneDisplay = {
       }
     }, [file])
 
-    async function handleTranscribe() {
-      startTransition(async () => {
-        try {
-          const result = await transcribeAudio({
-            audioFile: file,
-            apiKey: 'AIzaSyAeIyoeiEyba6Ss2e_y5_MfsFKGJRIjpOM'
-          })
-          // setTranscription(result)
-          console.log('Transcripción:', result)
-        } catch (error) {
-          console.error('Error al transcribir el audio:', error)
-        }
-      })
+    const handleTranscribe = async (e: React.MouseEvent) => {
+      e.stopPropagation()
+
+      try {
+        startTransitionTranscription(true)
+        const result = await transcribeAudio({
+          audioFile: file,
+          apiKey: 'AIzaSyAeIyoeiEyba6Ss2e_y5_MfsFKGJRIjpOM'
+        })
+        onTranscriptionComplete?.(result)
+        startTransitionTranscription(false)
+      } catch (error) {
+        console.error('Error al transcribir el audio:', error)
+      }
     }
 
+    if (isPendingTranscription) null
+
     return (
-      <div className='flex flex-col gap-2 w-full overflow-hidden'>
+      <div className='flex flex-col gap-2 w-full overflow-hidden relative'>
         <div className='flex justify-center h-full w-full bg-top'>
           {audioSrc ? (
-            <audio controls className='w-full'>
+            <audio
+              controls
+              className='w-full'
+              onClick={(e) => e.stopPropagation()}
+            >
               <source src={audioSrc} type={file.type} />
               Tu navegador no soporta la reproducción de audio.
             </audio>
@@ -116,32 +140,33 @@ export const DropzoneDisplay = {
         <p className='text-center max-w-md truncate'>
           Archivo de audio seleccionado: {file.name}
         </p>
-        <footer className=' flex gap-2 items-center'>
-          <Button variant='ghost' onClick={() => setAudioSrc(null)}>
+        <footer className='flex gap-2 items-center'>
+          <Button
+            variant='ghost'
+            onClick={(e) => {
+              e.stopPropagation()
+              onDelete?.()
+            }}
+            size={'icon'}
+            className=' aspect-square text-destructive hover:text-destructive hover:bg-destructive/10'
+          >
+            <Trash className='size-4' />
+          </Button>
+          <Button
+            variant='ghost'
+            onClick={(e) => {
+              setAudioSrc(null)
+            }}
+          >
             <RefreshCcw className='size-4 mr-2' />
             Cambiar archivo
           </Button>
-          <Button
-            className='w-full'
-            onClick={handleTranscribe}
-            disabled={isPending}
-          >
+
+          <Button className='w-full' onClick={handleTranscribe}>
             <Sparkles className='size-4 mr-2' />
-            {isPending ? 'Transcribiendo...' : 'Transcribir audio'}
+            Transcribir Audio
           </Button>
         </footer>
-        {transcription.length > 0 && (
-          <div className='mt-4'>
-            <h3 className='text-lg font-semibold'>Transcripción:</h3>
-            <ul className='list-disc list-inside'>
-              {transcription.map((entry, index) => (
-                <li key={index}>
-                  <strong>{entry.timestamp}:</strong> {entry.text}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
       </div>
     )
   }

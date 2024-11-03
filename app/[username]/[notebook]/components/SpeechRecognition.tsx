@@ -18,7 +18,9 @@ import TranscriptionHeader from './TranscriptionHeader'
 import TranscriptionControls from './TranscriptionControls'
 import TranscriptionList from './TranscriptionList'
 import { CoursorText } from '@/components/ui/coursor-text'
-import DragAndDropAudio from './DragAndDropAudio'
+import DragAndDropAudio, {
+  TranscriptionLoadingOverlay
+} from './DragAndDropAudio'
 import { useDropzone } from 'react-dropzone'
 
 interface SpeechRecognitionProps {
@@ -44,6 +46,7 @@ export default function SpeechRecognition({
   } = useSpeechRecognitionContext()
 
   const [isPending, startTransition] = useTransition()
+  const [isPendingTranscription, startTransitionTranscription] = useState(false)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isUpdated, setIsUpdated] = useState(false)
@@ -264,10 +267,17 @@ export default function SpeechRecognition({
             </p>
           </div>
         )}
-        {!isLoading && !isListening && isDragActive && (
-          <DragAndDropAudio onFileDrop={handleFileDrop} />
+        {!isLoading && !isListening && (isDragActive || audioFile) && (
+          <DragAndDropAudio
+            onFileDrop={handleFileDrop}
+            selectedFile={audioFile}
+            onFileDelete={() => setAudioFile(null)}
+            onHide={() => setAudioFile(null)}
+            startTransitionTranscription={startTransitionTranscription}
+            isPendingTranscription={isPendingTranscription}
+          />
         )}
-        {audioFile && <DragAndDropAudio onFileDrop={handleFileDrop} />}
+        {isPendingTranscription && <TranscriptionLoadingOverlay />}
       </aside>
     </section>
   )
