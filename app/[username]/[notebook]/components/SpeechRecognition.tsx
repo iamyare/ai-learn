@@ -189,14 +189,14 @@ export default function SpeechRecognition({
           </ScrollArea>
         </AudioDropzone>
 
-        {!shouldAutoScroll && isPlaying && (
+        {!shouldAutoScroll && (isPlaying || isListening) && (
           <Button
             size="icon"
             variant="outline"
             className="absolute bottom-4 right-4 rounded-full shadow-lg p-2 size-fit aspect-square"
             onClick={scrollToPosition}
           >
-            <ArrowDown className=" size-4" />
+            <ArrowDown className="size-4" />
           </Button>
         )}
       </aside>
