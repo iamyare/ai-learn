@@ -117,7 +117,8 @@ export default function SpeechRecognition({
   const handleScroll = () => {
     if (scrollAreaRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = scrollAreaRef.current
-      const isScrolledToBottom = scrollTop + clientHeight >= scrollHeight - 10
+      // Eliminar la declaración de isScrolledToBottom si no se usa
+      // const isScrolledToBottom = scrollTop + clientHeight >= scrollHeight - 10
     }
   }
 
@@ -183,11 +184,11 @@ export default function SpeechRecognition({
     setShowPageNumbers(!showPageNumbers)
   }
 
-  const handleFileDrop = (file: File) => {
+  const handleFileDrop = useCallback((file: File) => {
     setAudioFile(file)
     // Aquí puedes agregar la lógica para manejar el archivo de audio cargado
     console.log('Archivo de audio cargado:', file)
-  }
+  }, [])
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
@@ -263,9 +264,10 @@ export default function SpeechRecognition({
             </p>
           </div>
         )}
-        {!isLoading && !isListening && (
+        {!isLoading && !isListening && isDragActive && (
           <DragAndDropAudio onFileDrop={handleFileDrop} />
         )}
+        {audioFile && <DragAndDropAudio onFileDrop={handleFileDrop} />}
       </aside>
     </section>
   )

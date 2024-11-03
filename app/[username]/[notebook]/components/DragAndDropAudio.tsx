@@ -7,6 +7,7 @@ import {
   DropzoneDisplay,
   acceptClassAudio,
   focusedClassAudio,
+  normalClassAudio,
   rejectClassAudio
 } from '@/components/ui/dropzone-display-audio'
 import { cn } from '@/lib/utils'
@@ -49,7 +50,7 @@ export default function DragAndDropAudio({
     if (isDragReject) return rejectClassAudio
     if (isDragAccept) return acceptClassAudio
     if (isFocused) return focusedClassAudio
-    return 'bg-gray-200 border-gray-400 text-gray-700'
+    return normalClassAudio
   }
 
   return (

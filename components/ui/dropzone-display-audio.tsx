@@ -154,3 +154,5 @@ export const acceptClassAudio =
   'bg-primary/5 backdrop-blur-sm border-primary text-primary '
 export const rejectClassAudio =
   'bg-destructive/5 backdrop-blur-sm border-red-500 text-destructive'
+export const normalClassAudio =
+  'bg-muted/10 backdrop-blur-sm border-foreground/10 text-foreground'
