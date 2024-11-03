@@ -1,9 +1,8 @@
 import { useCallback, useState } from 'react'
-import { useDropzone } from 'react-dropzone'
-import DragAndDropAudio, {
-  TranscriptionLoadingOverlay
-} from './DragAndDropAudio'
-import { AnimatePresence } from 'framer-motion'
+import { AudioDropzoneWrapper } from './AudioDropzoneWrapper'
+import DragAndDropAudio from './DragAndDropAudio'
+import { AnimatePresence, motion } from 'framer-motion'
+import { TextSparkles } from '@/components/ui/text-sparkles'
 
 interface AudioDropzoneProps {
   isLoading: boolean
@@ -37,33 +36,56 @@ export const AudioDropzone = ({
     [handleFileDrop]
   )
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: {
-      'audio/*': ['.mp3', '.wav', '.ogg']
-    },
-    multiple: false,
-    noClick: isPendingTranscription || isLoading || !audioFile
-  })
-
   return (
-    <div {...getRootProps()}>
-      <input {...getInputProps()} />
-      {children}
-      {!isLoading && !isListening && (isDragActive || audioFile) && (
-        <DragAndDropAudio
-          onFileDrop={handleFileDrop}
-          selectedFile={audioFile}
-          onFileDelete={() => setAudioFile(null)}
-          onHide={() => setAudioFile(null)}
-          startTransitionTranscription={onTranscriptionStart}
-          isPendingTranscription={isPendingTranscription}
-          notebookId={notebookId}
-        />
+    <AudioDropzoneWrapper
+      isPendingTranscription={isPendingTranscription}
+      isLoading={false}
+      audioFile={audioFile ? true : false}
+      onDrop={onDrop}
+    >
+      {({ getRootProps, getInputProps, isDragActive }) => (
+        <div {...getRootProps()}>
+          <input {...getInputProps()} />
+          {children}
+          {!isLoading && !isListening && (isDragActive || audioFile) && (
+            <DragAndDropAudio
+              onFileDrop={handleFileDrop}
+              selectedFile={audioFile}
+              onFileDelete={() => setAudioFile(null)}
+              onHide={() => setAudioFile(null)}
+              startTransitionTranscription={onTranscriptionStart}
+              isPendingTranscription={isPendingTranscription}
+              notebookId={notebookId}
+            />
+          )}
+          <AnimatePresence>
+            {isPendingTranscription && <TranscriptionLoadingOverlay />}
+          </AnimatePresence>
+        </div>
       )}
-      <AnimatePresence>
-        {isPendingTranscription && <TranscriptionLoadingOverlay />}
-      </AnimatePresence>
-    </div>
+    </AudioDropzoneWrapper>
+  )
+}
+
+export function TranscriptionLoadingOverlay() {
+  return (
+    <>
+      <motion.div
+        className='absolute inset-0 backdrop-blur-sm bg-background/50'
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.5 }}
+      />
+      <motion.div
+        className='absolute flex inset-0 items-center justify-center'
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.8 }}
+        transition={{ duration: 0.5 }}
+      >
+        <TextSparkles text='Generando Transcripción' />
+      </motion.div>
+    </>
   )
 }
