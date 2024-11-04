@@ -18,25 +18,11 @@ const MindMap: React.FC<MindMapProps> = ({ mindMap }) => {
     if (!mindMap) return
 
     try {
-      // Initialize mermaid
       mermaid.initialize({
         startOnLoad: true,
-        theme: 'default',
-        themeVariables: {
-          fontFamily: 'Arial, sans-serif',
-          fontSize: '14px',
-          primaryTextColor: 'hsla(var(--foreground)/1)',
-          lineColor: 'hsla(var(--muted-foreground)/1)',
-          mainBkg: 'hsla(var(--muted)/1)',
-          nodeBorder: 'hsla(var(--muted-foreground)/1)',
-          nodeTextColor: 'hsla(var(--foreground)/1)',
-          clusterBkg: 'none',
-          clusterBorder: 'none',
-          titleColor: 'hsla(var(--primary)/1)'
-        }
+        theme: 'base'
       })
 
-      // Render the mind map
       const { svg } = await mermaid.render('mindmap-' + Date.now(), mindMap)
       setSvg(svg)
       setError(null)
@@ -60,6 +46,7 @@ const MindMap: React.FC<MindMapProps> = ({ mindMap }) => {
         if (svgElement) {
           svgElement.setAttribute('width', '100%')
           svgElement.setAttribute('height', '100%')
+          svgElement.style.minHeight = '300px'
         }
       }
     }
@@ -68,6 +55,7 @@ const MindMap: React.FC<MindMapProps> = ({ mindMap }) => {
     const currentRef = mindMapRef.current
     if (currentRef) {
       resizeObserver.observe(currentRef)
+      handleResize() // Llamada inicial para establecer dimensiones
     }
 
     return () => {
@@ -106,7 +94,9 @@ const MindMap: React.FC<MindMapProps> = ({ mindMap }) => {
         })
           .then((dataUrl) => {
             const link = document.createElement('a')
-            link.download = 'mindmap.png'
+            link.download = `Mindmap-${new Date().toLocaleDateString()}-${new Date()
+              .toLocaleTimeString()
+              .replace(/:/g, '-')}.png`
             link.href = dataUrl
             link.click()
           })
@@ -120,7 +110,7 @@ const MindMap: React.FC<MindMapProps> = ({ mindMap }) => {
 
   return (
     <div className='mind-map-container flex flex-col gap-2 w-full '>
-      <h2 className='text-xl font-semibold'>Eventos importantes</h2>
+      <h2 className='text-xl font-semibold'>Mapa Mental</h2>
       <div className=' flex flex-col gap-2 w-full overflow-hidden relative'>
         <TransformWrapper
           initialScale={1}
@@ -169,7 +159,7 @@ const MindMap: React.FC<MindMapProps> = ({ mindMap }) => {
               >
                 <div
                   ref={mindMapRef}
-                  className='w-full h-64'
+                  className='w-full h-full min-h-[300px]'
                   dangerouslySetInnerHTML={{ __html: svg }}
                 />
               </TransformComponent>

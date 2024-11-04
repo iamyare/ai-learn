@@ -65,6 +65,7 @@ export const useAIFunctions = (apiKeyGemini: string | null, updateMessages: (new
         apiKey: apiKeyGemini
       })
 
+
       if (mindMap) {
         const mindMapMessage: MindMapMessageType = {
           mindMap: mindMap,
