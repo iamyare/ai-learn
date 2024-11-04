@@ -5,99 +5,137 @@ import { generateObject } from 'ai'
 import { z } from 'zod'
 
 function removeParentheses(mindMapObject: { mindMap: string }): { mindMap: string } {
-    const lines = mindMapObject.mindMap.split('\n');
-    const modifiedLines = lines.map((line, index) => {
-        if (index === 1 || line.includes('::icon')) {
-            // Mantener los paréntesis en el nodo root y en los iconos
-            return line;
-        }
-        // Eliminar todos los paréntesis en las demás líneas
-        return line.replace(/[(){}]/g, '');
-    });
-    return { mindMap: modifiedLines.join('\n') };
+  const lines = mindMapObject.mindMap.split('\n');
+  const modifiedLines = lines.map((line, index) => {
+      if (index === 1 || line.includes('::icon')) {
+          // Mantener los paréntesis en el nodo root y en los iconos
+          return line;
+      }
+      // Eliminar todos los paréntesis y iconos en las demás líneas
+      return line.replace(/[(){}]|::icon/g, '');
+  });
+  return { mindMap: modifiedLines.join('\n') };
 }
 
-
 export async function generateMindMap({
-  prompt = 'Crea un mapa mental',
-  transcription,
-  textPdf,
-  apiKey
+    prompt = 'Crea un mapa mental',
+    transcription,
+    textPdf,
+    apiKey
 }: {
-  prompt?: string
-  transcription?: string
-  textPdf?: string
-  apiKey: string
+    prompt?: string
+    transcription?: string
+    textPdf?: string
+    apiKey: string
 }) {
-  'use server'
+    'use server'
 
-  const google = createGoogleGenerativeAI({
-    apiKey: apiKey ?? ''
-  })
-
-  const systemPrompt = `
-    Eres un asistente educativo especializado en crear mapas mentales utilizando la sintaxis de Mermaid.
-    Tu tarea es generar un mapa mental basado en la información proporcionada, siguiendo estas pautas:
-
-    1. Utiliza la información de la transcripción del docente (si está disponible) como fuente principal.
-    2. Complementa con el contenido del PDF de la clase si es necesario.
-    3. Considera la pregunta o instrucción específica del estudiante.
-
-    Reglas para el mapa mental:
-    - Utiliza la sintaxis de Mermaid para mindmaps.
-    - Crea un nodo principal con el tema central.
-    - Añade nodos secundarios para subtemas principales.
-    - Incluye nodos terciarios para detalles importantes.
-    - Limita el mapa a un máximo de 3 niveles de profundidad para mantenerlo claro y conciso.
-    - Solo los root y ::icon puede contener parentesis, en lo demas se deberan de eliminar parentesis, llaves, y demas que perjudique la sintaxis.
-    - La eliminación de parentesis, llaves, debe de ser obligatoria en los nodos.
-    - No seas redundante, utiliza la información más relevante.
-    - No debe de ser demasiado extenso, mantén la información clave.
-    - Solo incluye información relevante y significativa, máximo 5 detalles por nodo.
-    - El mapa mental debe ser claro y fácil de entender.
-    - Máximo 5 nodos en total.
-    - en palabras clasves utiliza iconos y el texto para mejorar la visualización y comprensión del mapa mental.
-    - Asegúrate de que el formato sea el siguiente:
-
-        mindmap
-        root((mindmap))
-            Subtema 1
-              Detalle 1
-              ::icon(fa fa-book)
-              Detalle 2
-                Detalle 2.1
-            Subtema 2
-              Detalle 1
-              Detalle 2
-  `
-
-  let userPrompt = prompt + '\n\n'
-
-  if (transcription) {
-    userPrompt += `Transcripción del docente: ${transcription}\n\n`
-  }
-
-  if (textPdf) {
-    userPrompt += `Contenido del PDF de la clase: ${textPdf}\n\n`
-  }
-
-  const schema = z.object({
-    mindMap: z.string().describe('Diagrama de mapa mental en sintaxis Mermaid')
-  })
-
-  try {
-    const { object } = await generateObject({
-      model: google('models/gemini-1.5-flash-latest'),
-      system: systemPrompt,
-      prompt: userPrompt,
-      schema: schema,
+    const google = createGoogleGenerativeAI({
+        apiKey: apiKey ?? ''
     })
 
+    const systemPrompt = `Eres un experto en crear mapas mentales educativos utilizando Mermaid.
+    
+OBJETIVO:
+Crear un mapa mental conciso y visualmente efectivo basado en la información proporcionada.
 
-    const modifiedObject = removeParentheses(object)
-    return { mindMap: modifiedObject.mindMap }
-  } catch (error) {
-    console.error('Error al generar el mapa mental:', error)
-    return { mindMap: 'mindmap\n  root((Información insuficiente))' }
-  }
+ESTRUCTURA DEL MAPA MENTAL:
+1. FORMATO BASE:
+   mindmap
+     root((Tema Principal))
+       Subtema
+         Detalle
+
+2. REGLAS DE DISEÑO:
+   - Máximo 3 niveles de profundidad
+   - Máximo 4 nodos principales
+   - Máximo 2-3 detalles por nodo
+   - Solo usar paréntesis en: root((tema))
+   - Los iconos deben usarse solo cuando sean necesarios para mejorar la comprensión: Concepto📚
+   - Usar Markdown para énfasis: **negrita**, *cursiva*
+
+3. USO DE ICONOS (Font Awesome 5):
+   Conceptos Comunes:
+   - Definiciones: 📚
+   - Ejemplos: 💡
+   - Procesos: ⚙️
+   - Fechas/Tiempo: ⏰
+   - Ideas clave: 🔑
+   - Advertencias: ⚠️
+   - Preguntas: ❓
+   - Recursos: 🔗
+   - Tips: ⭐
+
+4. FORMATO DE TEXTO:
+   - Enfatizar conceptos clave con **negrita**
+   - Usar *cursiva* para términos importantes
+   - Incluir emojis relevantes 🎯 para puntos clave
+
+5. ORGANIZACIÓN:
+   - Agrupar información relacionada
+   - Priorizar conceptos clave
+   - Mantener claridad y simplicidad
+   - Evitar redundancia
+
+EJEMPLO:
+mindmap
+  root((mindmap))
+        Orígenes
+          Historia larga
+          📚
+          Popularización
+            **Autor británico de psicología popular Tony Buzan**
+        Investigación
+          **Sobre efectividad**<br/>y características
+          **Sobre creación automática**
+        Herramientas
+          Papel y lápiz
+          Mermaid
+
+EJEMPLO 2:
+mindmap
+    id1["**Root** with
+a second line
+Unicode works too: 🤓"]
+      id2["The dog in **the** hog... a *very long text* that wraps to a new line"]
+      id3[Regular labels still works]
+
+
+RECUERDA:
+- Seleccionar solo la información más relevante
+- Utilizar íconos estratégicamente para mejorar comprensión
+- Mantener el mapa mental conciso y fácil de entender
+- Aplicar formato Markdown donde sea más efectivo
+- No usar paréntesis ni llaves excepto donde se especifica`
+
+    const userPrompt = [
+        prompt,
+        transcription && `TRANSCRIPCIÓN:\n${transcription}`,
+        textPdf && `CONTENIDO PDF:\n${textPdf}`
+    ]
+        .filter(Boolean)
+        .join('\n\n')
+
+    const schema = z.object({
+        mindMap: z.string().describe('Diagrama de mapa mental en sintaxis Mermaid')
+    })
+
+    try {
+        const { object } = await generateObject({
+            model: google('models/gemini-1.5-flash-latest'),
+            system: systemPrompt,
+            prompt: userPrompt,
+            schema: schema,
+        })
+
+        return removeParentheses(object)
+    } catch (error) {
+        console.error('Error al generar el mapa mental:', error)
+        return {
+            mindMap: `mindmap
+    root((Error al generar))
+      Causa ⚠️
+        [\`**Por favor**, intenta de nuevo\`]`
+        }
+    }
 }

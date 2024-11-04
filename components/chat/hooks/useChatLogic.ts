@@ -166,6 +166,8 @@ export function useChatLogic(notebookId: string) {
           apiKey: apiKeyGemini ?? ''
         })
 
+        console.log('mindMap:', mindMap)
+
         if (mindMap) {
           const mindMapMessage: MindMapMessageType = {
             mindMap: mindMap,
