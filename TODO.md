@@ -42,6 +42,8 @@
   - [ ] Gestión de API Keys
   - [ ] Configuración de dispositivos de audio (micrófono y altavoces)
   - [ ] Selección de idioma predeterminado para los notebooks
+- [ ] El estilo de la transcripcion debe de corregirse
+- [ ] Estilos recortados
 
 ## Optimización de Rendimiento
 
