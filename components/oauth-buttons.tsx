@@ -6,7 +6,7 @@ import { Icons } from './icons'
 
 type sizeType = 'default' | 'sm' | 'lg' | 'icon' | null | undefined
 
-export function GoogleButton ({
+export function GoogleButton({
   size = 'default',
   className
 }: {
@@ -33,7 +33,6 @@ export function GoogleButton ({
         'w-full inline-flex justify-center items-center gap-x-2',
         className
       )}
-      disabled
     >
       <Icons.google className='h-4 w-4' />
       {size === 'icon' ? null : 'Google'}
@@ -41,7 +40,7 @@ export function GoogleButton ({
   )
 }
 
-export function GitHubButton ({
+export function GitHubButton({
   size = 'default',
   className
 }: {
@@ -75,7 +74,7 @@ export function GitHubButton ({
   )
 }
 
-export function FacebookButton ({
+export function FacebookButton({
   size = 'default',
   className
 }: {
