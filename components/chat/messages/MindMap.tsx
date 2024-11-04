@@ -159,7 +159,7 @@ const MindMap: React.FC<MindMapProps> = ({ mindMap }) => {
               >
                 <div
                   ref={mindMapRef}
-                  className='w-full h-full min-h-[300px]'
+                  className='w-full h-full min-h-[200px]'
                   dangerouslySetInnerHTML={{ __html: svg }}
                 />
               </TransformComponent>
