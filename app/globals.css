@@ -371,6 +371,6 @@
 }
 
 /* Ocultar todos los elementos que contengan dmindmap-[...] */
-[id*="dmindmap-"] {
+/* [id*="dmindmap-"] {
   display: none;
-}
+} */

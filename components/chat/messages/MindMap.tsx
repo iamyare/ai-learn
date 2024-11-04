@@ -26,9 +26,13 @@ const MindMap: React.FC<MindMapProps> = ({ mindMap }) => {
       const { svg } = await mermaid.render('mindmap-' + Date.now(), mindMap)
       setSvg(svg)
       setError(null)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error rendering mind map:', error)
-      setError('Error rendering mind map')
+      if (error.message.includes('Syntax error')) {
+        setError('Error de sintaxis en el texto del mapa mental')
+      } else {
+        setError('Error rendering mind map')
+      }
       setSvg(
         '<svg width="100%" height="100%"><text x="10" y="20" fill="red">Error rendering mind map</text></svg>'
       )
@@ -159,7 +163,7 @@ const MindMap: React.FC<MindMapProps> = ({ mindMap }) => {
               >
                 <div
                   ref={mindMapRef}
-                  className='w-full h-full min-h-[200px]'
+                  className='w-full h-full min-h-[300px]'
                   dangerouslySetInnerHTML={{ __html: svg }}
                 />
               </TransformComponent>
