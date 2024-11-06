@@ -13,6 +13,7 @@ import { useEffect, useState } from 'react'
 import { Button } from './button'
 import { DialogEntry } from '@/types/speechRecognition'
 import { transcribeAudio } from '@/lib/ai/ai-transcribe'
+import { useApiKey } from '@/context/useAPIKeysContext'
 
 export const DropzoneDisplay = {
   Normal: () => {
@@ -39,7 +40,7 @@ export const DropzoneDisplay = {
             <p className='ps-1 select-none'>o arrastra y suelta</p>
           </div>
           <p className='text-xs leading-5 text-center text-muted-foreground select-none'>
-            Archivos permitidos: MP3, WAV, OGG hasta 10MB
+            Archivos permitidos: MP3, WAV, OGG, M4A hasta 10MB
           </p>
         </div>
       </div>
@@ -55,7 +56,7 @@ export const DropzoneDisplay = {
         <div className='flex flex-col'>
           <p className='text-center text-sm text-primary'>Suelta el archivo</p>
           <p className='text-xs text-center leading-5 text-primary select-none'>
-            Archivos permitidos: MP3, WAV, OGG hasta 10MB
+            Archivos permitidos: MP3, WAV, OGG, M4A hasta 10MB
           </p>
         </div>
       </div>
@@ -73,7 +74,7 @@ export const DropzoneDisplay = {
             Archivo no permitido
           </p>
           <p className='text-xs text-center leading-5 text-destructive select-none'>
-            Archivos permitidos: MP3, WAV, OGG hasta 10MB
+            Archivos permitidos: MP3, WAV, OGG, M4A hasta 10MB
           </p>
         </div>
       </div>
@@ -95,6 +96,7 @@ export const DropzoneDisplay = {
     hiddenComponent: () => void
   }) => {
     const [audioSrc, setAudioSrc] = useState<string | null>(null)
+    const geminiKey = useApiKey('gemini_key')
 
     useEffect(() => {
       const objectUrl = URL.createObjectURL(file)
@@ -114,7 +116,7 @@ export const DropzoneDisplay = {
       try {
         const result = await transcribeAudio({
           audioFile: file,
-          apiKey: 'AIzaSyAeIyoeiEyba6Ss2e_y5_MfsFKGJRIjpOM'
+          apiKey: geminiKey || ''
         })
 
         onTranscriptionComplete?.(result)

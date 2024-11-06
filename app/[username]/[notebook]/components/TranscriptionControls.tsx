@@ -1,17 +1,29 @@
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Mic, Play, Pause, SkipBack, SkipForward, StopCircle } from 'lucide-react';
+import React from 'react'
+import { Button } from '@/components/ui/button'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from '@/components/ui/tooltip'
+import {
+  Mic,
+  Play,
+  Pause,
+  SkipBack,
+  SkipForward,
+  StopCircle
+} from 'lucide-react'
 
 interface TranscriptionControlsProps {
-  isListening: boolean;
-  isPlaying: boolean;
-  isPending: boolean;
-  onMicClick: () => Promise<void>;
-  onPlayPauseClick: () => void;
-  onStopClick: () => void;
-  showPageNumbers: boolean; // Añadir esta línea
-  onTogglePageNumbers: () => void;
+  isListening: boolean
+  isPlaying: boolean
+  isPending: boolean
+  onMicClick: () => Promise<void>
+  onPlayPauseClick: () => void
+  onStopClick: () => void
+  showPageNumbers: boolean
+  onTogglePageNumbers: () => void
 }
 
 const TranscriptionControls: React.FC<TranscriptionControlsProps> = ({
@@ -27,7 +39,7 @@ const TranscriptionControls: React.FC<TranscriptionControlsProps> = ({
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button size={'icon'} variant={'ghost'}>
+            <Button size={'icon'} variant={'ghost'} aria-label='Retroceder'>
               <SkipBack className='size-4' />
             </Button>
           </TooltipTrigger>
@@ -38,10 +50,11 @@ const TranscriptionControls: React.FC<TranscriptionControlsProps> = ({
 
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button 
-              size={'icon'} 
+            <Button
+              size={'icon'}
               variant={'ghost'}
               onClick={onPlayPauseClick}
+              aria-label={isPlaying ? 'Pausar lectura' : 'Iniciar lectura'}
             >
               {isPlaying ? (
                 <Pause className='size-4' />
@@ -62,6 +75,9 @@ const TranscriptionControls: React.FC<TranscriptionControlsProps> = ({
               variant={'ghost'}
               onClick={onMicClick}
               disabled={isPending}
+              aria-label={
+                isListening ? 'Detener transcripción' : 'Comenzar transcripción'
+              }
             >
               {isListening ? (
                 <Mic className='size-4 text-red-500' />
@@ -77,10 +93,11 @@ const TranscriptionControls: React.FC<TranscriptionControlsProps> = ({
 
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button 
-              size={'icon'} 
+            <Button
+              size={'icon'}
               variant={'ghost'}
               onClick={onStopClick}
+              aria-label='Detener lectura'
             >
               <StopCircle className='size-4' />
             </Button>
@@ -92,7 +109,7 @@ const TranscriptionControls: React.FC<TranscriptionControlsProps> = ({
 
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button size={'icon'} variant={'ghost'}>
+            <Button size={'icon'} variant={'ghost'} aria-label='Avanzar'>
               <SkipForward className='size-4' />
             </Button>
           </TooltipTrigger>
@@ -102,7 +119,7 @@ const TranscriptionControls: React.FC<TranscriptionControlsProps> = ({
         </Tooltip>
       </TooltipProvider>
     </div>
-  );
-};
+  )
+}
 
-export default TranscriptionControls;
+export default TranscriptionControls

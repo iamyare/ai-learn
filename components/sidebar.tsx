@@ -138,7 +138,7 @@ export function Sidebar({ children, userId, defaultOpen }: SidebarProps) {
 
   return (
     <TooltipProvider delayDuration={0}>
-      <div className='flex h-screen min-h-screen overflow-hidden items-stretch'>
+      <div className='flex h-screen min-h-screen  items-stretch'>
         <div
           className={cn(
             'transition-all z-50 duration-300 ease-in-out',
@@ -198,12 +198,12 @@ export function Sidebar({ children, userId, defaultOpen }: SidebarProps) {
           </Button>
         </div>
 
-        <main className={cn('flex-1 p-5', !isOpen && 'ml-2')}>
+        <section className={cn('flex-1', !isOpen && 'ml-2')}>
           <ScrollArea className=' h-full'>
-            {children}
+            <aside className=' p-4'>{children}</aside>
             <ScrollBar />
           </ScrollArea>
-        </main>
+        </section>
       </div>
     </TooltipProvider>
   )
