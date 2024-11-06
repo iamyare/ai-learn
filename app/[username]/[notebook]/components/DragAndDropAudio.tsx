@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect } from 'react'
+import { useCallback, useState } from 'react'
 import { motion } from 'framer-motion'
 import { AudioDropzoneWrapper } from './AudioDropzoneWrapper'
 import {
@@ -11,7 +11,6 @@ import {
 import { cn } from '@/lib/utils'
 import { DialogEntry } from '@/types/speechRecognition'
 import { useSpeechRecognitionContext } from '@/context/useSpeechRecognitionContext'
-import { TextSparkles } from '@/components/ui/text-sparkles'
 import { updateTranscriptNotebook } from '@/actions'
 
 interface DragAndDropAudioProps {
@@ -38,21 +37,13 @@ export default function DragAndDropAudio({
   const [acceptedFile, setAcceptedFile] = useState<File | null>(
     selectedFile || null
   )
-  const [isVisible, setIsVisible] = useState(true)
   const { updateOptions, history } = useSpeechRecognitionContext()
-
-  useEffect(() => {
-    if (selectedFile) {
-      setIsVisible(true)
-    }
-  }, [selectedFile])
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       if (acceptedFiles.length > 0) {
         setAcceptedFile(acceptedFiles[0])
         onFileDrop(acceptedFiles[0])
-        setIsVisible(true) // Asegurarse de que el componente sea visible
       }
     },
     [onFileDrop]
@@ -61,7 +52,6 @@ export default function DragAndDropAudio({
   const handleDelete = useCallback(() => {
     setAcceptedFile(null)
     onFileDelete?.()
-    setIsVisible(false)
     onHide?.()
   }, [onFileDelete, onHide])
 
@@ -95,7 +85,6 @@ export default function DragAndDropAudio({
   )
 
   function handleHide() {
-    setIsVisible(false)
     onHide?.()
   }
 
