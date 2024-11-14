@@ -31,10 +31,8 @@ export default function UsernameLayoutClient({
 
   return (
     <FolderNavigationProvider>
-      <SidebarProvider>
-        <Sidebar defaultOpen={defaultOpen} userId={userId}>
-          {children}
-        </Sidebar>
+      <SidebarProvider defaultOpen={defaultOpen}>
+        <Sidebar userId={userId}>{children}</Sidebar>
       </SidebarProvider>
     </FolderNavigationProvider>
   )

@@ -1,14 +1,13 @@
 /* eslint-disable @next/next/no-img-element */
 'use client'
 import React, { useState, useEffect, useCallback } from 'react'
-import { Home, Search, Settings2, Command, ChevronLeft } from 'lucide-react'
+import { Home, Search, ChevronLeft } from 'lucide-react'
 import {
   Sidebar as SidebarComponent,
   SidebarContent,
   SidebarHeader,
   SidebarInset,
-  SidebarRail,
-  SidebarTrigger
+  SidebarRail
 } from '@/components/ui/sidebar'
 import { Button } from '@/components/ui/button'
 import { TooltipProvider } from '@/components/ui/tooltip'
@@ -17,33 +16,28 @@ import { useMediaQuery } from './ui/use-media-query'
 import { Tree, Folder, File, TreeViewElement } from '@/components/file-tree'
 import { usePathname } from 'next/navigation'
 import { ScrollArea, ScrollBar } from './ui/scroll-area'
-import { NavMain } from '@/components/nav-main'
-import { NavSecondary } from '@/components/nav-secondary'
-import { TeamSwitcher } from '@/components/team-switcher'
 import Link from 'next/link'
 
 interface SidebarProps {
   children: React.ReactNode
   userId: string
-  defaultOpen: boolean
 }
 
-const mainNavItems = [
-  {
-    title: 'Inicio',
-    url: '/',
-    icon: Home,
-    isActive: true
-  },
-  {
-    title: 'Buscar',
-    url: '/search',
-    icon: Search
-  }
-]
+// const mainNavItems = [
+//   {
+//     title: 'Inicio',
+//     url: '/',
+//     icon: Home,
+//     isActive: true
+//   },
+//   {
+//     title: 'Buscar',
+//     url: '/search',
+//     icon: Search
+//   }
+// ]
 
-export function Sidebar({ children, userId, defaultOpen }: SidebarProps) {
-  const [isOpen, setIsOpen] = useState(defaultOpen)
+export function Sidebar({ children, userId }: SidebarProps) {
   const [rootItems, setRootItems] = useState<TreeViewElement[]>([])
   const pathname = usePathname()
   const isDesktop = useMediaQuery('(min-width: 600px)')
@@ -77,12 +71,6 @@ export function Sidebar({ children, userId, defaultOpen }: SidebarProps) {
   useEffect(() => {
     loadItems().then(setRootItems)
   }, [loadItems])
-
-  const toggleSidebar = () => {
-    const newOpenState = !isOpen
-    setIsOpen(newOpenState)
-    document.cookie = `sidebarIsOpen=${newOpenState}`
-  }
 
   if (!isDesktop) {
     return (
@@ -142,7 +130,6 @@ export function Sidebar({ children, userId, defaultOpen }: SidebarProps) {
               size='icon'
               variant='outline'
               className=' mt-5 -ml-2 p-2 h-fit z-50 aspect-square rounded-full group-data-[collapsible=icon]:rotate-180 transition-transform duration-500'
-              onClick={toggleSidebar}
             >
               <ChevronLeft className='h-4 w-4' />
             </Button>
