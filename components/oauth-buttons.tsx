@@ -3,6 +3,7 @@ import { createSupabaseBrowerClient } from '@/lib/supabase'
 import { Button } from './ui/button'
 import { cn } from '@/lib/utils'
 import { Icons } from './icons'
+import ShinyButton from './ui/shiny-button'
 
 type sizeType = 'default' | 'sm' | 'lg' | 'icon' | null | undefined
 
@@ -37,6 +38,37 @@ export function GoogleButton({
       <Icons.google className='h-4 w-4' />
       {size === 'icon' ? null : 'Google'}
     </Button>
+  )
+}
+
+export function GoogleButtonStyle({
+  size = 'default',
+  className
+}: {
+  size?: sizeType
+  className?: string
+}) {
+  const supabase = createSupabaseBrowerClient()
+  const handleSignIn = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${location.origin}/auth/callback`
+      }
+    })
+  }
+
+  return (
+    <ShinyButton
+      type='button'
+      onClick={handleSignIn}
+      className={cn(' py-3 px-8 ', className)}
+    >
+      <span className=' flex items-center'>
+        <Icons.google className=' size-4 mr-2' />
+        {size === 'icon' ? null : 'Iniciar sesión con Google'}
+      </span>
+    </ShinyButton>
   )
 }
 
