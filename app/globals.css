@@ -32,6 +32,11 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --yellow: 50 100% 50%;
+    --color-1: 0 100% 63%;
+    --color-2: 270 100% 63%;
+    --color-3: 210 100% 63%;
+    --color-4: 195 100% 63%;
+    --color-5: 90 100% 63%;
   }
 
   .dark {
@@ -64,7 +69,7 @@
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-border scroll-smooth;
   }
   body {
     @apply bg-background text-foreground;
@@ -312,6 +317,15 @@
   100% {
     background-position: 0% 50%;
   }
+}
+
+::-moz-selection {
+  /* Code for Firefox */
+  @apply bg-primary/20;
+}
+
+::selection {
+  @apply bg-primary/20;
 }
 
 /* Add this class to your existing styles */
