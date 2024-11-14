@@ -2,11 +2,22 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { motion } from 'framer-motion'
+import { motion, useScroll, useTransform } from 'framer-motion'
 import { InView } from 'react-intersection-observer'
 import Link from 'next/link'
+import { useEffect } from 'react'
 
 export default function PageClient() {
+  useEffect(() => {
+    const images = Array.from({ length: 5 }).map(
+      (_, i) => `/phone/device_${i + 1}.png`
+    )
+    images.forEach((src) => {
+      const img = new Image()
+      img.src = src
+    })
+  }, [])
+
   const logoAnimation = {
     initial: {
       scale: 4,
@@ -16,7 +27,7 @@ export default function PageClient() {
       scale: 1,
       y: 0,
       transition: {
-        duration: 2,
+        duration: 1.5,
         ease: [0.2, 0, 0.3, 1] // cubicBezier personalizado: muy lento al inicio, muy rápido al final
       }
     }
@@ -31,7 +42,7 @@ export default function PageClient() {
       opacity: 1,
       y: 0,
       transition: {
-        delay: 1.5,
+        delay: 1,
         duration: 0.8
       }
     }
@@ -64,11 +75,11 @@ export default function PageClient() {
     let initialX = 0
 
     if (index === 2) {
-      initialY = 50 // Centro, de abajo hacia arriba
+      initialY = 50
     } else if (index < 2) {
-      initialX = -50 // Izquierda, de izquierda a derecha
+      initialX = -50
     } else {
-      initialX = 50 // Derecha, de derecha a izquierda
+      initialX = 50
     }
 
     return {
@@ -82,13 +93,24 @@ export default function PageClient() {
         y: 0,
         x: 0,
         transition: {
-          delay: 1,
-          duration: 0.5,
+          delay: 1, // Agregamos un pequeño delay escalonado
+          duration: 0.6,
           ease: 'easeOut'
         }
       }
     }
   }
+
+  const { scrollYProgress } = useScroll()
+
+  // Crear transformaciones individuales para cada imagen
+  const yPosScrolls = [
+    useTransform(scrollYProgress, [0, 1], [80, 0]), // Primera imagen
+    useTransform(scrollYProgress, [0, 1], [40, 0]), // Segunda imagen
+    useTransform(scrollYProgress, [0, 1], [0, 0]), // Imagen central
+    useTransform(scrollYProgress, [0, 1], [40, 0]), // Cuarta imagen
+    useTransform(scrollYProgress, [0, 1], [80, 0]) // Quinta imagen
+  ]
 
   return (
     <section id='hero'>
@@ -142,27 +164,39 @@ export default function PageClient() {
               </Button>
             </div>
 
-            <InView triggerOnce threshold={0.5}>
-              <motion.div
-                variants={phoneContainerAnimation}
-                initial='hidden'
-                animate={'visible'}
-                className='flex flex-nowrap items-center justify-center -space-x-20 sm:-space-x-20 h-auto select-none'
-              >
-                {Array.from({ length: 5 }).map((_, index) => (
-                  <motion.div
-                    key={index}
-                    variants={phoneAnimation(index)}
-                    className='flex-shrink-0'
-                  >
-                    <img
-                      src={`/phone/device_${index + 1}.png`}
-                      alt='iPhone'
-                      className=' h-[333px] object-cover aspect-[2/3] sm:h-[600px] flex-shrink-0'
-                    />
-                  </motion.div>
-                ))}
-              </motion.div>
+            <InView triggerOnce threshold={0.1}>
+              {({ inView, ref }) => (
+                <motion.div
+                  ref={ref}
+                  variants={phoneContainerAnimation}
+                  initial='hidden'
+                  animate='visible'
+                  className='flex flex-nowrap items-center justify-center -space-x-20 sm:-space-x-20 h-auto select-none'
+                  style={{ willChange: 'transform' }} // Optimización de rendimiento
+                >
+                  {Array.from({ length: 5 }).map((_, index) => (
+                    <motion.div
+                      key={index}
+                      variants={phoneAnimation(index)}
+                      style={{
+                        y: inView
+                          ? yPosScrolls[index]
+                          : yPosScrolls[index].get(),
+                        willChange: 'transform, opacity' // Optimización de rendimiento
+                      }}
+                      className='flex-shrink-0'
+                    >
+                      <img
+                        src={`/phone/device_${index + 1}.png`}
+                        alt={`iPhone preview ${index + 1}`}
+                        loading='lazy'
+                        className='h-[333px] object-cover aspect-[2/3] sm:h-[600px] flex-shrink-0'
+                        style={{ willChange: 'transform' }}
+                      />
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
             </InView>
           </motion.div>
         </main>
