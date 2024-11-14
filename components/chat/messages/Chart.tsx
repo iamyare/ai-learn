@@ -51,19 +51,23 @@ const Chart: React.FC<ChartProps> = ({ chartData }) => {
   const [activeDataset, setActiveDataset] = useState(0)
   const [error, setError] = useState<string | null>(null)
 
+  console.log('chartData', chartData)
+
   const formatTickValue = (value: number | string): string => {
     if (typeof value === 'number') {
-      const isNegative = value < 0;
-      const absoluteValue = Math.abs(value);
-  
+      const isNegative = value < 0
+      const absoluteValue = Math.abs(value)
+
       if (absoluteValue >= 1000000) {
-        return `${isNegative ? '-' : ''}${(absoluteValue / 1000000).toFixed(1)}M`;
+        return `${isNegative ? '-' : ''}${(absoluteValue / 1000000).toFixed(
+          1
+        )}M`
       } else if (absoluteValue >= 1000) {
-        return `${isNegative ? '-' : ''}${(absoluteValue / 1000).toFixed(1)}K`;
+        return `${isNegative ? '-' : ''}${(absoluteValue / 1000).toFixed(1)}K`
       }
     }
-    return value.toString();
-  };
+    return value.toString()
+  }
 
   const adaptDataToChartType = useMemo(
     () => (type: 'bar' | 'line' | 'pie' | 'scatter' | 'area') => {
@@ -97,16 +101,13 @@ const Chart: React.FC<ChartProps> = ({ chartData }) => {
 
   const chartConfig: ChartConfig = useMemo(() => {
     try {
-      return adaptedData.datasets.reduce(
-        (acc, dataset, index) => {
-          acc[dataset.label] = {
-            label: dataset.label,
-            color: COLORS[index % COLORS.length]
-          }
-          return acc
-        },
-        {} as ChartConfig
-      )
+      return adaptedData.datasets.reduce((acc, dataset, index) => {
+        acc[dataset.label] = {
+          label: dataset.label,
+          color: COLORS[index % COLORS.length]
+        }
+        return acc
+      }, {} as ChartConfig)
     } catch (err) {
       console.error('Error creating chart config:', err)
       setError('Error al configurar el gráfico.')
@@ -131,35 +132,36 @@ const Chart: React.FC<ChartProps> = ({ chartData }) => {
               <CartesianGrid vertical={false} />
               <Bar
                 dataKey={adaptedData.datasets[activeDataset].label}
-                fill={`var(--color-${adaptedData.datasets[activeDataset].label})`}
+                fill={COLORS[activeDataset % COLORS.length]}
                 radius={8}
               >
                 <LabelList position='top' offset={12} fontSize={12} />
               </Bar>
-              <XAxis dataKey='name'
-               tickLine={false}
-               axisLine={false}
-               tickMargin={2}
-               />
-              <YAxis 
+              <XAxis
+                dataKey='name'
+                tickLine={false}
+                axisLine={false}
+                tickMargin={2}
+              />
+              <YAxis
                 tickMargin={2}
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={formatTickValue}
               />
-
             </BarChart>
           )
         case 'line':
           return (
             <LineChart {...commonProps}>
               <CartesianGrid strokeDasharray='3 3' />
-              <XAxis dataKey='name'
-               tickLine={false}
-               axisLine={false}
-               tickMargin={2}
-               />
-                             <YAxis 
+              <XAxis
+                dataKey='name'
+                tickLine={false}
+                axisLine={false}
+                tickMargin={2}
+              />
+              <YAxis
                 tickMargin={2}
                 tickLine={false}
                 axisLine={false}
@@ -216,20 +218,36 @@ const Chart: React.FC<ChartProps> = ({ chartData }) => {
             <AreaChart {...commonProps}>
               <defs>
                 {adaptedData.datasets.map((dataset, index) => (
-                  <linearGradient key={dataset.label} id={`fill${dataset.label}`} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={COLORS[index % COLORS.length]} stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor={COLORS[index % COLORS.length]} stopOpacity={0.1}/>
+                  <linearGradient
+                    key={dataset.label}
+                    id={`fill-area-${index}`}
+                    x1='0'
+                    y1='0'
+                    x2='0'
+                    y2='1'
+                  >
+                    <stop
+                      offset='5%'
+                      stopColor={COLORS[index % COLORS.length]}
+                      stopOpacity={0.8}
+                    />
+                    <stop
+                      offset='95%'
+                      stopColor={COLORS[index % COLORS.length]}
+                      stopOpacity={0.1}
+                    />
                   </linearGradient>
                 ))}
               </defs>
               <ChartTooltip content={<ChartTooltipContent />} />
               <CartesianGrid vertical={false} />
-              <XAxis dataKey='name'
-               tickLine={false}
-               axisLine={false}
-               tickMargin={2}
-               />
-                             <YAxis 
+              <XAxis
+                dataKey='name'
+                tickLine={false}
+                axisLine={false}
+                tickMargin={2}
+              />
+              <YAxis
                 tickMargin={2}
                 tickLine={false}
                 axisLine={false}
@@ -238,18 +256,20 @@ const Chart: React.FC<ChartProps> = ({ chartData }) => {
               {adaptedData.datasets.map((dataset, index) => (
                 <Area
                   key={dataset.label}
-                  type="monotone"
+                  type='monotone'
                   dataKey={dataset.label}
                   stroke={COLORS[index % COLORS.length]}
                   fillOpacity={0.4}
-                  fill={`url(#fill${dataset.label})`}
+                  fill={`url(#fill-area-${index})`}
                 />
               ))}
             </AreaChart>
           )
         case 'scatter':
           if (adaptedData.datasets.length < 2) {
-            throw new Error('El gráfico de dispersión requiere al menos dos conjuntos de datos.')
+            throw new Error(
+              'El gráfico de dispersión requiere al menos dos conjuntos de datos.'
+            )
           }
           return (
             <ScatterChart {...commonProps}>
@@ -316,7 +336,7 @@ const Chart: React.FC<ChartProps> = ({ chartData }) => {
       </CardHeader>
       <CardContent className='px-2 sm:p-6'>
         {error ? (
-          <Alert variant="destructive">
+          <Alert variant='destructive'>
             <AlertTitle>Error</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
