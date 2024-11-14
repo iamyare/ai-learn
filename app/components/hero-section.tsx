@@ -8,7 +8,6 @@ import { useEffect } from 'react'
 import { BackgroundLines } from '@/components/ui/background-lines'
 import { RainbowButton } from '@/components/ui/RainbowButton'
 import { RocketIcon } from 'lucide-react'
-import ShinyButton from '@/components/ui/shiny-button'
 import { useRouter } from 'next/navigation'
 import { GoogleButtonStyle } from '@/components/oauth-buttons'
 

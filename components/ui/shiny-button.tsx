@@ -47,7 +47,7 @@ const ShinyButton = React.forwardRef<HTMLButtonElement, ShinyButtonProps>(
         )}
       >
         <span
-          className='relative block size-full text-sm uppercase tracking-wide text-[rgb(0,0,0,65%)] dark:font-light dark:text-[rgb(255,255,255,90%)]'
+          className='relative block w-full text-sm uppercase tracking-wide text-[rgb(0,0,0,65%)] dark:font-light dark:text-[rgb(255,255,255,90%)]'
           style={{
             maskImage:
               'linear-gradient(-75deg,hsl(var(--primary)) calc(var(--x) + 20%),transparent calc(var(--x) + 30%),hsl(var(--primary)) calc(var(--x) + 100%))'
@@ -58,6 +58,7 @@ const ShinyButton = React.forwardRef<HTMLButtonElement, ShinyButtonProps>(
         <span
           style={{
             mask: 'linear-gradient(rgb(0,0,0), rgb(0,0,0)) content-box,linear-gradient(rgb(0,0,0), rgb(0,0,0))',
+            WebkitMaskComposite: 'xor',
             maskComposite: 'exclude'
           }}
           className='absolute inset-0 z-10 block rounded-[inherit] bg-[linear-gradient(-75deg,hsl(var(--primary)/10%)_calc(var(--x)+20%),hsl(var(--primary)/50%)_calc(var(--x)+25%),hsl(var(--primary)/10%)_calc(var(--x)+100%))] p-px'
@@ -66,5 +67,7 @@ const ShinyButton = React.forwardRef<HTMLButtonElement, ShinyButtonProps>(
     )
   }
 )
+
+ShinyButton.displayName = 'ShinyButton'
 
 export default ShinyButton
