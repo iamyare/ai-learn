@@ -7,12 +7,12 @@ import {
   AudioLines,
   BarChart3,
   Cloud,
-  Columns2,
   FileText,
   Highlighter,
   Search
 } from 'lucide-react'
 import Container from '@/components/ui/container-animation'
+import { useMediaQuery } from '@/components/ui/use-media-query'
 
 export const projects = [
   {
@@ -60,6 +60,7 @@ export const projects = [
 ]
 
 export default function FeatureMoreSection() {
+  const isDesktop = useMediaQuery('(min-width: 600px)')
   return (
     <section id='moreFeacture' className='-mt-36'>
       <div className='sm:py-20 py-12 container px-10'>
@@ -72,9 +73,13 @@ export default function FeatureMoreSection() {
           </h3>
         </div>
 
-        <Container className='max-w-5xl mx-auto px-8'>
+        {isDesktop ? (
+          <Container className='max-w-5xl mx-auto px-8 '>
+            <HoverEffect items={projects} />
+          </Container>
+        ) : (
           <HoverEffect items={projects} />
-        </Container>
+        )}
       </div>
     </section>
   )
