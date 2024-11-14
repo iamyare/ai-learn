@@ -16,6 +16,7 @@ import { Icons } from './icons'
 type TreeViewElement = {
   id: string
   name: string
+  icon: string
   isSelectable?: boolean
   children?: TreeViewElement[]
   type: 'folder' | 'file'
@@ -180,6 +181,7 @@ type FolderProps = {
   value: string
   isSelectable?: boolean
   isSelect?: boolean
+  icon: string
 } & React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Item>
 
 const Folder = forwardRef<HTMLDivElement, FolderProps>(
@@ -188,6 +190,7 @@ const Folder = forwardRef<HTMLDivElement, FolderProps>(
       className,
       element,
       value,
+      icon,
       isSelectable = true,
       isSelect,
       children,
@@ -237,17 +240,16 @@ const Folder = forwardRef<HTMLDivElement, FolderProps>(
     )
 
     const folderChildren = loadedFolders[value] || []
-    const isExpanded = expandedItems?.includes(value)
 
     return (
       <AccordionPrimitive.Item
         {...props}
         value={value}
-        className='relative overflow-hidden py-1.5 px-1 hover:bg-muted rounded-sm'
+        className='relative overflow-hidden py-1.5 px-1 hover:bg-muted rounded-sm group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:p-0'
       >
         <AccordionPrimitive.Trigger
           className={cn(
-            `flex items-center gap-1 text-sm rounded-md w-full`,
+            `flex  items-center gap-1 text-sm rounded-md h-full`,
             className,
             {
               // 'bg-muted rounded-md': isSelect && isSelectable,
@@ -258,16 +260,12 @@ const Folder = forwardRef<HTMLDivElement, FolderProps>(
           disabled={!isSelectable}
           onClick={handleFolderExpand}
         >
-          {isExpanded
-            ? openIcon ?? (
-                <Icons.folder02Icon className='size-5 text-foreground' />
-              )
-            : closeIcon ?? (
-                <Icons.folder01Icon className='size-5 text-foreground' />
-              )}
-          <span>{element}</span>
+          <span className=' ml-2 mr-2'>{icon}</span>
+          <span className=' text-nowrap group-data-[collapsible=icon]:hidden'>
+            {element}
+          </span>
         </AccordionPrimitive.Trigger>
-        <AccordionPrimitive.Content className='text-sm data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden pl-6'>
+        <AccordionPrimitive.Content className='text-sm overflow-hidden pl-6'>
           {element && indicator && <TreeIndicator aria-hidden='true' />}
           {isLoading ? (
             <SkeletonItem />
@@ -280,6 +278,7 @@ const Folder = forwardRef<HTMLDivElement, FolderProps>(
                     element={child.name}
                     value={child.id}
                     isSelectable={child.isSelectable}
+                    icon={child.icon}
                   />
                 ) : (
                   <File
@@ -333,8 +332,10 @@ const File = forwardRef<HTMLButtonElement, FileProps>(
 
     const fileContent = (
       <>
-        {fileIcon ?? <Icons.notebookIcon className='size-5 text-foreground' />}
-        {children}
+        {fileIcon ?? <Icons.notebookIcon className='size-4 text-foreground' />}
+        <span className=' text-nowrap group-data-[collapsible=icon]:hidden '>
+          {children}
+        </span>
       </>
     )
 
@@ -348,7 +349,7 @@ const File = forwardRef<HTMLButtonElement, FileProps>(
             disabled={!isSelectable}
             aria-label='File'
             className={cn(
-              'flex w-full items-center  py-1.5 px-1 rounded-sm gap-1 cursor-pointer hover:bg-muted text-sm pr-1 rtl:pl-1 rtl:pr-0 transition-colors  duration-200 ease-in-out',
+              'flex w-full items-center py-1.5 px-1 group-data-[collapsible=icon]:p-2 rounded-sm gap-1 cursor-pointer hover:bg-muted text-sm pr-1 rtl:pl-1 rtl:pr-0 transition-colors  duration-200 ease-in-out',
               {
                 'bg-muted': isSelected && isSelectable
               },
