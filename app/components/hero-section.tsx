@@ -175,7 +175,7 @@ export default function HeroSection({ user }: { user: User | null }) {
             <div className='flex justify-center  mb-16'>
               {user ? (
                 <RainbowButton className=' '>
-                  <Link href='/auth/login' className=' inline-flex'>
+                  <Link href={`/${user.username}`} className=' inline-flex'>
                     Iniciar a la aplicacion
                     <RocketIcon className='size-5 ml-2' />
                   </Link>
