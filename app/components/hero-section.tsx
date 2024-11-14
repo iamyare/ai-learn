@@ -170,9 +170,8 @@ export default function HeroSection({ user }: { user: User | null }) {
               className='max-w-2xl mx-auto text-xl mb-8 font-medium text-balance'
               style={{ opacity: 1, willChange: 'auto' }}
             >
-              Stick Note transforma tu voz en texto al instante. Perfecto para
-              tomar notas rápidamente, crear contenido y capturar ideas sobre la
-              marcha.
+              Convierte tus clases en notas perfectamente organizadas con un
+              solo clic. Di adiós a los apuntes perdidos.
             </p>
             <div className='flex justify-center  mb-16'>
               {user ? (

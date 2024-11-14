@@ -1,81 +1,66 @@
 /* eslint-disable @next/next/no-img-element */
 'use client'
 import React from 'react'
-import { motion } from 'framer-motion'
-import { InView } from 'react-intersection-observer'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { Check, ChevronRight } from 'lucide-react'
-
-const Container = ({
-  children,
-  className
-}: {
-  children: React.ReactNode
-  className?: string
-}) => {
-  return (
-    <InView triggerOnce threshold={0.5}>
-      {({ inView, ref }) => (
-        <motion.div
-          ref={ref}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: inView ? 1 : 0, y: inView ? 0 : 20 }}
-          transition={{ duration: 0.6 }}
-          className={className}
-        >
-          {children}
-        </motion.div>
-      )}
-    </InView>
-  )
-}
+import Container from '@/components/ui/container-animation'
 
 export default function PricingSection() {
   return (
-    <section id='pricing' className=' -mt-36'>
+    <section id='pricing' className=' -mt-20'>
       <div className='sm:py-20 py-12 container px-10'>
         <div className='text-center space-y-4 pb-10 mx-auto'>
           <h2 className='text-sm text-primary text-balance font-mono font-semibold tracking-wider uppercase'>
-            Pricing
+            Planes
           </h2>
-          <h3 className='mx-0 mt-4 max-w-lg text-5xl text-balance font-bold sm:max-w-none sm:text-4xl md:text-5xl lg:text-6xl leading-[1.2] tracking-tighter text-foreground lowercase'>
-            simple pricing
+          <h3 className='mx-0 mt-4 max-w-lg text-5xl text-balance font-bold sm:max-w-none sm:text-4xl md:text-5xl lg:text-6xl leading-[1.2] tracking-tighter text-foreground '>
+            Elige el plan perfecto para ti
           </h3>
         </div>
         <div className='flex justify-center items-center max-w-3xl mx-auto py-10'>
           <Container className='bg-muted/60 p-6 rounded-3xl grid grid-rows-[auto_auto_1fr_auto]'>
-            <h2 className='text-2xl font-semibold mb-4'>Basic</h2>
+            <h2 className='text-2xl font-semibold mb-4'>Plan Estudiante</h2>
             <div className='text-4xl font-bold text-primary mb-2'>
               $0
               <span className='text-sm font-normal text-muted-foreground'>
-                /month
+                /mes
               </span>
             </div>
             <p className='text-sm text-muted-foreground mb-4'>
-              Perfect for individual users
+              Comienza tu viaje hacia el éxito académico
             </p>
             <div className='space-y-3 mb-6'>
               <div className='flex items-center'>
                 <Check className=' size-6 mr-2 text-primary' />
-                <span>AI-powered scheduling (up to 10 events/month)</span>
+                <span>Transcripciones ilimitadas</span>
               </div>
               <div className='flex items-center'>
                 <Check className=' size-6 mr-2 text-primary' />
-                <span>Basic time blocking</span>
+                <span>Organización completa</span>
               </div>
               <div className='flex items-center'>
                 <Check className=' size-6 mr-2 text-primary' />
-                <span>Cloud sync for 1 device</span>
+                <span>Gráficos ilimitados</span>
               </div>
               <div className='flex items-center'>
                 <Check className=' size-6 mr-2 text-primary' />
-                <span>Email reminders</span>
+                <span>Mapas mentales ilimitados</span>
+              </div>
+              <div className='flex items-center'>
+                <Check className=' size-6 mr-2 text-primary' />
+                <span>Almacenamiento en la nube</span>
+              </div>
+              <div className='flex items-center'>
+                <Check className=' size-6 mr-2 text-primary' />
+                <span>Sincronización en todos tus dispositivos</span>
               </div>
             </div>
-            <Button>
-              Get Started
-              <ChevronRight className=' size-5 ' />
+            <Button asChild>
+              <Link href='#hero'>
+                Empezar Gratis
+                <ChevronRight className=' size-5 ' />
+              </Link>
             </Button>
           </Container>
           {/* <Container className='bg-muted/60 p-6 rounded-3xl grid grid-rows-[auto_auto_1fr_auto]'>

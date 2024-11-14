@@ -1,34 +1,11 @@
 /* eslint-disable @next/next/no-img-element */
 'use client'
 import React from 'react'
-import { motion } from 'framer-motion'
-import { InView } from 'react-intersection-observer'
+
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 
-const Container = ({
-  children,
-  className
-}: {
-  children: React.ReactNode
-  className?: string
-}) => {
-  return (
-    <InView triggerOnce threshold={0.5}>
-      {({ inView, ref }) => (
-        <motion.div
-          ref={ref}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: inView ? 1 : 0, y: inView ? 0 : 20 }}
-          transition={{ duration: 0.6 }}
-          className={className}
-        >
-          {children}
-        </motion.div>
-      )}
-    </InView>
-  )
-}
+import Container from '@/components/ui/container-animation'
 
 export default function FeatureSection() {
   return (
@@ -39,13 +16,13 @@ export default function FeatureSection() {
             className='text-sm text-primary text-balance font-mono font-semibold tracking-wider uppercase'
             style={{ opacity: 1, transform: 'none' }}
           >
-            Features
+            Características
           </h2>
           <h3
-            className='mx-0 mt-4 max-w-lg text-5xl text-balance font-bold sm:max-w-none sm:text-4xl md:text-5xl lg:text-6xl leading-[1.2] tracking-tighter text-foreground lowercase'
+            className='mx-0 mt-4 max-w-lg text-5xl text-balance font-bold sm:max-w-none sm:text-4xl md:text-5xl lg:text-6xl leading-[1.2] tracking-tighter text-foreground'
             style={{ opacity: 1, transform: 'none' }}
           >
-            Powerful features
+            Todo lo que necesitas para destacar
           </h3>
         </div>
         <div className='flex flex-col items-center justify-between pb-10 transition-all duration-500 ease-out lg:flex-row-reverse'>
@@ -55,20 +32,20 @@ export default function FeatureSection() {
                 className='text-4xl md:text-5xl lg:text-6xl font-bold'
                 style={{ opacity: 1, willChange: 'auto', transform: 'none' }}
               >
-                AI-Powered Scheduling
+                Transcripción Inteligente
               </h2>
               <p
                 className='text-xl md:text-2xl'
                 style={{ opacity: 1, willChange: 'auto', transform: 'none' }}
               >
-                Intelligent scheduling that learns your preferences and
-                optimizes your time.
+                Concéntrate en entender, no en escribir. Nuestra IA captura cada
+                palabra importante mientras tú te sumerges en la clase.
               </p>
               <div
                 style={{ opacity: 1, willChange: 'auto', transform: 'none' }}
               >
                 <Button asChild>
-                  <Link href='#hero'>Comenzar</Link>
+                  <Link href='#hero'>Pruébalo ahora</Link>
                 </Button>
               </div>
             </div>
@@ -92,7 +69,7 @@ export default function FeatureSection() {
                   transform: 'none'
                 }}
               >
-                Smart Time Blocking
+                Organización Personalizada
               </h2>
               <p
                 className='text-xl md:text-2xl'
@@ -102,8 +79,9 @@ export default function FeatureSection() {
                   transform: 'none'
                 }}
               >
-                Automatically block time for focused work and personal
-                activities.
+                Tu espacio, tus reglas. Crea carpetas con colores, anida
+                notebooks dentro de otras carpetas y organiza tu contenido como
+                mejor te funcione.
               </p>
               <div
                 style={{
@@ -112,12 +90,9 @@ export default function FeatureSection() {
                   transform: 'none'
                 }}
               >
-                <a
-                  className='inline-flex items-center justify-center whitespace-nowrap font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary hover:bg-primary/90 h-11 px-8 text-white rounded-full group text-lg mx-auto lg:mx-0'
-                  href='#'
-                >
-                  Get Started
-                </a>
+                <Button asChild>
+                  <Link href='#hero'>Descubre cómo</Link>
+                </Button>
               </div>
             </div>
           </Container>
@@ -140,7 +115,7 @@ export default function FeatureSection() {
                   transform: 'none'
                 }}
               >
-                Predictive Event Planning
+                Asistente de Estudio Inteligente
               </h2>
               <p
                 className='text-xl md:text-2xl'
@@ -150,8 +125,8 @@ export default function FeatureSection() {
                   transform: 'none'
                 }}
               >
-                AI suggests optimal times for meetings and events based on your
-                habits.
+                Obtén resúmenes automáticos, mapas mentales y gráficos visuales
+                que transforman tus apuntes en contenido fácil de entender.
               </p>
               <div
                 style={{
@@ -160,12 +135,9 @@ export default function FeatureSection() {
                   transform: 'none'
                 }}
               >
-                <a
-                  className='inline-flex items-center justify-center whitespace-nowrap font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary hover:bg-primary/90 h-11 px-8 text-white rounded-full group text-lg mx-auto lg:mx-0'
-                  href='#'
-                >
-                  Get Started
-                </a>
+                <Button asChild>
+                  <Link href='#hero'>Descubre cómo</Link>
+                </Button>
               </div>
             </div>
           </Container>

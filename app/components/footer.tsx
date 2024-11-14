@@ -8,9 +8,9 @@ export default function Footer() {
   return (
     <footer className='bg-background my-4'>
       <div className='w-full container'>
-        <div className='sm:flex sm:items-center sm:justify-between'>
+        <div className='flex justify-between'>
           <Link
-            href='https://flowbite.com/'
+            href='https://sticky-notes-yare.vercel.app/'
             className='flex items-center  space-x-3 rtl:space-x-reverse'
           >
             <img
@@ -46,7 +46,7 @@ export default function Footer() {
         <span className='block text-sm text-muted-foreground sm:text-center '>
           © 2024{' '}
           <Link href='#' className='hover:underline'>
-            Flowbite™
+            Stick Note
           </Link>
           . All Rights Reserved.
         </span>
