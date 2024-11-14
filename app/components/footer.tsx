@@ -25,19 +25,25 @@ export default function Footer() {
           </Link>
           <ul className='flex flex-wrap items-center gap-4 text-muted-foreground'>
             <li>
-              <Link href={'#'}>
+              <Link href={'https://github.com/iamyare'} target='_blank'>
                 <GithubIcon className='size-5' />
               </Link>
             </li>
 
             <li>
-              <Link href={'#'}>
+              <Link
+                href={'https://www.linkedin.com/in/iamyare/'}
+                target='_blank'
+              >
                 <LinkedinIcon className='size-5' />
               </Link>
             </li>
 
             <li>
-              <Link href={'#'}>
+              <Link
+                href={'https://www.instagram.com/i.am.yare/'}
+                target='_blank'
+              >
                 <InstagramIcon className='size-5' />
               </Link>
             </li>
