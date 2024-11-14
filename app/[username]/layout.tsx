@@ -27,7 +27,7 @@ export default async function UsernameLayout({
 
   const { apiKeys } = await getApiKeys({ userId: user.id })
 
-  const sidebarIsOpen = cookies().get('sidebarIsOpen')
+  const sidebarIsOpen = cookies().get('sidebar:state')
   const defaultOpen =
     sidebarIsOpen && sidebarIsOpen.value !== 'undefined'
       ? JSON.parse(sidebarIsOpen.value)

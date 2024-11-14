@@ -35,7 +35,6 @@ export default function RenderView({
   const isDesktop = useMediaQuery('(min-width: 600px)')
   const { user } = useUser()
 
-
   const toggleChat = useCallback(() => setChatOpen((prev) => !prev), [])
 
   const headerContent = useMemo(
@@ -50,7 +49,14 @@ export default function RenderView({
           >
             <ChevronLeft className='size-4' />
           </Button>
-          <h2 className='font-medium'>{notebookInfo.notebook_name}</h2>
+          <h2
+            className='font-medium'
+            style={{
+              viewTransitionName: `notebook-${notebookInfo.notebook_id}`
+            }}
+          >
+            {notebookInfo.notebook_name}
+          </h2>
         </div>
         <div className='flex items-center gap-4'>
           <ThemeToggle className=' size-fit p-3' />
@@ -75,8 +81,6 @@ export default function RenderView({
     () => <Chat notebookId={notebookInfo.notebook_id} />,
     [notebookInfo.notebook_id]
   )
-
-  
 
   return (
     <PDFTextProvider>
