@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Menu } from '@headlessui/react'
 import { Button } from './ui/button'
 import Link from 'next/link'
-import ConfigModal from './modals/config'
+import { SettingsDialog } from './modals/config'
 import LogOut from './ui/log-out'
 import { UserIcon, Settings } from 'lucide-react'
 import { usePathname } from 'next/navigation'
@@ -60,7 +60,10 @@ export default function MenuUser({ user }: { user: User }) {
           </Menu.Items>
 
           {isConfigOpen && (
-            <ConfigModal open={isConfigOpen} onOpenChange={setIsConfigOpen} />
+            <SettingsDialog
+              open={isConfigOpen}
+              onOpenChange={setIsConfigOpen}
+            />
           )}
         </>
       )}
