@@ -1,3 +1,4 @@
+'use client'
 import React from 'react'
 import { cn } from '@/lib/utils'
 import ChatHeader from './ChatHeader'
@@ -7,7 +8,13 @@ import ChatLoading from './ChatLoading'
 import { useChatLogic } from './hooks/useChatLogic'
 import AIFunctions from './AIFunctions'
 
-export default function Chat({ notebookId, className }: { notebookId: string, className?: string }) {
+export default function Chat({
+  notebookId,
+  className
+}: {
+  notebookId: string
+  className?: string
+}) {
   const {
     messages,
     isLoading,
@@ -27,14 +34,23 @@ export default function Chat({ notebookId, className }: { notebookId: string, cl
     <section className='flex flex-col h-full max-h-full relative'>
       <ChatHeader chat={messages} />
       {!apiKeyGemini ? (
-        <div className={cn('flex justify-center items-center h-full w-full p-4', className)}>
+        <div
+          className={cn(
+            'flex justify-center items-center h-full w-full p-4',
+            className
+          )}
+        >
           <p className='text-muted-foreground text-center'>
             Considera ingresar el API KEY necesaria en la configuración
           </p>
         </div>
       ) : (
         <>
-          <ChatMessages messages={messages} className={className} isPending={isPending} />
+          <ChatMessages
+            messages={messages}
+            className={className}
+            isPending={isPending}
+          />
 
           <div className='flex flex-col space-y-2 p-2 absolute bottom-0 left-0 w-full'>
             <AIFunctions

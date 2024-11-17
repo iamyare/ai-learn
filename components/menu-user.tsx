@@ -6,6 +6,7 @@ import { SettingsDialog } from './modals/config'
 import LogOut from './ui/log-out'
 import { UserIcon, Settings } from 'lucide-react'
 import { usePathname } from 'next/navigation'
+import { cn } from '@/lib/utils'
 
 export default function MenuUser({ user }: { user: User }) {
   const pathname = usePathname()
@@ -45,9 +46,10 @@ export default function MenuUser({ user }: { user: User }) {
                 {({ active }) => (
                   <Button
                     variant={'ghost'}
-                    className={`w-full font-normal text-foreground justify-start rounded-none ${
+                    className={cn(
+                      'w-full font-normal text-foreground justify-start rounded-none',
                       active ? 'bg-accent' : ''
-                    }`}
+                    )}
                     onClick={() => setIsConfigOpen(true)}
                   >
                     <Settings className='size-4 mr-2' />

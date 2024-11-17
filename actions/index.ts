@@ -3,11 +3,6 @@ import { supabase } from '@/lib/supabase'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { DialogEntry } from '@/types/speechRecognition'
 
-//get sessions of a user
-export async function getSessions({ userId }: { userId: string }) {
-  const supabase = await createSupabaseServerClient()
-  return await supabase.auth.sessions
-}
 
 export async function getUser() {
   const supabase = await createSupabaseServerClient()

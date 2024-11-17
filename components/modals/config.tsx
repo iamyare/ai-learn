@@ -63,9 +63,9 @@ const data = {
   nav: [
     { name: 'Cuenta', icon: Home },
     { name: 'API', icon: Link },
-    { name: 'Audio', icon: Video },
-    { name: 'Sesiones', icon: MessageCircle },
-    { name: 'Eliminar cuenta', icon: Lock }
+    { name: 'Audio', icon: Video }
+    // { name: 'Sesiones', icon: MessageCircle },
+    // { name: 'Eliminar cuenta', icon: Lock }
   ]
 }
 
@@ -113,8 +113,8 @@ export function SettingsDialog({
           </SidebarContent>
         </Sidebar>
         <main className='flex md:h-[480px] flex-1 flex-col overflow-hidden'>
-          <header className='flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12'>
-            <div className='flex items-center gap-2 px-4'>
+          <header className='flex md:h-12 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12'>
+            <div className=' items-center gap-2 px-4 hidden md:flex'>
               <Breadcrumb>
                 <BreadcrumbList>
                   <BreadcrumbItem className='hidden md:block'>
@@ -128,7 +128,7 @@ export function SettingsDialog({
               </Breadcrumb>
             </div>
           </header>
-          <ScrollArea className='flex flex-1 flex-col gap-4 overflow-y-auto p-4 pt-0'>
+          <ScrollArea className='flex flex-1 flex-col gap-4 p-4 pt-0'>
             {activeTab === 'Cuenta' && <GeneralConfig />}
             {activeTab === 'API' && <APIConfig />}
             {activeTab === 'Audio' && <AudioConfig />}
@@ -147,9 +147,6 @@ export function SettingsDialog({
   if (isDesktop) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange} modal>
-        <DialogTrigger asChild>
-          <Button size='sm'>Abrir Configuración</Button>
-        </DialogTrigger>
         <DialogContent className='overflow-hidden p-0 md:max-h-[500px] md:max-w-[700px] lg:max-w-[800px]'>
           {Content}
         </DialogContent>
@@ -159,9 +156,6 @@ export function SettingsDialog({
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerTrigger asChild>
-        <Button size='sm'>Abrir Configuración</Button>
-      </DrawerTrigger>
       <DrawerContent className=' max-h-[90%] h-fit'>
         <DrawerHeader className='text-left'>
           <DrawerTitle>Configuración</DrawerTitle>

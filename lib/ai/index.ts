@@ -97,22 +97,36 @@ export async function aiStream(params: AiStreamParams) {
   const userPrompt = buildPrompt(params)
   const stream = createStreamableValue()
 
-  const { apiKey } = params
-  const google = createGoogleGenerativeAI({
-    apiKey: apiKey ?? ''
-  })
-  const { textStream } = await streamText({
-    model: google('models/gemini-1.5-flash-latest'),
-    system: SYSTEM_PROMPT,
-    prompt: userPrompt
-  })
+  try {
+    const { apiKey } = params
+    const google = createGoogleGenerativeAI({
+      apiKey: apiKey ?? ''
+    })
 
-  ;(async () => {
-    for await (const text of textStream) {
-      stream.update(text)
-    }
-    stream.done()
-  })()
+    const { textStream } = await streamText({
+      model: google('models/gemini-1.5-flash-latest'),
+      system: SYSTEM_PROMPT,
+      prompt: userPrompt,
+    })
 
-  return { textStream: stream.value }
+    ;(async () => {
+      try {
+        for await (const text of textStream) {
+          stream.update(text)
+        }
+        stream.done()
+      } catch (error) {
+        console.error('Error in stream processing:', error)
+        stream.error(error)
+      }
+    })()
+
+    console.log('AI Stream started successfully')
+    return { textStream: stream.value }
+
+  } catch (error) {
+    console.error('Error in aiStream:', error)
+    stream.error(error)
+    throw error
+  }
 }
