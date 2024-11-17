@@ -23,7 +23,7 @@ const BubbleChat: React.FC<BubbleChatProps> = ({ message }) => {
     () =>
       `p-3 relative w-full rounded-2xl ${
         message.isUser
-          ? 'bg-primary rounded-br-[4px] text-primary-foreground ml-auto'
+          ? 'bg-primary selection-primary rounded-br-[4px] text-primary-foreground ml-auto'
           : ' rounded-bl-[4px]'
       }`,
     [message.isUser]
@@ -48,7 +48,7 @@ const BubbleChat: React.FC<BubbleChatProps> = ({ message }) => {
       return <Explanation explanation={message.explanation} />
     } else if ('translation' in message) {
       return <Translation translation={message.translation} />
-    } 
+    }
   }
 
   return (
@@ -56,8 +56,6 @@ const BubbleChat: React.FC<BubbleChatProps> = ({ message }) => {
       <Card className={bubbleClass}>
         <div className='text-sm'>{renderMessageContent()}</div>
       </Card>
-
-
 
       <span className='text-xs mx-2 mt-1 text-muted-foreground'>
         {new Date(message.timestamp).toLocaleTimeString()}

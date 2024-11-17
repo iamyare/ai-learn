@@ -51,7 +51,7 @@ export default function GeneralConfig() {
   }
 
   return (
-    <section className='flex flex-col gap-4'>
+    <section className='flex flex-col gap-4 mb-52 md:mb-0'>
       <Header.Container>
         <Header.Title>Datos Generales del Usuario</Header.Title>
         <Header.Description>

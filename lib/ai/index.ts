@@ -52,6 +52,7 @@ Eres un asistente educativo diseñado para proporcionar respuestas concisas y di
 Recuerda: El objetivo es proporcionar la información más relevante de la manera más eficiente posible.
 `
 
+
 function truncateHistory(history: MessageType[]): MessageType[] {
   const isLongConversation = history.some(
     (msg) => msg.content.length > MESSAGE_LENGTH_THRESHOLD
@@ -62,7 +63,6 @@ function truncateHistory(history: MessageType[]): MessageType[] {
 
 function buildPrompt(params: AiStreamParams): string {
   const { prompt, transcription, textPdf, messageHistory } = params
-
   let userPrompt = ''
 
   if (transcription) {
@@ -86,33 +86,45 @@ function buildPrompt(params: AiStreamParams): string {
 
   userPrompt += `Pregunta o instrucción actual del estudiante: ${prompt}\n\n`
 
-  return (
-    userPrompt.trim() ||
-    'No se ha proporcionado ninguna información específica. Por favor, proporciona un resumen general de cómo puedes ayudar en el contexto educativo.'
-  )
+  return userPrompt.trim() || 'No se ha proporcionado ninguna información específica.'
 }
 
 export async function aiStream(params: AiStreamParams) {
   'use server'
-  const userPrompt = buildPrompt(params)
   const stream = createStreamableValue()
 
-  const { apiKey } = params
-  const google = createGoogleGenerativeAI({
-    apiKey: apiKey ?? ''
-  })
-  const { textStream } = await streamText({
-    model: google('models/gemini-1.5-flash-latest'),
-    system: SYSTEM_PROMPT,
-    prompt: userPrompt
-  })
+  try {
+    const userPrompt = buildPrompt(params)
+    const google = createGoogleGenerativeAI({
+      apiKey: params.apiKey
+    })
 
-  ;(async () => {
-    for await (const text of textStream) {
-      stream.update(text)
+    const streamResponse = await streamText({
+      model: google('models/gemini-1.5-pro-latest'), // Changed to pro version
+      system: SYSTEM_PROMPT,
+      prompt: userPrompt,
+    })
+
+    if (!streamResponse?.textStream) {
+      throw new Error('No se pudo iniciar el stream de texto')
     }
-    stream.done()
-  })()
 
-  return { textStream: stream.value }
+    ;(async () => {
+      try {
+        for await (const text of streamResponse.textStream) {
+          stream.update(text)
+        }
+        stream.done()
+      } catch (error) {
+        console.error('Error en el stream:', error)
+        stream.error(error)
+      }
+    })()
+
+    return { textStream: stream.value }
+  } catch (error) {
+    console.error('Error en aiStream:', error)
+    stream.error(error)
+    return { textStream: stream.value }
+  }
 }
