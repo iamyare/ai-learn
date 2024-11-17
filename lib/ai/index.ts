@@ -99,19 +99,20 @@ export async function aiStream(params: AiStreamParams) {
       apiKey: params.apiKey
     })
 
-    const streamResponse = await streamText({
+    const {textStream} = await streamText({
       model: google('models/gemini-1.5-pro-latest'), // Changed to pro version
       system: SYSTEM_PROMPT,
       prompt: userPrompt,
     })
 
-    if (!streamResponse?.textStream) {
+
+    if (!textStream) {
       throw new Error('No se pudo iniciar el stream de texto')
     }
 
     ;(async () => {
       try {
-        for await (const text of streamResponse.textStream) {
+        for await (const text of textStream) {
           stream.update(text)
         }
         stream.done()
@@ -121,7 +122,7 @@ export async function aiStream(params: AiStreamParams) {
       }
     })()
 
-    return { textStream: stream.value }
+    return { textStream: stream.value}
   } catch (error) {
     console.error('Error en aiStream:', error)
     stream.error(error)
