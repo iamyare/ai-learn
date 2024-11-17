@@ -1,9 +1,7 @@
 'use client'
 import MenuUser from '@/components/menu-user'
-import ConfigModal from '@/components/modals/config'
 import CreateFolder from '@/components/modals/create-folder'
 import CreateNotebook from '@/components/modals/create-notebook'
-import LogOut from '@/components/ui/log-out'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 export default function DashboardHeader({ user }: { user: User }) {
