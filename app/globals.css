@@ -344,6 +344,15 @@
   @apply bg-primary/20;
 }
 
+.selection-primary ::-moz-selection {
+  /* Code for Firefox */
+  @apply bg-primary-foreground/50 text-background;
+}
+
+.selection-primary ::selection {
+  @apply bg-primary-foreground/50 text-background;
+}
+
 /* Add this class to your existing styles */
 .animated-gradient {
   background-size: 200% 200%;

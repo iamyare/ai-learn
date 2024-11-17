@@ -73,25 +73,24 @@ const ChatInput: React.FC<ChatInputProps> = ({
           let textContent = ''
           for await (const delta of readStreamableValue(textStream)) {
             textContent = `${textContent}${delta}`
-            // setMessages((prev) => {
-            //   const updatedMessages = [...prev]
-            //   const lastMessage = updatedMessages[updatedMessages.length - 1]
-            //   if (!lastMessage.isUser && 'content' in lastMessage) {
-            //     lastMessage.content = textContent
-            //   } else {
-            //     updatedMessages.push({
-            //       content: textContent,
-            //       isUser: false,
-            //       timestamp: new Date().toISOString()
-            //     })
-            //   }
-            //   return updatedMessages
-            // })
-            console.log('textContent:', textContent)
+            setMessages((prev) => {
+              const updatedMessages = [...prev]
+              const lastMessage = updatedMessages[updatedMessages.length - 1]
+              if (!lastMessage.isUser && 'content' in lastMessage) {
+                lastMessage.content = textContent
+              } else {
+                updatedMessages.push({
+                  content: textContent,
+                  isUser: false,
+                  timestamp: new Date().toISOString()
+                })
+              }
+              return updatedMessages
+            })
           }
 
           // Actualizar la base de datos después de terminar el stream
-          // await updateChatInDatabase(messages)
+          await updateChatInDatabase(messages)
         } catch (err) {
           console.error('Error en el flujo de AI:', err)
           toast({
