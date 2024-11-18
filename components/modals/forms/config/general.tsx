@@ -22,6 +22,7 @@ import {
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
+import { useUser } from '@/context/useUserContext'
 
 const formSchema = z.object({
   username: z.string().min(2, {
@@ -32,15 +33,21 @@ const formSchema = z.object({
   }),
   language: z.string({
     required_error: 'Please select a language.'
-  })
+  }),
+  full_name: z.string().optional(),
+  avatar_url: z.string().optional()
 })
 
 export default function GeneralConfig() {
+  const { user } = useUser()
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: '',
-      email: '',
+      username: user?.username ?? '',
+      full_name: user?.full_name ?? '',
+      avatar_url: user?.avatar_url ?? '',
+      email: user?.email ?? '',
       language: ''
     }
   })
@@ -51,7 +58,7 @@ export default function GeneralConfig() {
   }
 
   return (
-    <section className='flex flex-col gap-4 mb-52 md:mb-0'>
+    <section className='flex flex-col gap-4 mb-52 p-4 md:mb-0'>
       <Header.Container>
         <Header.Title>Datos Generales del Usuario</Header.Title>
         <Header.Description>
@@ -84,7 +91,7 @@ export default function GeneralConfig() {
               <FormItem>
                 <FormLabel>Correo electrónico</FormLabel>
                 <FormControl>
-                  <Input placeholder='tu@ejemplo.com' {...field} />
+                  <Input placeholder='tu@ejemplo.com' disabled {...field} />
                 </FormControl>
                 <FormDescription>
                   Tu dirección de correo electrónico principal.

@@ -10,6 +10,7 @@ import {
   Lock,
   Menu,
   MessageCircle,
+  NotebookIcon,
   Paintbrush,
   Settings,
   Video
@@ -63,7 +64,8 @@ const data = {
   nav: [
     { name: 'Cuenta', icon: Home },
     { name: 'API', icon: Link },
-    { name: 'Audio', icon: Video }
+    { name: 'Audio', icon: Video },
+    { name: 'Notebook', icon: NotebookIcon }
     // { name: 'Sesiones', icon: MessageCircle },
     // { name: 'Eliminar cuenta', icon: Lock }
   ]
@@ -130,7 +132,7 @@ export function SettingsDialog({
               </Breadcrumb>
             </div>
           </header>
-          <ScrollArea className='flex flex-1 flex-col gap-4 p-4 pt-0'>
+          <ScrollArea className='flex flex-1 flex-col gap-4'>
             {activeTab === 'Cuenta' && <GeneralConfig />}
             {activeTab === 'API' && <APIConfig />}
             {activeTab === 'Audio' && <AudioConfig />}
