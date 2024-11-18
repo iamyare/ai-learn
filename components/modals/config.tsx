@@ -117,8 +117,10 @@ export function SettingsDialog({
             <div className=' items-center gap-2 px-4 hidden md:flex'>
               <Breadcrumb>
                 <BreadcrumbList>
-                  <BreadcrumbItem className='hidden md:block'>
-                    <BreadcrumbLink href='#'>Configuración</BreadcrumbLink>
+                  <BreadcrumbItem className='hidden md:block cursor-pointer'>
+                    <BreadcrumbLink onClick={() => setActiveTab('Cuenta')}>
+                      Configuración
+                    </BreadcrumbLink>
                   </BreadcrumbItem>
                   <BreadcrumbSeparator className='hidden md:block' />
                   <BreadcrumbItem>
