@@ -1,12 +1,11 @@
 'use client'
 
 import { useState, useMemo, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+
 import { useMediaQuery } from '@/components/ui/use-media-query'
 
 import SpeechRecognition from './components/SpeechRecognition'
 import PDFViewer from '@/components/ui/PDFViewer'
-import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 import {
   ResizableHandle,
@@ -14,60 +13,27 @@ import {
   ResizablePanelGroup
 } from '@/components/ui/resizable'
 import { Button } from '@/components/ui/button'
-import { ChevronLeft, MessageCircle, XIcon } from 'lucide-react'
+import { MessageCircle, XIcon } from 'lucide-react'
 
 import { SpeechRecognitionProvider } from '@/context/useSpeechRecognitionContext'
 import { PDFTextProvider } from '@/context/usePDFTextExtractionContext'
 import { PDFProvider } from '@/context/useCurrentPageContext'
 import { cn } from '@/lib/utils'
-import MenuUser from '@/components/menu-user'
 import { useUser } from '@/context/useUserContext'
 import Chat from '@/components/chat/Chat'
 import { HighlighterProvider } from '@/context/useHighlighterContext'
-import { NavActions } from './components/nav-actions'
+import HeaderNotebook from './components/HeaderNotebook'
 
 export default function RenderView({
   notebookInfo
 }: {
   notebookInfo: NotebookInfo
 }) {
-  const router = useRouter()
   const [chatOpen, setChatOpen] = useState(false)
   const isDesktop = useMediaQuery('(min-width: 600px)')
   const { user } = useUser()
 
   const toggleChat = useCallback(() => setChatOpen((prev) => !prev), [])
-
-  const headerContent = useMemo(
-    () => (
-      <header className='w-screen flex justify-between items-center h-10 py-1 px-2 border-b'>
-        <div className='flex items-center gap-2'>
-          <Button
-            size='icon'
-            variant='ghost'
-            className='p-1 size-8'
-            onClick={() => router.back()}
-          >
-            <ChevronLeft className='size-4' />
-          </Button>
-          <h2
-            className='font-medium'
-            style={{
-              viewTransitionName: `notebook-${notebookInfo.notebook_id}`
-            }}
-          >
-            {notebookInfo.notebook_name}
-          </h2>
-        </div>
-        <div className='flex items-center gap-4'>
-          <ThemeToggle className=' size-fit p-3' />
-          {user && <MenuUser user={user} />}
-          <NavActions />
-        </div>
-      </header>
-    ),
-    [notebookInfo.notebook_id, notebookInfo.notebook_name, router, user]
-  )
 
   const pdfViewerContent = useMemo(
     () => <PDFViewer initialFileUrl={notebookInfo.pdf_document.file_path} />,
@@ -83,6 +49,7 @@ export default function RenderView({
     () => <Chat notebookId={notebookInfo.notebook_id} />,
     [notebookInfo.notebook_id]
   )
+  if (!user) return null
 
   return (
     <PDFTextProvider>
@@ -90,7 +57,7 @@ export default function RenderView({
         <SpeechRecognitionProvider>
           <HighlighterProvider>
             <main className='flex relative flex-col w-screen h-screen overflow-hidden'>
-              {headerContent}
+              <HeaderNotebook notebookInfo={notebookInfo} user={user} />
               <ResizablePanelGroup
                 direction='horizontal'
                 className='w-full h-full'

@@ -10,20 +10,29 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 
-export function ThemeToggle({className, classNameIcon}: {className?: string, classNameIcon?: string}) {
+export function ThemeToggle({
+  className,
+  classNameIcon
+}: {
+  className?: string
+  classNameIcon?: string
+}) {
   const { theme, setTheme } = useTheme()
   const [isSystemDark, setIsSystemDark] = React.useState(false)
 
   React.useEffect(() => {
     if (theme === 'system') {
-      setIsSystemDark(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
+      setIsSystemDark(
+        window.matchMedia &&
+          window.matchMedia('(prefers-color-scheme: dark)').matches
+      )
     }
   }, [theme])
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className={`relative ${className}`}>
+        <Button variant='ghost' size='icon' className={`relative ${className}`}>
           <div
             className={`absolute transition-all duration-300 ${
               theme === 'system'
@@ -35,7 +44,7 @@ export function ThemeToggle({className, classNameIcon}: {className?: string, cla
                 : 'rotate-0 scale-100'
             } ${classNameIcon}`}
           >
-            <Sun className="size-4" />
+            <Sun className='size-5' />
           </div>
           <div
             className={`absolute transition-all duration-300 ${
@@ -48,22 +57,31 @@ export function ThemeToggle({className, classNameIcon}: {className?: string, cla
                 : 'rotate-90 scale-0'
             } ${classNameIcon}`}
           >
-            <Moon className="size-4" />
+            <Moon className='size-5' />
           </div>
-          <span className="sr-only">Toggle theme</span>
+          <span className='sr-only'>Toggle theme</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme('light')} className="cursor-pointer">
-          <Sun className="size-4 mr-2" />
+      <DropdownMenuContent align='end'>
+        <DropdownMenuItem
+          onClick={() => setTheme('light')}
+          className='cursor-pointer'
+        >
+          <Sun className='size-4 mr-2' />
           Claro
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme('dark')} className="cursor-pointer">
-          <Moon className="size-4 mr-2" />
+        <DropdownMenuItem
+          onClick={() => setTheme('dark')}
+          className='cursor-pointer'
+        >
+          <Moon className='size-4 mr-2' />
           Oscuro
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme('system')} className="cursor-pointer">
-          <MonitorSmartphone className="size-4 mr-2" />
+        <DropdownMenuItem
+          onClick={() => setTheme('system')}
+          className='cursor-pointer'
+        >
+          <MonitorSmartphone className='size-4 mr-2' />
           Igual que el sistema
         </DropdownMenuItem>
       </DropdownMenuContent>
