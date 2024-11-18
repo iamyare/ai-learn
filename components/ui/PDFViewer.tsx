@@ -4,7 +4,7 @@ import { Worker } from '@react-pdf-viewer/core'
 import { toolbarPlugin } from '@react-pdf-viewer/toolbar'
 import { dropPlugin } from '@react-pdf-viewer/drop'
 import { SpecialZoomLevel } from '@react-pdf-viewer/core'
-import { HighlightArea, highlightPlugin } from '@react-pdf-viewer/highlight'
+import { highlightPlugin } from '@react-pdf-viewer/highlight'
 import '@react-pdf-viewer/core/lib/styles/index.css'
 import '@react-pdf-viewer/toolbar/lib/styles/index.css'
 import '@react-pdf-viewer/drop/lib/styles/index.css'
@@ -12,19 +12,21 @@ import '@react-pdf-viewer/drop/lib/styles/index.css'
 import usePDFViewer from './usePDFViewer'
 import Toolbar from './viewer/toolbar'
 import LoadingComponent from './loading-component'
-import { usePDFText } from '@/context/usePDFTextExtractionContext'
+import { usePDFTextStore } from '@/stores/usePDFTextStore'
+import { usePDFStore } from '@/stores/usePDFStore'
 
 import {
   renderHighlightContent,
   renderHighlightTarget
 } from './viewer/PDFHighlighter'
-import { usePDFStore } from '@/stores/usePDFStore'
 
 interface PDFViewerProps {
   initialFileUrl: string
 }
 
 const PDFViewer: React.FC<PDFViewerProps> = ({ initialFileUrl }) => {
+  // Usar el store
+  const { extractTextFromPDF } = usePDFTextStore()
   const { fileUrl, setFileUrl, setCurrentPage } = usePDFStore()
 
   const findTextNode = (node: Node): Node | null => {
@@ -104,7 +106,7 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ initialFileUrl }) => {
     [normalizeSelection]
   )
 
-  const { isPending: isLoading } = usePDFText()
+  const { isPending: isLoading } = usePDFTextStore()
 
   const {
     workerSrc,
@@ -129,10 +131,11 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ initialFileUrl }) => {
   ]
 
   useEffect(() => {
-    if (!fileUrl && initialFileUrl) {
+    if (initialFileUrl) {
       setFileUrl(initialFileUrl)
+      extractTextFromPDF(initialFileUrl)
     }
-  }, [initialFileUrl, fileUrl, setFileUrl])
+  }, [initialFileUrl, setFileUrl, extractTextFromPDF])
 
   useEffect(() => {
     document.addEventListener(

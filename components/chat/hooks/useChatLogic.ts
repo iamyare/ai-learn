@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useTransition } from 'react'
 import { toast } from '@/components/ui/use-toast'
 import { useApiKey } from '@/context/useAPIKeysContext'
-import { usePDFText } from '@/context/usePDFTextExtractionContext'
 import { useSpeechRecognitionStore } from '@/stores/useSpeechRecognitionStore'
 import { useHighlighter, HighlighterAction } from '@/context/useHighlighterContext'
 import { getChat, createChatNotebook, updateChatNotebook } from '@/actions'
@@ -9,7 +8,7 @@ import { generateImportantEvents } from '@/lib/ai/ai-events'
 import { generateMindMap } from '@/lib/ai/ai-map-mental'
 import { generateChartFromHighlight, explainText, translateText } from '@/lib/ai/ai-highlighter'
 import { usePDFStore } from '@/stores/usePDFStore'
-
+import { usePDFTextStore } from '@/stores/usePDFTextStore'
 
 
 
@@ -22,7 +21,7 @@ export function useChatLogic(notebookId: string) {
   const [isMindMapPending, startMindMapTransition] = useTransition()
 
   const geminiKey = useApiKey('gemini_key')
-  const { text, extractTextFromPDF } = usePDFText()
+  const { text, extractTextFromPDF } = usePDFTextStore()
   const fileUrl = usePDFStore((state) => state.fileUrl)
   const { history } = useSpeechRecognitionStore()
   const { setActionHandler } = useHighlighter()

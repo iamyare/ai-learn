@@ -11,7 +11,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from '../ui/use-toast'
-import { usePDFText } from '@/context/usePDFTextExtractionContext'
+import { usePDFTextStore } from '@/stores/usePDFTextStore'
 import { useSpeechRecognitionStore } from '@/stores/useSpeechRecognitionStore'
 
 interface ChatInputProps {
@@ -32,7 +32,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   messages
 }) => {
   const { history } = useSpeechRecognitionStore()
-  const { text } = usePDFText()
+  const { text } = usePDFTextStore()
   const [isPending, startTransition] = useTransition()
 
   const form = useForm<z.infer<typeof formSchema>>({
