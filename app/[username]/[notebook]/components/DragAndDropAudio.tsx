@@ -10,8 +10,8 @@ import {
 } from '@/components/ui/dropzone-display-audio'
 import { cn } from '@/lib/utils'
 import { DialogEntry } from '@/types/speechRecognition'
-import { useSpeechRecognitionContext } from '@/context/useSpeechRecognitionContext'
 import { updateTranscriptNotebook } from '@/actions'
+import { useSpeechRecognitionStore } from '@/stores/useSpeechRecognitionStore'
 
 interface DragAndDropAudioProps {
   onFileDrop: (file: File) => void
@@ -37,7 +37,7 @@ export default function DragAndDropAudio({
   const [acceptedFile, setAcceptedFile] = useState<File | null>(
     selectedFile || null
   )
-  const { updateOptions, history } = useSpeechRecognitionContext()
+  const { updateOptions, history } = useSpeechRecognitionStore()
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {

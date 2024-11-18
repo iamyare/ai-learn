@@ -1,6 +1,6 @@
 import { useState, useTransition, useEffect } from 'react'
 import { getTranscriptions, createTranscriptNotebook, updateTranscriptNotebook } from '@/actions'
-import { useSpeechRecognitionContext } from '@/context/useSpeechRecognitionContext'
+import { useSpeechRecognitionStore } from '@/stores/useSpeechRecognitionStore'
 
 export const useSpeechRecognitionState = (notebookId: string) => {
   const {
@@ -11,7 +11,7 @@ export const useSpeechRecognitionState = (notebookId: string) => {
     stopListening,
     updateOptions,
     visualizationOptions
-  } = useSpeechRecognitionContext()
+  } = useSpeechRecognitionStore()
 
   const [isPending, startTransition] = useTransition()
   const [isPendingTranscription, setIsPendingTranscription] = useState(false)

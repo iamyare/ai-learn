@@ -11,8 +11,8 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from '../ui/use-toast'
-import { useSpeechRecognitionContext } from '@/context/useSpeechRecognitionContext'
 import { usePDFText } from '@/context/usePDFTextExtractionContext'
+import { useSpeechRecognitionStore } from '@/stores/useSpeechRecognitionStore'
 
 interface ChatInputProps {
   updateChatInDatabase: (updatedMessages: ChatMessageType[]) => Promise<void>
@@ -31,7 +31,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   apiKeyGemini,
   messages
 }) => {
-  const { history } = useSpeechRecognitionContext()
+  const { history } = useSpeechRecognitionStore()
   const { text } = usePDFText()
   const [isPending, startTransition] = useTransition()
 
