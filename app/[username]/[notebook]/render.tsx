@@ -24,6 +24,7 @@ import MenuUser from '@/components/menu-user'
 import { useUser } from '@/context/useUserContext'
 import Chat from '@/components/chat/Chat'
 import { HighlighterProvider } from '@/context/useHighlighterContext'
+import { NavActions } from './components/nav-actions'
 
 export default function RenderView({
   notebookInfo
@@ -61,10 +62,11 @@ export default function RenderView({
         <div className='flex items-center gap-4'>
           <ThemeToggle className=' size-fit p-3' />
           {user && <MenuUser user={user} />}
+          <NavActions />
         </div>
       </header>
     ),
-    [notebookInfo.notebook_name, router, user]
+    [notebookInfo.notebook_id, notebookInfo.notebook_name, router, user]
   )
 
   const pdfViewerContent = useMemo(
