@@ -36,6 +36,27 @@ export async function getUserInfo() {
   return { user, errorUser }
 }
 
+//obtener user por username
+export async function checkUsernameAvailability({ username }: { username: string }) {
+  const { data } = await supabase
+    .from('users')
+    .select('username')
+    .ilike('username', username) 
+  return { data }
+}
+
+//Actualizar usuario
+export async function updateUser({ userData, userId }: { userData: UserUpdate, userId: string }) {
+  const { data: user, error: errorUser } = await supabase
+    .from('users')
+    .update({ ...userData })
+    .eq('id', userId)
+    .select('*')
+    .single()
+
+  return { user, errorUser }
+}
+
 //obtener api keys
 export async function getApiKeys({ userId}: { userId: string }) {
   const { data: apiKeys, error: errorApiKeys } = await supabase

@@ -84,7 +84,7 @@ export default function ApiKey() {
   }
 
   return (
-    <section className=' flex flex-col gap-2 mb-52 md:mb-0'>
+    <section className=' flex flex-col gap-2 px-4 mb-52 md:mb-0'>
       <Header.Container>
         <Header.Title>Api Keys</Header.Title>
         <Header.Description>
@@ -112,10 +112,9 @@ export default function ApiKey() {
                   Puedes obtener tu Gemini API Key en tu cuenta de Gemini o
                   dando click{' '}
                   <Link
-                    href='https://exchange.gemini.com/settings/api'
+                    href='https://makersuite.google.com/app/apikey?hl=es-419'
                     className=' underline'
                     target='_blank'
-                    rel='noreferrer'
                   >
                     aquí
                   </Link>

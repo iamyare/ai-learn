@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import useTextToSpeech from '@/components/ui/useTextToSpeech'
 
 export const useAudioControl = (text: string) => {
-  const [currentPosition, setCurrentPosition] = useState(0)
-  const [lastPlayPosition, setLastPlayPosition] = useState(0)
+  const [currentPosition, setCurrentPosition] = useState(1)
+  const [lastPlayPosition, setLastPlayPosition] = useState(1)
 
   const {
     speak,
@@ -33,7 +33,7 @@ export const useAudioControl = (text: string) => {
       pause()
     } else {
       setLastPlayPosition(currentPosition)
-      speak(currentPosition)
+      speak(currentPosition )
     }
   }
 

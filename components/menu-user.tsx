@@ -14,8 +14,6 @@ export default function MenuUser({ user }: { user: User }) {
   const pathname = usePathname()
   const [isConfigOpen, setIsConfigOpen] = useState(false)
 
-  console.log('user', user)
-
   return (
     <Menu as='div' className='relative'>
       <>

@@ -59,6 +59,7 @@ import {
   DrawerTrigger
 } from '@/components/ui/drawer'
 import { useMediaQuery } from '../ui/use-media-query'
+import NotebookConfig from './forms/config/notebook-config'
 
 const data = {
   nav: [
@@ -137,6 +138,7 @@ export function SettingsDialog({
             {activeTab === 'API' && <APIConfig />}
             {activeTab === 'Audio' && <AudioConfig />}
             {activeTab === 'Sesiones' && <UserSessions />}
+            {activeTab === 'Notebook' && <NotebookConfig />}
             {activeTab === 'Eliminar cuenta' && (
               <div className='text-muted-foreground'>
                 Luego se mostrará la opción de eliminar cuenta
