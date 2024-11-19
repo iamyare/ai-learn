@@ -48,7 +48,7 @@ export default function GeneralConfig() {
 
   // Añadir verificación de seguridad
   if (!user) {
-    router.push('/login') // o donde quieras redirigir si no hay usuario
+    router.push('/auth/login') // o donde quieras redirigir si no hay usuario
     return null
   }
 
@@ -71,12 +71,16 @@ export default function GeneralConfig() {
     try {
       setIsLoading(true)
 
-      const { data: usernameCheckResult } = await checkUsernameAvailability({
-        username: values.username
-      })
+      // Verificar si el nombre de usuario ya está en uso
+      // Si el nombre de usuario es el mismo que el actual, no se hace la verificación
+      if (values.username !== user?.username) {
+        const { data: usernameCheckResult } = await checkUsernameAvailability({
+          username: values.username
+        })
 
-      if (usernameCheckResult !== null) {
-        throw new Error('El nombre de usuario ya está en uso.')
+        if (usernameCheckResult !== null) {
+          throw new Error('El nombre de usuario ya está en uso.')
+        }
       }
 
       let avatarUrl = values.avatar_url
@@ -104,6 +108,14 @@ export default function GeneralConfig() {
           avatar_url: avatarUrl
         },
         userId: user?.id ?? ''
+      })
+
+      useUserStore.setState({
+        setUser: (prevUser) => ({
+          ...prevUser,
+          ...values,
+          avatar_url: avatarUrl
+        })
       })
 
       toast({
