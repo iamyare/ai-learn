@@ -28,6 +28,10 @@ import {
   SelectValue
 } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
+import { useExportStore } from '@/stores/useExportStore'
+import { useMarkdownExport } from '@/hooks/export/useMarkdownExport'
+import { useHTMLExport } from '@/hooks/export/useHTMLExport'
+import { usePDFExport } from '@/hooks/export/usePDFExport'
 
 type Config = {
   includeMetadata?: boolean
@@ -205,9 +209,58 @@ export function ExportDialog() {
     }, {} as { [key: string]: Config })
   )
 
-  const handleExport = (format: string) => {
-    console.log(`Exportando como ${format}`, configs[format])
-    setOpen(false)
+  const exportStore = useExportStore()
+  const { exportToMarkdown } = useMarkdownExport()
+  const { exportToHTML } = useHTMLExport()
+  const { exportToPDF } = usePDFExport()
+
+  const handleExport = async (format: string) => {
+    let content = ''
+    let fileName = `notebook-export-${Date.now()}`
+    let mimeType = 'text/plain'
+
+    try {
+      switch (format) {
+        case 'Markdown (.md)':
+          content = exportToMarkdown()
+          fileName += '.md'
+          mimeType = 'text/markdown'
+          break
+        case 'HTML (.html)':
+          content = exportToHTML()
+          fileName += '.html'
+          mimeType = 'text/html'
+          break
+        case 'PDF (.pdf)':
+          const pdfConfig = {
+            ...configs['PDF (.pdf)'],
+            notebookName: 'Nombre del Notebook' // Añadir el nombre del notebook aquí
+          }
+          const { doc, fileName: pdfFileName } = await exportToPDF({
+            notebookName: 'Nombre del Notebook',
+            orientation: 'portrait',
+            pageSize: 'a4'
+          })
+          doc.save(`${pdfFileName}.pdf`)
+          setOpen(false)
+          return
+      }
+
+      const element = document.createElement('a')
+      const file = new Blob([content], { type: `${mimeType};charset=utf-8` })
+      element.href = URL.createObjectURL(file)
+      element.download = fileName
+
+      document.body.appendChild(element)
+      element.click()
+      document.body.removeChild(element)
+
+      setTimeout(() => URL.revokeObjectURL(element.href), 100)
+      setOpen(false)
+    } catch (error) {
+      console.error('Error al exportar:', error)
+      // Mostrar toast de error
+    }
   }
 
   return (

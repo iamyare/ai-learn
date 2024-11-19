@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button'
 import { ArrowDown } from 'lucide-react'
 import { AudioDropzone } from './AudioDropzone'
 import { useScroll } from './useScroll'
+import { useExportStore } from '@/stores/useExportStore'
+import { useEffect } from 'react'
 
 interface SpeechRecognitionProps {
   classNameContainer?: string
@@ -54,6 +56,13 @@ export default function SpeechRecognition({
     isPlaying,
     currentPosition
   )
+
+  const setTranscriptions = useExportStore((state) => state.setTranscriptions)
+
+  useEffect(() => {
+    const transcriptions = history.map((entry) => entry.text)
+    setTranscriptions(transcriptions)
+  }, [history, setTranscriptions])
 
   return (
     <section

@@ -14,6 +14,7 @@ import Toolbar from './viewer/toolbar'
 import LoadingComponent from './loading-component'
 import { usePDFTextStore } from '@/stores/usePDFTextStore'
 import { usePDFStore } from '@/stores/usePDFStore'
+import { useExportStore } from '@/stores/useExportStore'
 
 import {
   renderHighlightContent,
@@ -28,6 +29,13 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ initialFileUrl }) => {
   // Usar el store
   const { extractTextFromPDF } = usePDFTextStore()
   const { fileUrl, setFileUrl, setCurrentPage } = usePDFStore()
+  const { text } = usePDFTextStore()
+  const { setPdfText, setPdfUrl } = useExportStore()
+
+  useEffect(() => {
+    setPdfText(text)
+    setPdfUrl(initialFileUrl)
+  }, [text, initialFileUrl, setPdfText, setPdfUrl])
 
   const findTextNode = (node: Node): Node | null => {
     if (node.nodeType === Node.TEXT_NODE) {

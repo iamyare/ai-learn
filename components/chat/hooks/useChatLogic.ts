@@ -9,6 +9,7 @@ import { generateMindMap } from '@/lib/ai/ai-map-mental'
 import { generateChartFromHighlight, explainText, translateText } from '@/lib/ai/ai-highlighter'
 import { usePDFStore } from '@/stores/usePDFStore'
 import { usePDFTextStore } from '@/stores/usePDFTextStore'
+import { useExportStore } from '@/stores/useExportStore'
 
 
 
@@ -25,6 +26,7 @@ export function useChatLogic(notebookId: string) {
   const fileUrl = usePDFStore((state) => state.fileUrl)
   const { history } = useSpeechRecognitionStore()
   const { setActionHandler } = useHighlighterStore()
+  const setExportMessages = useExportStore(state => state.setMessages)
 
 
 
@@ -261,6 +263,10 @@ export function useChatLogic(notebookId: string) {
       setActionHandler(() => {}); // Clean up by setting a no-op function
     };
   }, [apiKeyGemini, setActionHandler, updateChatInDatabase]);
+
+  useEffect(() => {
+    setExportMessages(messages)
+  }, [messages, setExportMessages])
 
   return {
     messages,
