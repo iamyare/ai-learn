@@ -1,4 +1,3 @@
-
 import { useCallback } from 'react'
 import { useExportStore } from '@/stores/useExportStore'
 import { format } from '@formkit/tempo'
@@ -17,8 +16,16 @@ export const useMarkdownExport = () => {
 
     if (transcriptions.length > 0) {
       markdown += `## Transcripciones\n\n`
-      transcriptions.forEach((t, i) => {
-        markdown += `### Transcripción ${i + 1}\n${t}\n\n`
+      transcriptions.forEach(t => {
+        const date = new Date(t.timestamp)
+        const formattedDate = format(date, 'DD MMM YYYY').toLowerCase()
+        const formattedTime = format(date, 'HH:mm:ss')
+        
+        markdown += `### ${formattedDate} - ${formattedTime}`
+        if (t.page) {
+          markdown += ` - Página ${t.page}`
+        }
+        markdown += `\n${t.text}\n\n`
       })
     }
 

@@ -1,9 +1,7 @@
 import { jsPDF } from 'jspdf'
 import { format } from '@formkit/tempo'
-import { usePageFooter } from './usePageFooter'
 
 export const useEventsPDFRenderer = () => {
-  const { renderPageFooter } = usePageFooter()
 
   const renderEvents = (
     doc: jsPDF,

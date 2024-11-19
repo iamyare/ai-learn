@@ -1,19 +1,20 @@
+import { DialogEntry } from '@/types/speechRecognition'
 import { create } from 'zustand'
 
 interface ExportStore {
   messages: ChatMessageType[]
-  transcriptions: string[]
+  transcriptions: DialogEntry[] 
   pdfText: string
   pdfUrl: string
   setMessages: (messages: ChatMessageType[]) => void
-  setTranscriptions: (transcriptions: string[]) => void
+  setTranscriptions: (transcriptions: DialogEntry[]) => void
   setPdfText: (text: string) => void
   setPdfUrl: (url: string) => void
 }
 
 export const useExportStore = create<ExportStore>((set) => ({
   messages: [],
-  transcriptions: [],
+  transcriptions: [], 
   pdfText: '',
   pdfUrl: '',
   setMessages: (messages) => set({ messages }),

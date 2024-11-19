@@ -60,8 +60,7 @@ export default function SpeechRecognition({
   const setTranscriptions = useExportStore((state) => state.setTranscriptions)
 
   useEffect(() => {
-    const transcriptions = history.map((entry) => entry.text)
-    setTranscriptions(transcriptions)
+    setTranscriptions(history)
   }, [history, setTranscriptions])
 
   return (
