@@ -3,7 +3,7 @@ import { Sidebar } from '@/components/sidebar'
 import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { SidebarProvider } from '@/components/ui/sidebar'
-import { useUserStore } from '@/store/useUserStore'
+import { useUserStore } from '@/stores/useUserStore'
 import { useApiKeysStore } from '@/stores/useApiKeysStore'
 
 export default function UsernameLayoutClient({

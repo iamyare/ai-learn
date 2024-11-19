@@ -15,7 +15,7 @@ import {
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
-import { useUserStore } from '@/store/useUserStore'
+import { useUserStore } from '@/stores/useUserStore'
 import { AvatarDropzone } from './components/AvatarDropzone'
 import { checkUsernameAvailability, updateUser } from '@/actions'
 import { useToast } from '@/components/ui/use-toast'
@@ -23,10 +23,10 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { LoaderCircleIcon, SaveIcon } from 'lucide-react'
 
-async function uploadAvatar(file: File, userId: string) {
+async function uploadAvatar(file: File, userId: string, username: string) {
   const { data, error } = await supabase.storage
     .from('avatar_users')
-    .upload(`${userId}-${Date.now()}`, file)
+    .upload(`${username}_${userId}_${Date.now()}`, file)
 
   return { data, error }
 }
@@ -88,7 +88,8 @@ export default function GeneralConfig() {
       if (avatarFile) {
         const { data: avatarUpload, error } = await uploadAvatar(
           avatarFile,
-          user?.id ?? ''
+          user?.id ?? '',
+          user?.username ?? ''
         )
 
         if (error) {

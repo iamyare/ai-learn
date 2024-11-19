@@ -16,7 +16,7 @@ import {
 import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Separator } from '@/components/ui/separator'
-import { useUserStore } from '@/store/useUserStore'
+import { useUserStore } from '@/stores/useUserStore'
 
 const formSchema = z.object({
   session_name: z.string().min(1, 'Session Name is required'),

@@ -14,7 +14,7 @@ import { MessageCircle, XIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import Chat from '@/components/chat/Chat'
 import HeaderNotebook from './components/HeaderNotebook'
-import { useUserStore } from '@/store/useUserStore'
+import { useUserStore } from '@/stores/useUserStore'
 
 export default function RenderView({
   notebookInfo

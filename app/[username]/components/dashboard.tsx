@@ -1,5 +1,5 @@
 'use client'
-import { useUserStore } from '@/store/useUserStore'
+import { useUserStore } from '@/stores/useUserStore'
 import { useFolderData } from './useFolderData'
 import DashboardHeader from './dashboard-header'
 import ItemList from './item-list'
