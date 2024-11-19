@@ -13,7 +13,7 @@ import {
   FormLabel,
   FormMessage
 } from '@/components/ui/form'
-import { useApiKeys } from '@/context/useAPIKeysContext'
+
 import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import {
@@ -23,61 +23,91 @@ import {
 } from '@/actions'
 import Link from 'next/link'
 import { Separator } from '@/components/ui/separator'
+import { useApiKeysStore } from '@/stores/useApiKeysStore'
+import { useToast } from '@/components/ui/use-toast'
 
 const formSchema = z.object({
-  gemini_key: z.string().min(1, 'Gemini Key is required'),
-  user_id: z.string().min(1, 'User id is required')
+  gemini_key: z.string().min(1, 'Gemini Key es requerido'),
+  user_id: z.string().min(1, 'User id es requerido')
 })
+
 export default function ApiKey() {
   const [isPending, startTransition] = useTransition()
-
-  const { apiKeys, updateApiKeys, user_id } = useApiKeys()
+  const { apiKeys, updateApiKeys, userId } = useApiKeysStore()
   const router = useRouter()
+  const { toast } = useToast()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       gemini_key: apiKeys.gemini_key || '',
-      user_id: user_id
+      user_id: userId
     }
   })
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     startTransition(async () => {
       try {
-        const { apiKeys, errorApiKeys } = await getApiKeys({ userId: user_id })
+        const { apiKeys, errorApiKeys } = await getApiKeys({ userId: userId })
 
         if (errorApiKeys) {
-          console.error('Error al obtener las claves API:', errorApiKeys)
+          toast({
+            title: 'Error al obtener las claves API',
+            description: 'Hubo un error al obtener las claves API',
+            variant: 'destructive'
+          })
           return
         }
 
         if (apiKeys) {
-          const { apiKeys: updatedKeys, errorApiKeys: updateError } =
-            await updateApiKeysBD({
-              apiKeysData: { gemini_key: values.gemini_key },
-              userId: user_id
-            })
+          const { errorApiKeys: updateError } = await updateApiKeysBD({
+            apiKeysData: { gemini_key: values.gemini_key },
+            userId: userId
+          })
 
           if (updateError) {
-            console.error('Error al actualizar las claves API:', updateError)
+            toast({
+              title: 'Error al actualizar las claves API',
+              description: 'Hubo un error al actualizar las claves API',
+              variant: 'destructive'
+            })
             return
           }
 
           updateApiKeys({ gemini_key: values.gemini_key })
+          toast({
+            title: 'Claves API actualizadas',
+            description: 'Tus claves API han sido actualizadas correctamente'
+          })
         } else {
-          const { apiKeys: newKeys, errorApiKeys: insertError } =
-            await insertApiKeys({
-              apiKeysData: { gemini_key: values.gemini_key, user_id: user_id }
-            })
+          const { errorApiKeys: insertError } = await insertApiKeys({
+            apiKeysData: { gemini_key: values.gemini_key, user_id: userId }
+          })
 
           if (insertError) {
-            console.error('Error al insertar las claves API:', insertError)
+            toast({
+              title: 'Error al guardar las claves API',
+              description: 'Hubo un error al guardar las claves API',
+              variant: 'destructive'
+            })
             return
           }
+
+          toast({
+            title: 'Claves API insertadas',
+            description: 'Tus claves API han sido insertadas correctamente'
+          })
         }
         router.refresh()
       } catch (error) {
+        toast({
+          title: 'Error al procesar la solicitud',
+          description:
+            error instanceof Error
+              ? error.message
+              : 'Hubo un error al procesar tu solicitud',
+          variant: 'destructive'
+        })
         console.error('Error al procesar la solicitud:', error)
       }
     })

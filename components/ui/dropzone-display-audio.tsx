@@ -13,7 +13,7 @@ import { useEffect, useState } from 'react'
 import { Button } from './button'
 import { DialogEntry } from '@/types/speechRecognition'
 import { transcribeAudio } from '@/lib/ai/ai-transcribe'
-import { useApiKey } from '@/context/useAPIKeysContext'
+import { useApiKey } from '@/stores/useApiKeysStore'
 
 export const DropzoneDisplay = {
   Normal: () => {

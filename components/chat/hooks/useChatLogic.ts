@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useTransition } from 'react'
 import { toast } from '@/components/ui/use-toast'
-import { useApiKey } from '@/context/useAPIKeysContext'
+import { useApiKey } from '@/stores/useApiKeysStore'
 import { useSpeechRecognitionStore } from '@/stores/useSpeechRecognitionStore'
 import { useHighlighter, HighlighterAction } from '@/context/useHighlighterContext'
 import { getChat, createChatNotebook, updateChatNotebook } from '@/actions'

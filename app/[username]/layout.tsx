@@ -1,5 +1,4 @@
 import { getApiKeys, getUserInfo } from '@/actions'
-import { ApiKeysProvider } from '@/context/useAPIKeysContext'
 import UsernameLayoutClient from './components/layout-client'
 import { cookies } from 'next/headers'
 import ErrorPage from '@/components/error-page'
@@ -31,13 +30,12 @@ export default async function UsernameLayout({
       : true
 
   return (
-    <ApiKeysProvider
-      initialApiKeys={apiKeys ?? undefined}
-      initialUserId={user.id}
+    <UsernameLayoutClient
+      apiKeys={apiKeys}
+      defaultOpen={defaultOpen}
+      user={user}
     >
-      <UsernameLayoutClient defaultOpen={defaultOpen} user={user}>
-        {children}
-      </UsernameLayoutClient>
-    </ApiKeysProvider>
+      {children}
+    </UsernameLayoutClient>
   )
 }
