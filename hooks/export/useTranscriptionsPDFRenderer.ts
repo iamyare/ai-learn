@@ -3,66 +3,84 @@ import { format } from '@formkit/tempo'
 import { DialogEntry } from '@/types/speechRecognition'
 
 export const useTranscriptionsPDFRenderer = () => {
+  const formatTimeStamp = (date: Date): string => {
+    const hours = Math.floor(date.getHours())
+    const minutes = Math.floor(date.getMinutes())
+    const seconds = Math.floor(date.getSeconds())
+    return `[${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}]`
+  }
+
+  const groupByDate = (transcriptions: DialogEntry[]): Map<string, DialogEntry[]> => {
+    const groups = new Map<string, DialogEntry[]>()
+    
+    transcriptions.forEach(trans => {
+      const date = format(new Date(trans.timestamp), 'long')
+      if (!groups.has(date)) {
+        groups.set(date, [])
+      }
+      groups.get(date)?.push(trans)
+    })
+    
+    return groups
+  }
+
   const renderTranscriptions = (
     doc: jsPDF,
     transcriptions: DialogEntry[],
     startY: number,
     margin: number,
     pageWidth: number,
-    pageHeight: number
+    pageHeight: number,
+    showTimestamp: boolean = true
   ) => {
     const textWidth = pageWidth - (2 * margin)
-    const footerSpace = 15
     let y = startY
 
-    if (transcriptions.length === 0) return y;
+    if (transcriptions.length === 0) return y
 
-    // Título de la sección
+    // Título principal
     doc.setFontSize(16)
     doc.setFont('helvetica', 'bold')
     doc.setTextColor(44, 62, 80)
     doc.text('Transcripciones', margin, y + 8)
-    y += 20
+    y += 15
 
-    transcriptions.forEach((transcription) => {
-      if (y > pageHeight - margin - footerSpace - 60) {
+    const dateGroups = groupByDate(transcriptions)
+
+    dateGroups.forEach((groupTranscriptions, date) => {
+      // Título de la fecha
+      if (y + 40 > pageHeight - margin) {
         doc.addPage()
-        y = margin + 15
+        y = margin + 10
       }
 
-      // Calcular altura del texto primero
-      const textLines = doc.splitTextToSize(transcription.text, textWidth - 10)
-      const textHeight = textLines.length * 7 + 10
+      doc.setFontSize(14)
+      doc.setFont('helvetica', 'bold')
+      doc.text(date, margin, y + 10)
+      y += 20
 
-      // Contenedor principal de la transcripción
-      doc.setFillColor(248, 249, 250)
-      doc.roundedRect(margin, y, textWidth, textHeight + 25, 3, 3, 'F')
+      let combinedText = ''
+      groupTranscriptions.forEach(trans => {
+        combinedText += showTimestamp 
+          ? `${formatTimeStamp(new Date(trans.timestamp))} ${trans.text}\n`
+          : `${trans.text}\n`
+      })
 
-      // Header (timestamp y página)
-      doc.setFontSize(10)
-      doc.setFont('helvetica', 'normal')
-      doc.setTextColor(73, 80, 87)
-      const timeStamp = format(new Date(transcription.timestamp), 'DD MMM YYYY HH:mm:ss')
-      let headerText = timeStamp
-      if (transcription.page !== undefined && transcription.page > 0) {
-        headerText += ` | Página ${transcription.page}`
-      }
-      doc.text(headerText, margin + 5, y + 12)
-
-      // Línea separadora sutil
-      doc.setDrawColor(233, 236, 239)
-      doc.setLineWidth(0.5)
-      doc.line(margin + 5, y + 15, margin + textWidth - 5, y + 15)
-
-      // Contenido de la transcripción
       doc.setFontSize(11)
-      doc.setTextColor(44, 62, 80)
-      doc.text(textLines, margin + 5, y + 25)
+      doc.setFont('helvetica', 'normal')
+      const textLines = doc.splitTextToSize(combinedText, textWidth)
 
-      y += textHeight + 35
+      if (y + (textLines.length * 7) > pageHeight - margin) {
+        doc.addPage()
+        y = margin + 10
+      }
+
+      doc.setTextColor(44, 62, 80)
+      doc.text(textLines, margin, y)
+      y += textLines.length * 7 + 15
     })
 
-    return y + 10
+    return y
   }
 
   return { renderTranscriptions }
