@@ -1,8 +1,10 @@
-
 import { jsPDF } from 'jspdf'
 import { format } from '@formkit/tempo'
+import { usePageFooter } from './usePageFooter'
 
 export const useEventsPDFRenderer = () => {
+  const { renderPageFooter } = usePageFooter()
+
   const renderEvents = (
     doc: jsPDF,
     events: ImportantEventType[],
@@ -11,8 +13,9 @@ export const useEventsPDFRenderer = () => {
     pageWidth: number,
     pageHeight: number
   ) => {
-    let y = startY
     const textWidth = pageWidth - (2 * margin)
+    const footerSpace = 15 // Espacio reservado para pie de página
+    let y = startY
 
     // Ordenar eventos por fecha
     const sortedEvents = [...events].sort((a, b) => 
@@ -30,8 +33,8 @@ export const useEventsPDFRenderer = () => {
 
     // Renderizar eventos por grupos
     Object.entries(eventGroups).forEach(([groupName, groupEvents]) => {
-      // Verificar espacio para nuevo grupo
-      if (y > pageHeight - margin - 20) {
+      // Verificar espacio para nuevo grupo considerando el footer
+      if (y > pageHeight - margin - footerSpace - 20) {
         doc.addPage()
         y = margin + 15
       }
@@ -45,8 +48,8 @@ export const useEventsPDFRenderer = () => {
 
       // Renderizar eventos del grupo
       groupEvents.forEach((event) => {
-        // Verificar si necesitamos una nueva página
-        if (y > pageHeight - margin - 40) {
+        // Verificar espacio considerando el footer
+        if (y > pageHeight - margin - footerSpace - 40) {
           doc.addPage()
           y = margin + 15
         }
