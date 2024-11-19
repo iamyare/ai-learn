@@ -227,7 +227,7 @@ export function ExportDialog() {
           mimeType = 'text/markdown'
           break
         case 'HTML (.html)':
-          content = exportToHTML()
+          content = exportToHTML('Nombre del Notebook')
           fileName += '.html'
           mimeType = 'text/html'
           break

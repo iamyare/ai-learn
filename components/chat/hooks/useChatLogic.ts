@@ -99,10 +99,11 @@ export function useChatLogic(notebookId: string) {
   const updateChatInDatabase = useCallback(async (updatedMessages: ChatMessageType[]) => {
 
     try {
-      const { errorChatUpdate } = await updateChatNotebook({
+      const { chatUpdate,errorChatUpdate } = await updateChatNotebook({
         content: JSON.stringify(updatedMessages),
         notebookId
       })
+      console.log('chatUpdate:', chatUpdate)
       if (errorChatUpdate) {
         console.error('Error al actualizar el chat:', errorChatUpdate)
         toast({

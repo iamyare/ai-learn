@@ -48,9 +48,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
         timestamp: new Date().toISOString()
       }
       setMessages((prev) => [...prev, userMessage])
-      form.reset()
-
-      await updateChatInDatabase([...messages, userMessage])
 
       const transcript = history.map((entry) => entry.text).join(' ')
       const messageHistory = messages
@@ -71,26 +68,30 @@ const ChatInput: React.FC<ChatInputProps> = ({
           })
 
           let textContent = ''
+          const aiMessage: MessageType = {
+            content: '',
+            isUser: false,
+            timestamp: new Date().toISOString()
+          }
+
+          setMessages((prev) => [...prev, aiMessage])
+
           for await (const delta of readStreamableValue(textStream)) {
             textContent = `${textContent}${delta}`
             setMessages((prev) => {
               const updatedMessages = [...prev]
               const lastMessage = updatedMessages[updatedMessages.length - 1]
-              if (!lastMessage.isUser && 'content' in lastMessage) {
+              // Verificar que el mensaje es del tipo correcto
+              if ('content' in lastMessage) {
                 lastMessage.content = textContent
-              } else {
-                updatedMessages.push({
-                  content: textContent,
-                  isUser: false,
-                  timestamp: new Date().toISOString()
-                })
               }
               return updatedMessages
             })
           }
 
-          // Actualizar la base de datos después de terminar el stream
-          await updateChatInDatabase(messages)
+          // Actualizar la base de datos con el mensaje completo
+          aiMessage.content = textContent
+          await updateChatInDatabase([...messages, userMessage, aiMessage])
         } catch (err) {
           console.error('Error en el flujo de AI:', err)
           toast({
@@ -101,6 +102,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
           })
         }
       })
+      form.reset()
     },
     [
       setMessages,
