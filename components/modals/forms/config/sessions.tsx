@@ -15,9 +15,8 @@ import {
 } from '@/components/ui/form'
 import { useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import { Separator } from '@/components/ui/separator'
-import { useUser } from '@/context/useUserContext'
+import { useUserStore } from '@/store/useUserStore'
 
 const formSchema = z.object({
   session_name: z.string().min(1, 'Session Name is required'),
@@ -26,15 +25,21 @@ const formSchema = z.object({
 
 export default function UserSessions() {
   const [isPending, startTransition] = useTransition()
-  const { user } = useUser()
+  const user = useUserStore((state) => state.user)
 
   const router = useRouter()
+
+  // Añadir verificación de seguridad
+  if (!user) {
+    router.push('/login')
+    return null
+  }
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       session_name: '',
-      user_id: user?.id || ''
+      user_id: user.id // Ahora podemos estar seguros de que user existe
     }
   })
 

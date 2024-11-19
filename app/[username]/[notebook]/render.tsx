@@ -1,12 +1,9 @@
 'use client'
 
 import { useState, useMemo, useCallback } from 'react'
-
 import { useMediaQuery } from '@/components/ui/use-media-query'
-
 import SpeechRecognition from './components/SpeechRecognition'
 import PDFViewer from '@/components/ui/PDFViewer'
-
 import {
   ResizableHandle,
   ResizablePanel,
@@ -14,14 +11,11 @@ import {
 } from '@/components/ui/resizable'
 import { Button } from '@/components/ui/button'
 import { MessageCircle, XIcon } from 'lucide-react'
-
-// Removed import of SpeechRecognitionProvider
-// Removed import of PDFTextProvider
 import { cn } from '@/lib/utils'
-import { useUser } from '@/context/useUserContext'
 import Chat from '@/components/chat/Chat'
 import { HighlighterProvider } from '@/context/useHighlighterContext'
 import HeaderNotebook from './components/HeaderNotebook'
+import { useUserStore } from '@/store/useUserStore'
 
 export default function RenderView({
   notebookInfo
@@ -30,7 +24,7 @@ export default function RenderView({
 }) {
   const [chatOpen, setChatOpen] = useState(false)
   const isDesktop = useMediaQuery('(min-width: 600px)')
-  const { user } = useUser()
+  const { user } = useUserStore()
 
   const toggleChat = useCallback(() => setChatOpen((prev) => !prev), [])
 

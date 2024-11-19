@@ -4,16 +4,18 @@ import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { FolderNavigationProvider } from '@/context/useFolderNavigationContext'
 import { SidebarProvider } from '@/components/ui/sidebar'
+import { useUserStore } from '@/store/useUserStore'
 
 export default function UsernameLayoutClient({
   children,
-  userId,
+  user,
   defaultOpen
 }: {
   children: React.ReactNode
-  userId: string
+  user: User
   defaultOpen: boolean
 }) {
+  useUserStore.setState({ user })
   const params = useParams()
   const [isLoaded, setIsLoaded] = useState(false)
 
@@ -32,7 +34,7 @@ export default function UsernameLayoutClient({
   return (
     <FolderNavigationProvider>
       <SidebarProvider defaultOpen={defaultOpen}>
-        <Sidebar userId={userId}>{children}</Sidebar>
+        <Sidebar userId={user.id}>{children}</Sidebar>
       </SidebarProvider>
     </FolderNavigationProvider>
   )

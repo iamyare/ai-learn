@@ -15,7 +15,7 @@ import {
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
-import { useUser } from '@/context/useUserContext'
+import { useUserStore } from '@/store/useUserStore'
 import { AvatarDropzone } from './components/AvatarDropzone'
 import { checkUsernameAvailability, updateUser } from '@/actions'
 import { useToast } from '@/components/ui/use-toast'
@@ -43,10 +43,17 @@ const formSchema = z.object({
 })
 
 export default function GeneralConfig() {
-  const { user } = useUser()
+  const user = useUserStore((state) => state.user)
+  const router = useRouter()
+
+  // Añadir verificación de seguridad
+  if (!user) {
+    router.push('/login') // o donde quieras redirigir si no hay usuario
+    return null
+  }
+
   const [isLoading, setIsLoading] = useState(false)
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
-  const router = useRouter()
 
   const { toast } = useToast()
 
