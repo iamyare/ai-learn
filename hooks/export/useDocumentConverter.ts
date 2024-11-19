@@ -1,4 +1,3 @@
-
 import { useCallback } from 'react'
 import { useExportStore } from '@/stores/useExportStore'
 import { format } from '@formkit/tempo'
@@ -32,7 +31,6 @@ export const useDocumentConverter = () => {
       sections: []
     }
 
-    // Agregar contenido PDF si existe
     if (pdfUrl) {
       data.sections.push({
         type: 'pdf',
@@ -40,7 +38,6 @@ export const useDocumentConverter = () => {
       })
     }
 
-    // Agregar transcripciones si existen
     if (transcriptions.length > 0) {
       data.sections.push({
         type: 'transcriptions',
@@ -52,18 +49,17 @@ export const useDocumentConverter = () => {
       })
     }
 
-    // Procesar mensajes y eventos
     if (messages.length > 0) {
       const events: ImportantEventType[] = []
-      const conversation: any[] = []
+      const conversation: { role: string; content: string }[] = []
 
       messages.forEach(msg => {
         if ('events' in msg) {
           events.push(...msg.events)
-        } else if ('text' in msg) {
+        } else if ('content' in msg) {
           conversation.push({
-            role: msg.isUser ? 'Usuario' : 'AI',
-            content: msg.text
+            role: msg.isUser ? 'Usuario' : 'Stick Note',
+            content: msg.content
           })
         }
       })
