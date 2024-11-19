@@ -14,70 +14,80 @@ import { FolderPlus } from 'lucide-react'
 import { useEffect, useState, useTransition } from 'react'
 import EmojiPicker from '../ui/emoji-picker'
 import ColorPicker from '../ui/color-picker'
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form"
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormMessage
+} from '@/components/ui/form'
 import { insertFolder } from '@/actions'
 import { toast } from '../ui/use-toast'
-import { useFolderNavigation } from '@/context/useFolderNavigationContext'
+import { useFolderNavigationStore } from '@/stores/useFolderNavigationStore'
 
 const formSchema = z.object({
-  folder_name: z.string().min(1, "El nombre de la carpeta es requerido"),
-  folder_icon: z.string().min(1, "Debes seleccionar un emoji"),
-  folder_color: z.string().regex(/^#[0-9A-F]{6}$/i, "Debes seleccionar un color válido"),
-  user_id: z.string().min(1, "Falta User id"),
+  folder_name: z.string().min(1, 'El nombre de la carpeta es requerido'),
+  folder_icon: z.string().min(1, 'Debes seleccionar un emoji'),
+  folder_color: z
+    .string()
+    .regex(/^#[0-9A-F]{6}$/i, 'Debes seleccionar un color válido'),
+  user_id: z.string().min(1, 'Falta User id'),
   parent_folder_id: z.string().nullable()
 })
 
-export default function CreateFolder({userId}:{userId: string}) {
+export default function CreateFolder({ userId }: { userId: string }) {
   const [open, setOpen] = useState(false)
   const [isPeding, startTransition] = useTransition()
 
-  const {currentPath, navigateToFolder} =  useFolderNavigation()
+  const { currentPath, navigateToFolder } = useFolderNavigationStore()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      folder_name: "",
-      folder_icon: "🚀",
-      folder_color: "#8B00FF",
+      folder_name: '',
+      folder_icon: '����',
+      folder_color: '#8B00FF',
       parent_folder_id: null,
       user_id: userId
-    },
+    }
   })
 
   useEffect(() => {
-    const parentFolderId = currentPath.length > 1 
-      ? currentPath[currentPath.length - 1].id 
-      : null;
-    
-    form.setValue('parent_folder_id', parentFolderId);
-  }, [currentPath, form]);
+    const parentFolderId =
+      currentPath.length > 1 ? currentPath[currentPath.length - 1].id : null
+
+    form.setValue('parent_folder_id', parentFolderId)
+  }, [currentPath, form])
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    startTransition(async()=>{
-      const {folder, errorFolder} = await insertFolder({folderData: values})
+    startTransition(async () => {
+      const { folder, errorFolder } = await insertFolder({ folderData: values })
 
-      if (errorFolder){
+      if (errorFolder) {
         toast({
-          title: "Uh oh! Something went wrong.",
-          description: "There was a problem with your request.",
+          title: 'Uh oh! Something went wrong.',
+          description: 'There was a problem with your request.'
         })
         return
       }
 
-      if (!folder){
+      if (!folder) {
         toast({
-          title: "Uh oh! Something went wrong.",
-          description: "There was a problem with your request.",
+          title: 'Uh oh! Something went wrong.',
+          description: 'There was a problem with your request.'
         })
         return
       }
 
       //En caso de querer navegar a la carpeta creada
       //navigateToFolder(folder.id, folder.name)
-      navigateToFolder(currentPath[currentPath.length - 1].id, currentPath[currentPath.length - 1].name)
+      navigateToFolder(
+        currentPath[currentPath.length - 1].id,
+        currentPath[currentPath.length - 1].name
+      )
       form.reset()
       setOpen(false)
     })
@@ -99,15 +109,15 @@ export default function CreateFolder({userId}:{userId: string}) {
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
             <div className='flex items-center gap-2'>
               <FormField
                 control={form.control}
-                name="folder_icon"
+                name='folder_icon'
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <EmojiPicker getValue={field.onChange} >
+                      <EmojiPicker getValue={field.onChange}>
                         {field.value}
                       </EmojiPicker>
                     </FormControl>
@@ -117,9 +127,9 @@ export default function CreateFolder({userId}:{userId: string}) {
               />
               <FormField
                 control={form.control}
-                name="folder_name"
+                name='folder_name'
                 render={({ field }) => (
-                  <FormItem className="flex-grow">
+                  <FormItem className='flex-grow'>
                     <FormControl>
                       <Input placeholder='Nombre de la carpeta' {...field} />
                     </FormControl>
@@ -129,11 +139,14 @@ export default function CreateFolder({userId}:{userId: string}) {
               />
               <FormField
                 control={form.control}
-                name="folder_color"
+                name='folder_color'
                 render={({ field }) => (
                   <FormItem>
                     <FormControl>
-                      <ColorPicker getValue={field.onChange} defaultColor={field.value} />
+                      <ColorPicker
+                        getValue={field.onChange}
+                        defaultColor={field.value}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -141,9 +154,7 @@ export default function CreateFolder({userId}:{userId: string}) {
               />
             </div>
             <DialogFooter>
-              <Button type='submit'>
-                {isPeding ? 'Creando...' : 'Crear'}
-              </Button>
+              <Button type='submit'>{isPeding ? 'Creando...' : 'Crear'}</Button>
             </DialogFooter>
           </form>
         </Form>

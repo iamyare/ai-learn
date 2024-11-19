@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { useFolderNavigation } from '@/context/useFolderNavigationContext'
+import { useFolderNavigationStore } from '@/stores/useFolderNavigationStore'
 import { useView } from '@/context/useViewContext'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import GridView from './views/grid-view'
@@ -63,7 +63,7 @@ function slideInOut(direction: 'forward' | 'backward') {
 }
 
 const ItemList: React.FC<ItemListProps> = ({ items, isLoading }) => {
-  const { currentPath, navigateToFolder } = useFolderNavigation()
+  const { currentPath, navigateToFolder } = useFolderNavigationStore()
   const { currentView, setView } = useView()
   const pathname = usePathname()
   const router = useRouter()

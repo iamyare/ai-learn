@@ -2,7 +2,6 @@
 import { Sidebar } from '@/components/sidebar'
 import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { FolderNavigationProvider } from '@/context/useFolderNavigationContext'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { useUserStore } from '@/store/useUserStore'
 import { useApiKeysStore } from '@/stores/useApiKeysStore'
@@ -40,10 +39,8 @@ export default function UsernameLayoutClient({
   }
 
   return (
-    <FolderNavigationProvider>
-      <SidebarProvider defaultOpen={defaultOpen}>
-        <Sidebar userId={user.id}>{children}</Sidebar>
-      </SidebarProvider>
-    </FolderNavigationProvider>
+    <SidebarProvider defaultOpen={defaultOpen}>
+      <Sidebar userId={user.id}>{children}</Sidebar>
+    </SidebarProvider>
   )
 }
