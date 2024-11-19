@@ -1,6 +1,5 @@
 'use client'
 import { useUserStore } from '@/store/useUserStore'
-import { ViewProvider } from '@/context/useViewContext'
 import { useFolderData } from './useFolderData'
 import DashboardHeader from './dashboard-header'
 import ItemList from './item-list'
@@ -24,9 +23,7 @@ export default function DashboardClient() {
   return (
     <main className='flex flex-col gap-8'>
       <DashboardHeader user={user} />
-      <ViewProvider>
-        <ItemList items={folders} isLoading={isLoading} />
-      </ViewProvider>
+      <ItemList items={folders} isLoading={isLoading} />
     </main>
   )
 }
