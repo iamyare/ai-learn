@@ -14,10 +14,6 @@ import {
   BookmarkIcon,
   ChevronDown
 } from 'lucide-react'
-import {
-  HighlighterAction,
-  useHighlighter
-} from '@/context/useHighlighterContext'
 
 import {
   DropdownMenu,
@@ -25,6 +21,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
+import {
+  HighlighterAction,
+  useHighlighterStore
+} from '@/stores/useHighlighterStore'
 
 const classNameButton =
   'bg-muted size-fit px-3 py-1 text-sm transition-[transform, colors] duration-300 hover:scale-105 shadow-md hover:text-primary'
@@ -37,7 +37,7 @@ type HighlightOptionsProps = RenderHighlightContentProps & {
 }
 
 const HighlightOptions: React.FC<HighlightOptionsProps> = (props) => {
-  const { triggerAction } = useHighlighter()
+  const { triggerAction } = useHighlighterStore()
 
   const handleAction = (action: HighlighterAction, options = {}) => {
     // console.log('Triggering action', action, props.selectedText, options)

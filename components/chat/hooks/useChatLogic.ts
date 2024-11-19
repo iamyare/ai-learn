@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useTransition } from 'react'
 import { toast } from '@/components/ui/use-toast'
 import { useApiKey } from '@/stores/useApiKeysStore'
 import { useSpeechRecognitionStore } from '@/stores/useSpeechRecognitionStore'
-import { useHighlighter, HighlighterAction } from '@/context/useHighlighterContext'
+import { HighlighterAction, useHighlighterStore } from '@/stores/useHighlighterStore'
 import { getChat, createChatNotebook, updateChatNotebook } from '@/actions'
 import { generateImportantEvents } from '@/lib/ai/ai-events'
 import { generateMindMap } from '@/lib/ai/ai-map-mental'
@@ -24,7 +24,7 @@ export function useChatLogic(notebookId: string) {
   const { text, extractTextFromPDF } = usePDFTextStore()
   const fileUrl = usePDFStore((state) => state.fileUrl)
   const { history } = useSpeechRecognitionStore()
-  const { setActionHandler } = useHighlighter()
+  const { setActionHandler } = useHighlighterStore()
 
 
 
