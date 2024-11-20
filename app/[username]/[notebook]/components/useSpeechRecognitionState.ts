@@ -22,27 +22,39 @@ export const useSpeechRecognitionState = (notebookId: string) => {
   const [showPageNumbers, setShowPageNumbers] = useState(true)
   const { updateNotebookInfo } = useNotebookStore()
 
+
   useEffect(() => {
     const loadTranscriptions = async () => {
+      updateOptions({ history: [] })
       setIsLoading(true)
       try {
         const { transcriptions, errorTranscriptions } = await getTranscriptions({ notebookId })
-        if (transcriptions?.content) {
+
+        if (!transcriptions) {
+          return updateOptions({ history: [] })
+        }
+
+        if (transcriptions.content) {
           const parsedContent = JSON.parse(String(transcriptions.content))
           updateOptions({ history: parsedContent })
           setIsUpdated(true)
           setLastUpdateTime(new Date(transcriptions.updated_at))
         } else if (errorTranscriptions) {
+          updateOptions({ history: [] })
+
           console.error('Error al cargar transcripciones:', errorTranscriptions)
           setIsUpdated(false)
         }
       } catch (error) {
+        updateOptions({ history: [] })
+
         console.error('Error al cargar transcripciones:', error)
         setIsUpdated(false)
       } finally {
         setIsLoading(false)
       }
     }
+
     loadTranscriptions()
   }, [notebookId, updateOptions])
 
