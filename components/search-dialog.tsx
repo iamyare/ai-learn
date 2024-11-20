@@ -1,5 +1,5 @@
 'use client'
-import { Calendar, LoaderCircle, Search, Smile } from 'lucide-react'
+import { Folder, LoaderCircle, NotebookPen, Search } from 'lucide-react'
 import { useDebouncedCallback } from 'use-debounce'
 import {
   CommandDialog,
@@ -88,23 +88,42 @@ export default function SearchDialog() {
             'flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50'
           )}
           placeholder='Buscar notebooks o folders'
+          value={searchValue}
           onChange={(e) => handleSearch(e.target.value)}
         />
       </div>
-      <CommandList>
-        {results.length === 0 && searchValue ? (
-          <CommandEmpty>No hay resultados</CommandEmpty>
-        ) : (
-          <CommandGroup heading='Resultados'>
-            {results.map((result, index) => (
-              <CommandItem key={index}>
-                {result.type === 'notebook' ? <Calendar /> : <Smile />}
-                <span>{result.name}</span>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        )}
-      </CommandList>
+      {(searchValue || isloading || results.length > 0) && (
+        <CommandList>
+          {isloading ? (
+            <CommandGroup heading='Buscando...'>
+              {Array.from({ length: 3 }).map((_, index) => (
+                <CommandItem
+                  key={index}
+                  className=' bg-muted animate-pulse h-8 my-2'
+                ></CommandItem>
+              ))}
+            </CommandGroup>
+          ) : results.length === 0 && searchValue ? (
+            <CommandEmpty>
+              No hay resultados para{' '}
+              <span className=' font-semibold'>{searchValue}</span>
+            </CommandEmpty>
+          ) : results.length > 0 ? (
+            <CommandGroup heading='Resultados'>
+              {results.map((result, index) => (
+                <CommandItem key={index}>
+                  {result.type === 'notebook' ? (
+                    <NotebookPen className='mr-2 h-4 w-4' />
+                  ) : (
+                    <Folder className='mr-2 h-4 w-4' />
+                  )}
+                  <span>{result.name}</span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          ) : null}
+        </CommandList>
+      )}
     </CommandDialog>
   )
 }
