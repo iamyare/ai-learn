@@ -67,8 +67,8 @@ const ItemList: React.FC<ItemListProps> = ({ items, isLoading }) => {
   const { currentView, setView } = useViewStore((state) => state)
   const pathname = usePathname()
   const router = useRouter()
-  const routerTransition = useTransitionRouter()
   const params = useSearchParams()
+  const routerTransition = useTransitionRouter()
 
   useEffect(() => {
     //cargar la lista de items por los parametros de la URL

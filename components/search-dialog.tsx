@@ -5,7 +5,6 @@ import {
   CommandDialog,
   CommandEmpty,
   CommandGroup,
-  CommandInput,
   CommandItem,
   CommandList
 } from '@/components/ui/command'
@@ -14,14 +13,18 @@ import { searchFoldersAndNotebooks } from '@/actions'
 import { useUserStore } from '@/stores/useUserStore'
 import { useToast } from './ui/use-toast'
 import { cn } from '@/lib/utils'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
 export default function SearchDialog() {
   const { user } = useUserStore()
   const [open, setOpen] = useState(false)
   const [searchValue, setSearchValue] = useState('')
   const [results, setResults] = useState<SearchByName[]>([])
-  const [isloading, setLoading] = useState(false)
+  const [isLoading, setLoading] = useState(false)
 
+  const pathname = usePathname()
+  const router = useRouter()
+  const params = useSearchParams()
   const { toast } = useToast()
 
   useEffect(() => {
@@ -36,7 +39,25 @@ export default function SearchDialog() {
     return () => document.removeEventListener('keydown', down)
   }, [])
 
+  const handleNavigate = (result: SearchByName) => {
+    if (result.type === 'folder') {
+      const newParams = new URLSearchParams(params)
+      newParams.set('folder_id', result.id)
+      newParams.set('folder_name', result.name)
+      const newPath = `${pathname}?${newParams.toString()}`
+      router.replace(newPath)
+    } else {
+      router.push(`/${user?.username}/${result.id}`)
+    }
+    setOpen(false)
+  }
+
   const debouncedSearch = useDebouncedCallback(async (value: string) => {
+    if (!value.trim()) {
+      setResults([])
+      return
+    }
+
     try {
       setLoading(true)
       const { searchResults, errorSearchResults } =
@@ -70,6 +91,7 @@ export default function SearchDialog() {
 
   const handleSearch = (value: string) => {
     setSearchValue(value)
+    setLoading(true) // Mostrar loading inmediatamente
     debouncedSearch(value)
   }
 
@@ -78,7 +100,7 @@ export default function SearchDialog() {
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
       <div className='flex items-center border-b px-3' cmdk-input-wrapper=''>
-        {isloading ? (
+        {isLoading ? (
           <LoaderCircle className='mr-2 h-4 w-4 shrink-0 animate-spin opacity-50' />
         ) : (
           <Search className='mr-2 h-4 w-4 shrink-0 opacity-50' />
@@ -92,38 +114,40 @@ export default function SearchDialog() {
           onChange={(e) => handleSearch(e.target.value)}
         />
       </div>
-      {(searchValue || isloading || results.length > 0) && (
-        <CommandList>
-          {isloading ? (
-            <CommandGroup heading='Buscando...'>
-              {Array.from({ length: 3 }).map((_, index) => (
-                <CommandItem
-                  key={index}
-                  className=' bg-muted animate-pulse h-8 my-2'
-                ></CommandItem>
-              ))}
-            </CommandGroup>
-          ) : results.length === 0 && searchValue ? (
-            <CommandEmpty>
-              No hay resultados para{' '}
-              <span className=' font-semibold'>{searchValue}</span>
-            </CommandEmpty>
-          ) : results.length > 0 ? (
-            <CommandGroup heading='Resultados'>
-              {results.map((result, index) => (
-                <CommandItem key={index}>
-                  {result.type === 'notebook' ? (
-                    <NotebookPen className='mr-2 h-4 w-4' />
-                  ) : (
-                    <Folder className='mr-2 h-4 w-4' />
-                  )}
-                  <span>{result.name}</span>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          ) : null}
-        </CommandList>
-      )}
+      <CommandList>
+        {isLoading && (
+          <CommandGroup heading='Buscando...'>
+            {Array.from({ length: 3 }).map((_, index) => (
+              <CommandItem
+                key={index}
+                className='bg-muted animate-pulse h-8 my-2'
+              ></CommandItem>
+            ))}
+          </CommandGroup>
+        )}
+
+        {!isLoading && searchValue && results.length === 0 && (
+          <CommandEmpty>
+            No hay resultados para{' '}
+            <span className='font-semibold'>{searchValue}</span>
+          </CommandEmpty>
+        )}
+
+        {!isLoading && results.length > 0 && (
+          <CommandGroup heading='Resultados'>
+            {results.map((result, index) => (
+              <CommandItem key={index} onSelect={() => handleNavigate(result)}>
+                {result.type === 'notebook' ? (
+                  <NotebookPen className='mr-2 h-4 w-4' />
+                ) : (
+                  <Folder className='mr-2 h-4 w-4' />
+                )}
+                <span>{result.name}</span>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
+      </CommandList>
     </CommandDialog>
   )
 }
