@@ -1,6 +1,19 @@
 import { DialogEntry, SpeechRecognitionOptions } from "@/types/speechRecognition"
 import { useCallback, useEffect, useRef, useState } from "react"
 
+export const createSpeechRecognition = () => {
+  const recognition = (window.SpeechRecognition || window.webkitSpeechRecognition) ? 
+    new (window.SpeechRecognition || window.webkitSpeechRecognition)() : null
+
+  if (recognition) {
+    recognition.continuous = true
+    recognition.interimResults = true
+    recognition.lang = 'es-ES'
+  }
+
+  return recognition
+}
+
 export const useSpeechRecognition = (initialOptions: SpeechRecognitionOptions = {}) => {
   const [options, setOptions] = useState<SpeechRecognitionOptions>({
     groupingInterval: 10000,
@@ -169,6 +182,10 @@ export const useSpeechRecognition = (initialOptions: SpeechRecognitionOptions = 
     }
   }, [addToHistory])
 
+  const createRecognitionInstance = useCallback(() => {
+    return createSpeechRecognition()
+  }, [])
+
   return { 
     isListening, 
     transcript, 
@@ -177,6 +194,7 @@ export const useSpeechRecognition = (initialOptions: SpeechRecognitionOptions = 
     startListening, 
     stopListening,
     changePage,
-    updateOptions
+    updateOptions,
+    createRecognitionInstance,
   }
 }
