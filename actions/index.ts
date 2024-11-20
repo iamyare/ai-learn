@@ -15,6 +15,15 @@ export async function logout() {
   return await supabase.auth.signOut()
 }
 
+export async function searchFoldersAndNotebooks({name, userId}: {name: string, userId: string}) {
+  const { data: searchResults, error: errorSearchResults } = await supabase.rpc(
+    'search_by_name',
+    { search_text: name, user_id: userId }
+  )
+
+  return { searchResults, errorSearchResults }
+}
+
 //Obtener usuario y user
 export async function getUserInfo() {
   const { data, error } = await getUser()

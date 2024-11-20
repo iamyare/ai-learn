@@ -363,6 +363,7 @@ export type Database = {
       search_by_name: {
         Args: {
           search_text: string
+          user_id: string
         }
         Returns: {
           id: string

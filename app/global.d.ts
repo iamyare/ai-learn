@@ -10,6 +10,7 @@ declare global {
 
   type GetFoldersAndNotebooksFunction = DB['public']['Functions']['get_folders_and_notebooks']['Returns'][0]
   type GetFolderFunction = DB['public']['Functions']['get_folders']['Returns'][0]
+  type SearchByName = DB['public']['Functions']['search_by_name']['Returns'][0]
   type User = DB['public']['Tables']['users']['Row']
   type UserUpdate = DB['public']['Tables']['users']['Update']
   type Folder = DB['public']['Tables']['folders']['Row']
