@@ -29,17 +29,11 @@ export default function UserSessions() {
 
   const router = useRouter()
 
-  // Añadir verificación de seguridad
-  if (!user) {
-    router.push('/login')
-    return null
-  }
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       session_name: '',
-      user_id: user.id // Ahora podemos estar seguros de que user existe
+      user_id: user?.id // Ahora podemos estar seguros de que user existe
     }
   })
 
@@ -53,6 +47,12 @@ export default function UserSessions() {
         console.error('Error al procesar la solicitud:', error)
       }
     })
+  }
+
+  // Añadir verificación de seguridad
+  if (!user) {
+    router.push('/login')
+    return null
   }
 
   return (

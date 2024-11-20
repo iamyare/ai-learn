@@ -17,7 +17,16 @@ interface ChatMessagesProps {
   className?: string
 }
 
-const AnimatedMessage = memo(({ message }: { message: ChatMessageType }) => {
+interface AnimatedMessageProps {
+  message: ChatMessageType
+}
+
+interface MessageGroupProps {
+  date: string
+  messages: ChatMessageType[]
+}
+
+const AnimatedMessage = memo(({ message }: AnimatedMessageProps) => {
   const [isPresent, safeToRemove] = usePresence()
 
   useEffect(() => {
@@ -28,6 +37,7 @@ const AnimatedMessage = memo(({ message }: { message: ChatMessageType }) => {
 
   return (
     <div
+      className='animated-message'
       style={{
         animation: isPresent ? 'slideIn 0.3s ease-out' : 'slideOut 0.3s ease-in'
       }}
@@ -37,20 +47,22 @@ const AnimatedMessage = memo(({ message }: { message: ChatMessageType }) => {
   )
 })
 
-const MessageGroup = memo(
-  ({ date, messages }: { date: string; messages: ChatMessageType[] }) => (
-    <div key={date}>
-      <p className='text-sm font-medium mx-auto bg-muted rounded-lg size-fit px-6 py-1 shadow-sm my-4'>
-        {formatRelativeDate(date)}
-      </p>
-      <div className='flex flex-col gap-4'>
-        {messages.map((message) => (
-          <AnimatedMessage key={message.timestamp} message={message} />
-        ))}
-      </div>
+AnimatedMessage.displayName = 'AnimatedMessage'
+
+const MessageGroup = memo(({ date, messages }: MessageGroupProps) => (
+  <div key={date}>
+    <p className='text-sm font-medium mx-auto bg-muted rounded-lg size-fit px-6 py-1 shadow-sm my-4'>
+      {formatRelativeDate(date)}
+    </p>
+    <div className='flex flex-col gap-4'>
+      {messages.map((message) => (
+        <AnimatedMessage key={message.timestamp} message={message} />
+      ))}
     </div>
-  )
-)
+  </div>
+))
+
+MessageGroup.displayName = 'MessageGroup'
 
 const ChatMessages: React.FC<ChatMessagesProps> = ({
   messages,

@@ -45,18 +45,9 @@ const formSchema = z.object({
 export default function GeneralConfig() {
   const user = useUserStore((state) => state.user)
   const router = useRouter()
-
-  // Añadir verificación de seguridad
-  if (!user) {
-    router.push('/auth/login') // o donde quieras redirigir si no hay usuario
-    return null
-  }
-
   const [isLoading, setIsLoading] = useState(false)
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
-
   const { toast } = useToast()
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
