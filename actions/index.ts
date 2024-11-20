@@ -303,6 +303,18 @@ export async function createChatNotebook({ notebookId }: { notebookId: string })
   return { chatInsert, errorChatInsert }
 }
 
+//update notebook
+export async function updateNotebook({ notebookData, notebookId }: { notebookData: NotebookUpdate, notebookId: string }) {
+  const { data: notebook, error: errorNotebook } = await supabase
+    .from('notebooks')
+    .update({ ...notebookData })
+    .eq('notebook_id', notebookId)
+    .select('*')
+    .single()
+
+  return { notebook, errorNotebook }
+}
+
 //Update chat notebook
 export async function updateChatNotebook({
   content,

@@ -17,6 +17,7 @@ declare global {
   type FolderInsert = DB['public']['Tables']['folders']['Insert']
   type Notebook = DB['public']['Tables']['notebooks']['Row']
   type NotebookInsert = DB['public']['Tables']['notebooks']['Insert']
+  type NotebookUpdate = DB['public']['Tables']['notebooks']['Update']
   type PDFDocuments = DB['public']['Tables']['pdf_documents']['Row']
   type PDFDocumentsInsert = DB['public']['Tables']['pdf_documents']['Insert']
   type NotebookInfo = Notebook & {pdf_document: PDFDocuments}

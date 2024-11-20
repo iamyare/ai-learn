@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useMediaQuery } from '@/components/ui/use-media-query'
 import SpeechRecognition from './components/SpeechRecognition'
 import PDFViewer from '@/components/ui/PDFViewer'
@@ -15,21 +15,27 @@ import { cn } from '@/lib/utils'
 import Chat from '@/components/chat/Chat'
 import HeaderNotebook from './components/HeaderNotebook'
 import { useUserStore } from '@/stores/useUserStore'
+import { useNotebookStore } from '@/stores/useNotebookStore'
 
 export default function RenderView({
-  notebookInfo
+  initialNotebook
 }: {
-  notebookInfo: NotebookInfo
+  initialNotebook: NotebookInfo
 }) {
   const [chatOpen, setChatOpen] = useState(false)
   const isDesktop = useMediaQuery('(min-width: 600px)')
   const { user } = useUserStore()
+  const { notebookInfo, setNotebookInfo } = useNotebookStore()
+
+  useEffect(() => {
+    setNotebookInfo(initialNotebook)
+  }, [initialNotebook, setNotebookInfo])
 
   const toggleChat = useCallback(() => setChatOpen((prev) => !prev), [])
 
   const pdfViewerContent = useMemo(
-    () => <PDFViewer initialFileUrl={notebookInfo.pdf_document.file_path} />,
-    [notebookInfo.pdf_document.file_path]
+    () => <PDFViewer initialFileUrl={initialNotebook.pdf_document.file_path} />,
+    [initialNotebook.pdf_document.file_path]
   )
 
   const speechRecognitionContent = useMemo(
@@ -41,11 +47,12 @@ export default function RenderView({
     () => <Chat notebookId={notebookInfo.notebook_id} />,
     [notebookInfo.notebook_id]
   )
+
   if (!user) return null
 
   return (
     <main className='flex relative flex-col w-screen h-screen overflow-hidden'>
-      <HeaderNotebook notebookInfo={notebookInfo} user={user} />
+      <HeaderNotebook user={user} />
       <ResizablePanelGroup direction='horizontal' className='w-full h-full'>
         <ResizablePanel defaultSize={isDesktop ? 100 : 60}>
           <ResizablePanelGroup direction='vertical'>

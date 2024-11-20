@@ -1,6 +1,7 @@
 import { useState, useTransition, useEffect } from 'react'
 import { getTranscriptions, createTranscriptNotebook, updateTranscriptNotebook } from '@/actions'
 import { useSpeechRecognitionStore } from '@/stores/useSpeechRecognitionStore'
+import { useNotebookStore } from '@/stores/useNotebookStore'
 
 export const useSpeechRecognitionState = (notebookId: string) => {
   const {
@@ -19,6 +20,7 @@ export const useSpeechRecognitionState = (notebookId: string) => {
   const [isUpdated, setIsUpdated] = useState(false)
   const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null)
   const [showPageNumbers, setShowPageNumbers] = useState(true)
+  const { updateNotebookInfo } = useNotebookStore()
 
   useEffect(() => {
     const loadTranscriptions = async () => {
@@ -59,6 +61,8 @@ export const useSpeechRecognitionState = (notebookId: string) => {
             transcriptHistory: history,
             notebookId
           })
+      updateNotebookInfo({ updated_at: new Date().toISOString() })
+
         } else {
           await createTranscriptNotebook({
             transcriptHistory: history,

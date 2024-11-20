@@ -13,6 +13,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from '../ui/use-toast'
 import { usePDFTextStore } from '@/stores/usePDFTextStore'
 import { useSpeechRecognitionStore } from '@/stores/useSpeechRecognitionStore'
+import { useNotebookStore } from '@/stores/useNotebookStore'
 
 interface ChatInputProps {
   updateChatInDatabase: (updatedMessages: ChatMessageType[]) => Promise<void>
@@ -34,6 +35,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const { history } = useSpeechRecognitionStore()
   const { text } = usePDFTextStore()
   const [isPending, startTransition] = useTransition()
+  const { updateNotebookInfo } = useNotebookStore()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -92,6 +94,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
           // Actualizar la base de datos con el mensaje completo
           aiMessage.content = textContent
           await updateChatInDatabase([...messages, userMessage, aiMessage])
+          updateNotebookInfo({ updated_at: new Date().toISOString() })
         } catch (err) {
           console.error('Error en el flujo de AI:', err)
           toast({
@@ -106,12 +109,13 @@ const ChatInput: React.FC<ChatInputProps> = ({
     },
     [
       setMessages,
-      form,
-      updateChatInDatabase,
-      messages,
       history,
+      messages,
+      form,
       text,
-      apiKeyGemini
+      apiKeyGemini,
+      updateChatInDatabase,
+      updateNotebookInfo
     ]
   )
 

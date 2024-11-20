@@ -151,6 +151,7 @@ export type Database = {
         Row: {
           created_at: string
           folder_id: string | null
+          is_favorite: boolean
           notebook_id: string
           notebook_name: string
           updated_at: string
@@ -159,6 +160,7 @@ export type Database = {
         Insert: {
           created_at?: string
           folder_id?: string | null
+          is_favorite?: boolean
           notebook_id?: string
           notebook_name: string
           updated_at?: string
@@ -167,6 +169,7 @@ export type Database = {
         Update: {
           created_at?: string
           folder_id?: string | null
+          is_favorite?: boolean
           notebook_id?: string
           notebook_name?: string
           updated_at?: string
