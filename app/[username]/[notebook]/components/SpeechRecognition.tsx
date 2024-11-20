@@ -57,7 +57,7 @@ export default function SpeechRecognition({
     currentPosition
   )
 
-  const setTranscriptions = useExportStore((state) => state.setTranscriptions)
+  const { setTranscriptions } = useExportStore()
 
   useEffect(() => {
     setTranscriptions(history)

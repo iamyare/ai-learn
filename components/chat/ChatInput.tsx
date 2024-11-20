@@ -50,8 +50,8 @@ const ChatInput: React.FC<ChatInputProps> = ({
         timestamp: new Date().toISOString()
       }
       setMessages((prev) => [...prev, userMessage])
-
       const transcript = history.map((entry) => entry.text).join(' ')
+
       const messageHistory = messages
         .filter((msg): msg is MessageType => 'content' in msg)
         .map((msg) => ({
@@ -69,31 +69,37 @@ const ChatInput: React.FC<ChatInputProps> = ({
             apiKey: apiKeyGemini ?? ''
           })
 
-          let textContent = ''
           const aiMessage: MessageType = {
             content: '',
             isUser: false,
             timestamp: new Date().toISOString()
           }
 
+          // Agregar mensaje inicial vacío
           setMessages((prev) => [...prev, aiMessage])
 
+          let accumulatedText = ''
           for await (const delta of readStreamableValue(textStream)) {
-            textContent = `${textContent}${delta}`
+            accumulatedText += delta
             setMessages((prev) => {
-              const updatedMessages = [...prev]
-              const lastMessage = updatedMessages[updatedMessages.length - 1]
-              // Verificar que el mensaje es del tipo correcto
-              if ('content' in lastMessage) {
-                lastMessage.content = textContent
+              const newMessages = [...prev]
+              const lastIndex = newMessages.length - 1
+              if (lastIndex >= 0 && !newMessages[lastIndex].isUser) {
+                newMessages[lastIndex] = {
+                  ...newMessages[lastIndex],
+                  content: accumulatedText
+                }
               }
-              return updatedMessages
+              return newMessages
             })
           }
 
           // Actualizar la base de datos con el mensaje completo
-          aiMessage.content = textContent
-          await updateChatInDatabase([...messages, userMessage, aiMessage])
+          await updateChatInDatabase([
+            ...messages,
+            userMessage,
+            { ...aiMessage, content: accumulatedText }
+          ])
           updateNotebookInfo({ updated_at: new Date().toISOString() })
         } catch (err) {
           console.error('Error en el flujo de AI:', err)
