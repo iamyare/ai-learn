@@ -1,12 +1,14 @@
 'use client'
 
-import { type LucideIcon } from 'lucide-react'
+import { Search, type LucideIcon } from 'lucide-react'
 
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem
 } from '@/components/ui/sidebar'
+import Link from 'next/link'
+import { useUserStore } from '@/stores/useUserStore'
 
 export function NavMain({
   items
@@ -18,18 +20,26 @@ export function NavMain({
     isActive?: boolean
   }[]
 }) {
+  const { user } = useUserStore()
+  if (!user) return null
   return (
     <SidebarMenu>
       {items.map((item) => (
         <SidebarMenuItem key={item.title}>
           <SidebarMenuButton asChild isActive={item.isActive}>
-            <a href={item.url}>
+            <Link href={`/${user.username}${item.url}`}>
               <item.icon />
               <span>{item.title}</span>
-            </a>
+            </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
       ))}
+      <SidebarMenuItem>
+        <SidebarMenuButton>
+          <Search />
+          <span>Buscar</span>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
     </SidebarMenu>
   )
 }
