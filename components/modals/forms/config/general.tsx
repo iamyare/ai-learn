@@ -100,7 +100,6 @@ export default function GeneralConfig() {
         avatarUrl = avatarUpload?.fullPath
           ? `${baseURL}${avatarUpload.fullPath}`
           : values.avatar_url
-        console.log('avatarUrl', avatarUrl)
       }
 
       await updateUser({

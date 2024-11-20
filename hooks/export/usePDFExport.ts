@@ -22,7 +22,7 @@ export const usePDFExport = () => {
 
   const exportToPDF = useCallback(async (config: PDFExportConfig) => {
     const data = convertToStructuredData(config.notebookName)
-    console.log('data', data)
+
     const doc = new jsPDF({
       orientation: config.orientation,
       unit: 'mm',
@@ -61,7 +61,6 @@ export const usePDFExport = () => {
           currentY += 15
           break
         case 'conversation':
-            console.log('rendering conversation', section.content)
           currentY = renderConversation(doc, section.content, currentY, margin, pageWidth, pageHeight)
           currentY += 15
           break

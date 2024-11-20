@@ -1,4 +1,11 @@
-import React, { useRef, useState, useCallback, useEffect } from 'react'
+import React, {
+  useRef,
+  useState,
+  useCallback,
+  useEffect,
+  memo,
+  useMemo
+} from 'react'
 import { cn, formatRelativeDate } from '@/lib/utils'
 import BubbleChat from './BubbleChat'
 import MessageLoading from './messages/MessageLoading'
@@ -10,14 +17,11 @@ interface ChatMessagesProps {
   className?: string
 }
 
-const AnimatedMessage: React.FC<{ message: ChatMessageType }> = ({
-  message
-}) => {
+const AnimatedMessage = memo(({ message }: { message: ChatMessageType }) => {
   const [isPresent, safeToRemove] = usePresence()
 
   useEffect(() => {
     if (!isPresent) {
-      // Add any cleanup logic here if needed
       safeToRemove()
     }
   }, [isPresent, safeToRemove])
@@ -31,7 +35,22 @@ const AnimatedMessage: React.FC<{ message: ChatMessageType }> = ({
       <BubbleChat message={message} />
     </div>
   )
-}
+})
+
+const MessageGroup = memo(
+  ({ date, messages }: { date: string; messages: ChatMessageType[] }) => (
+    <div key={date}>
+      <p className='text-sm font-medium mx-auto bg-muted rounded-lg size-fit px-6 py-1 shadow-sm my-4'>
+        {formatRelativeDate(date)}
+      </p>
+      <div className='flex flex-col gap-4'>
+        {messages.map((message) => (
+          <AnimatedMessage key={message.timestamp} message={message} />
+        ))}
+      </div>
+    </div>
+  )
+)
 
 const ChatMessages: React.FC<ChatMessagesProps> = ({
   messages,
@@ -70,7 +89,10 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
     }, {} as Record<string, ChatMessageType[]>)
   }
 
-  const groupedMessages = groupMessagesByDate(messages)
+  const groupedMessages = useMemo(
+    () => groupMessagesByDate(messages),
+    [messages]
+  )
 
   return (
     <div
@@ -83,18 +105,8 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
       onScroll={handleScroll}
     >
       {Object.keys(groupedMessages).length > 0 ? (
-        Object.keys(groupedMessages).map((date) => (
-          <div key={date}>
-            <p className='text-sm font-medium mx-auto bg-muted rounded-lg size-fit px-6 py-1 shadow-sm my-4'>
-              {formatRelativeDate(date)}
-            </p>
-
-            <div className='flex flex-col gap-4'>
-              {groupedMessages[date].map((message) => (
-                <AnimatedMessage key={message.timestamp} message={message} />
-              ))}
-            </div>
-          </div>
+        Object.entries(groupedMessages).map(([date, dateMessages]) => (
+          <MessageGroup key={date} date={date} messages={dateMessages} />
         ))
       ) : (
         <p className='text-center text-muted-foreground'>
@@ -108,4 +120,4 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
   )
 }
 
-export default ChatMessages
+export default memo(ChatMessages)

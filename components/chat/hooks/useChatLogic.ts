@@ -103,7 +103,6 @@ export function useChatLogic(notebookId: string) {
         content: JSON.stringify(updatedMessages),
         notebookId
       })
-      console.log('chatUpdate:', chatUpdate)
       if (errorChatUpdate) {
         console.error('Error al actualizar el chat:', errorChatUpdate)
         toast({
@@ -168,7 +167,6 @@ export function useChatLogic(notebookId: string) {
           apiKey: apiKeyGemini ?? ''
         })
 
-        console.log('mindMap:', mindMap)
 
         if (mindMap) {
           const mindMapMessage: MindMapMessageType = {
@@ -218,7 +216,6 @@ export function useChatLogic(notebookId: string) {
               });
               break;
             case 'translate':
-              console.log('Translating text:', options?.targetLanguage);
               result = await translateText({ 
                 highlightedText: text, 
                 apiKey: apiKeyGemini,

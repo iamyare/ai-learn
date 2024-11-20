@@ -55,7 +55,6 @@ export const useSpeechRecognitionState = (notebookId: string) => {
       try {
         const { transcriptions } = await getTranscriptions({ notebookId })
         if (transcriptions) {
-            console.log('Se actualizó el estado de las transcripciones:')
           await updateTranscriptNotebook({
             transcriptHistory: history,
             notebookId

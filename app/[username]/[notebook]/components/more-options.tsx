@@ -97,11 +97,6 @@ export function MoreOptionsTranscript() {
             }
             onCheckedChange={() => {
               handleChange(option.value as keyof VisualizationOptions)
-              console.log(
-                `${option.value}: ${!visualizationOptions[
-                  option.value as keyof VisualizationOptions
-                ]}`
-              )
             }}
           >
             {option.label}

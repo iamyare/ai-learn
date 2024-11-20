@@ -108,10 +108,6 @@ export default function NotebookConfig() {
       pt: 'Olá, este é um teste de voz.'
     }[language]
 
-    console.log(
-      'getVoices',
-      getVoices().find((v) => v.lang === 'es-MX' && v.name.includes('Natural'))
-    )
     speak(1)
     setIsPlaying(false)
   }
