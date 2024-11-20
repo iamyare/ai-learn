@@ -33,7 +33,7 @@ const mainNavItems = [
   },
   {
     title: 'Favoritos',
-    url: '/favorites',
+    url: '?favorites',
     icon: StarIcon
   }
   // {
