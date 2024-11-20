@@ -1,14 +1,17 @@
 'use client'
-import { useUser } from '@/context/useUserContext'
-import { ViewProvider } from '@/context/useViewContext'
+import { useUserStore } from '@/stores/useUserStore'
 import { useFolderData } from './useFolderData'
 import DashboardHeader from './dashboard-header'
 import ItemList from './item-list'
 
 export default function DashboardClient() {
-  const { user } = useUser()
+  const user = useUserStore((state) => state.user)
 
-  const { folders, error: folderError, isLoading } = useFolderData(user!.id)
+  const {
+    folders,
+    error: folderError,
+    isLoading
+  } = useFolderData(user?.id ?? '')
 
   if (folderError) {
     return <div>{folderError}</div>
@@ -20,9 +23,7 @@ export default function DashboardClient() {
   return (
     <main className='flex flex-col gap-8'>
       <DashboardHeader user={user} />
-      <ViewProvider>
-        <ItemList items={folders} isLoading={isLoading} />
-      </ViewProvider>
+      <ItemList items={folders} isLoading={isLoading} />
     </main>
   )
 }

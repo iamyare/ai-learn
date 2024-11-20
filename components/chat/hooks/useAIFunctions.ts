@@ -1,13 +1,14 @@
 import { useCallback } from 'react'
 import { toast } from '@/components/ui/use-toast'
-import { useSpeechRecognitionContext } from '@/context/useSpeechRecognitionContext'
-import { usePDFText } from '@/context/usePDFTextExtractionContext'
+import { useSpeechRecognitionStore } from '@/stores/useSpeechRecognitionStore'
+import { usePDFTextStore } from '@/stores/usePDFTextStore'
 import { generateImportantEvents } from '@/lib/ai/ai-events'
 import { generateMindMap } from '@/lib/ai/ai-map-mental'
 
 export const useAIFunctions = (apiKeyGemini: string | null, updateMessages: (newMessage: ChatMessageType) => void) => {
-  const { history } = useSpeechRecognitionContext()
-  const { text } = usePDFText()
+  const { history } = useSpeechRecognitionStore()
+  // Usar el store en lugar del contexto
+  const { text } = usePDFTextStore()
 
   const handleImportantEvents = useCallback(async () => {
     if (!apiKeyGemini) {

@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useFolderNavigation } from '@/context/useFolderNavigationContext';
+import { useFolderNavigationStore } from '@/stores/useFolderNavigationStore';
 import { getFoldersAndNotebooks } from '@/actions';
 
 export const useFolderData = (userId: string) => {
   const [folders, setFolders] = useState<GetFoldersAndNotebooksFunction[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { currentPath } = useFolderNavigation();
+  const { currentPath } = useFolderNavigationStore();
 
   useEffect(() => {
     const fetchFolders = async () => {

@@ -29,7 +29,7 @@ const useTextToSpeech = ({
   voice,
 }: UseTextToSpeechProps): UseTextToSpeechReturn => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentPosition, setCurrentPosition] = useState(0);
+  const [currentPosition, setCurrentPosition] = useState(1);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const textRef = useRef(text);
@@ -114,7 +114,7 @@ const useTextToSpeech = ({
     const synth = window.speechSynthesis;
     synth.cancel();
     setIsPlaying(false);
-    setCurrentPosition(0);
+    setCurrentPosition(1);
   }, []);
 
   const getVoices = useCallback((): SpeechSynthesisVoice[] => {

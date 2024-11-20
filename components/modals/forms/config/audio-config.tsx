@@ -76,7 +76,8 @@ export default function AudioConfig() {
           const firstSpeaker = audioDevices.find(
             (device) => device.kind === 'audiooutput'
           )
-          if (firstMicrophone) form.setValue('microphone', firstMicrophone.deviceId)
+          if (firstMicrophone)
+            form.setValue('microphone', firstMicrophone.deviceId)
           if (firstSpeaker) form.setValue('speaker', firstSpeaker.deviceId)
         }
       } catch (error) {
@@ -177,7 +178,7 @@ export default function AudioConfig() {
   }
 
   return (
-    <section className='flex flex-col gap-4'>
+    <section className='flex flex-col gap-4 px-4'>
       <Header.Container>
         <Header.Title>Configuración de Dispositivos de Audio</Header.Title>
         <Header.Description>

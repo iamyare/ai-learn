@@ -26,7 +26,6 @@ import {
 } from '@/components/ui/form'
 import { insertNotebook, insertPdfDocument } from '@/actions'
 import { toast } from '../ui/use-toast'
-import { useFolderNavigation } from '@/context/useFolderNavigationContext'
 import { usePathname, useRouter } from 'next/navigation'
 import { useDropzone } from 'react-dropzone'
 import {
@@ -37,6 +36,7 @@ import {
 } from '../ui/dropzone-display'
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
+import { useFolderNavigationStore } from '@/stores/useFolderNavigationStore'
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const ACCEPTED_FILE_TYPES = ['application/pdf']
@@ -65,7 +65,7 @@ export default function CreateNotebook({ userId }: { userId: string }) {
   const router = useRouter()
   const pathname = usePathname()
 
-  const { currentPath } = useFolderNavigation()
+  const { currentPath } = useFolderNavigationStore()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

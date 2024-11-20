@@ -11,8 +11,9 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from '../ui/use-toast'
-import { useSpeechRecognitionContext } from '@/context/useSpeechRecognitionContext'
-import { usePDFText } from '@/context/usePDFTextExtractionContext'
+import { usePDFTextStore } from '@/stores/usePDFTextStore'
+import { useSpeechRecognitionStore } from '@/stores/useSpeechRecognitionStore'
+import { useNotebookStore } from '@/stores/useNotebookStore'
 
 interface ChatInputProps {
   updateChatInDatabase: (updatedMessages: ChatMessageType[]) => Promise<void>
@@ -31,9 +32,10 @@ const ChatInput: React.FC<ChatInputProps> = ({
   apiKeyGemini,
   messages
 }) => {
-  const { history } = useSpeechRecognitionContext()
-  const { text } = usePDFText()
+  const { history } = useSpeechRecognitionStore()
+  const { text } = usePDFTextStore()
   const [isPending, startTransition] = useTransition()
+  const { updateNotebookInfo } = useNotebookStore()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -48,9 +50,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
         timestamp: new Date().toISOString()
       }
       setMessages((prev) => [...prev, userMessage])
-      form.reset()
-
-      await updateChatInDatabase([...messages, userMessage])
 
       const transcript = history.map((entry) => entry.text).join(' ')
       const messageHistory = messages
@@ -71,26 +70,31 @@ const ChatInput: React.FC<ChatInputProps> = ({
           })
 
           let textContent = ''
+          const aiMessage: MessageType = {
+            content: '',
+            isUser: false,
+            timestamp: new Date().toISOString()
+          }
+
+          setMessages((prev) => [...prev, aiMessage])
+
           for await (const delta of readStreamableValue(textStream)) {
             textContent = `${textContent}${delta}`
             setMessages((prev) => {
               const updatedMessages = [...prev]
               const lastMessage = updatedMessages[updatedMessages.length - 1]
-              if (!lastMessage.isUser && 'content' in lastMessage) {
+              // Verificar que el mensaje es del tipo correcto
+              if ('content' in lastMessage) {
                 lastMessage.content = textContent
-              } else {
-                updatedMessages.push({
-                  content: textContent,
-                  isUser: false,
-                  timestamp: new Date().toISOString()
-                })
               }
               return updatedMessages
             })
           }
 
-          // Actualizar la base de datos después de terminar el stream
-          await updateChatInDatabase(messages)
+          // Actualizar la base de datos con el mensaje completo
+          aiMessage.content = textContent
+          await updateChatInDatabase([...messages, userMessage, aiMessage])
+          updateNotebookInfo({ updated_at: new Date().toISOString() })
         } catch (err) {
           console.error('Error en el flujo de AI:', err)
           toast({
@@ -101,15 +105,17 @@ const ChatInput: React.FC<ChatInputProps> = ({
           })
         }
       })
+      form.reset()
     },
     [
       setMessages,
-      form,
-      updateChatInDatabase,
-      messages,
       history,
+      messages,
+      form,
       text,
-      apiKeyGemini
+      apiKeyGemini,
+      updateChatInDatabase,
+      updateNotebookInfo
     ]
   )
 

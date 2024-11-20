@@ -10,6 +10,7 @@ import {
   Lock,
   Menu,
   MessageCircle,
+  NotebookIcon,
   Paintbrush,
   Settings,
   Video
@@ -58,12 +59,14 @@ import {
   DrawerTrigger
 } from '@/components/ui/drawer'
 import { useMediaQuery } from '../ui/use-media-query'
+import NotebookConfig from './forms/config/notebook-config'
 
 const data = {
   nav: [
     { name: 'Cuenta', icon: Home },
     { name: 'API', icon: Link },
-    { name: 'Audio', icon: Video }
+    { name: 'Audio', icon: Video },
+    { name: 'Notebook', icon: NotebookIcon }
     // { name: 'Sesiones', icon: MessageCircle },
     // { name: 'Eliminar cuenta', icon: Lock }
   ]
@@ -117,8 +120,10 @@ export function SettingsDialog({
             <div className=' items-center gap-2 px-4 hidden md:flex'>
               <Breadcrumb>
                 <BreadcrumbList>
-                  <BreadcrumbItem className='hidden md:block'>
-                    <BreadcrumbLink href='#'>Configuración</BreadcrumbLink>
+                  <BreadcrumbItem className='hidden md:block cursor-pointer'>
+                    <BreadcrumbLink onClick={() => setActiveTab('Cuenta')}>
+                      Configuración
+                    </BreadcrumbLink>
                   </BreadcrumbItem>
                   <BreadcrumbSeparator className='hidden md:block' />
                   <BreadcrumbItem>
@@ -128,11 +133,12 @@ export function SettingsDialog({
               </Breadcrumb>
             </div>
           </header>
-          <ScrollArea className='flex flex-1 flex-col gap-4 p-4 pt-0'>
+          <ScrollArea className='flex flex-1 flex-col gap-4'>
             {activeTab === 'Cuenta' && <GeneralConfig />}
             {activeTab === 'API' && <APIConfig />}
             {activeTab === 'Audio' && <AudioConfig />}
             {activeTab === 'Sesiones' && <UserSessions />}
+            {activeTab === 'Notebook' && <NotebookConfig />}
             {activeTab === 'Eliminar cuenta' && (
               <div className='text-muted-foreground'>
                 Luego se mostrará la opción de eliminar cuenta

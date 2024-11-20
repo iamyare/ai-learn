@@ -151,6 +151,7 @@ export type Database = {
         Row: {
           created_at: string
           folder_id: string | null
+          is_favorite: boolean
           notebook_id: string
           notebook_name: string
           updated_at: string
@@ -159,6 +160,7 @@ export type Database = {
         Insert: {
           created_at?: string
           folder_id?: string | null
+          is_favorite?: boolean
           notebook_id?: string
           notebook_name: string
           updated_at?: string
@@ -167,6 +169,7 @@ export type Database = {
         Update: {
           created_at?: string
           folder_id?: string | null
+          is_favorite?: boolean
           notebook_id?: string
           notebook_name?: string
           updated_at?: string
@@ -287,38 +290,46 @@ export type Database = {
       }
       users: {
         Row: {
+          avatar_url: string | null
           created_at: string
+          email: string | null
+          full_name: string | null
           id: string
           updated_at: string
           username: string
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string
+          email?: string | null
+          full_name?: string | null
           id: string
           updated_at?: string
           username: string
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string
+          email?: string | null
+          full_name?: string | null
           id?: string
           updated_at?: string
           username?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "users_id_fkey"
-            columns: ["id"]
-            isOneToOne: true
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      generate_unique_username: {
+        Args: {
+          p_username: string
+          p_email: string
+        }
+        Returns: string
+      }
       get_folders: {
         Args: {
           p_user_id: string
@@ -350,6 +361,17 @@ export type Database = {
           notebook_count: number
           created_at: string
           updated_at: string
+        }[]
+      }
+      search_by_name: {
+        Args: {
+          search_text: string
+          user_id: string
+        }
+        Returns: {
+          id: string
+          name: string
+          type: string
         }[]
       }
     }
@@ -442,4 +464,19 @@ export type Enums<
   ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
     ? PublicSchema["Enums"][PublicEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof PublicSchema["CompositeTypes"]
+    | { schema: keyof Database },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof Database
+  }
+    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
+    ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never

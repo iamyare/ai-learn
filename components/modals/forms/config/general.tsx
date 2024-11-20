@@ -1,12 +1,5 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Header } from '../header'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -22,36 +15,122 @@ import {
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
+import { useUserStore } from '@/stores/useUserStore'
+import { AvatarDropzone } from './components/AvatarDropzone'
+import { checkUsernameAvailability, updateUser } from '@/actions'
+import { useToast } from '@/components/ui/use-toast'
+import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase'
+import { LoaderCircleIcon, SaveIcon } from 'lucide-react'
+
+async function uploadAvatar(file: File, userId: string, username: string) {
+  const { data, error } = await supabase.storage
+    .from('avatar_users')
+    .upload(`${username}_${userId}_${Date.now()}`, file)
+
+  return { data, error }
+}
 
 const formSchema = z.object({
   username: z.string().min(2, {
-    message: 'Username must be at least 2 characters.'
+    message: 'El nombre de usuario debe tener al menos 2 caracteres.'
   }),
   email: z.string().email({
-    message: 'Please enter a valid email.'
+    message: 'Por favor, introduce un correo electrónico válido.'
   }),
-  language: z.string({
-    required_error: 'Please select a language.'
-  })
+  full_name: z.string().optional(),
+  avatar_url: z.string().optional()
 })
 
 export default function GeneralConfig() {
+  const user = useUserStore((state) => state.user)
+  const router = useRouter()
+  const [isLoading, setIsLoading] = useState(false)
+  const [avatarFile, setAvatarFile] = useState<File | null>(null)
+  const { toast } = useToast()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: '',
-      email: '',
-      language: ''
+      username: user?.username ?? '',
+      full_name: user?.full_name ?? '',
+      avatar_url: user?.avatar_url ?? '',
+      email: user?.email ?? ''
     }
   })
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // TODO: Implement the submit logic
-    console.log(values)
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      setIsLoading(true)
+
+      // Verificar si el nombre de usuario ya está en uso
+      // Si el nombre de usuario es el mismo que el actual, no se hace la verificación
+      if (values.username !== user?.username) {
+        const { data: usernameCheckResult } = await checkUsernameAvailability({
+          username: values.username
+        })
+
+        if (usernameCheckResult !== null) {
+          throw new Error('El nombre de usuario ya está en uso.')
+        }
+      }
+
+      let avatarUrl = values.avatar_url
+
+      if (avatarFile) {
+        const { data: avatarUpload, error } = await uploadAvatar(
+          avatarFile,
+          user?.id ?? '',
+          user?.username ?? ''
+        )
+
+        if (error) {
+          throw new Error('Error al subir la imagen de perfil')
+        }
+
+        const baseURL = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/`
+        avatarUrl = avatarUpload?.fullPath
+          ? `${baseURL}${avatarUpload.fullPath}`
+          : values.avatar_url
+      }
+
+      await updateUser({
+        userData: {
+          ...values,
+          avatar_url: avatarUrl
+        },
+        userId: user?.id ?? ''
+      })
+
+      useUserStore.setState({
+        setUser: (prevUser) => ({
+          ...prevUser,
+          ...values,
+          avatar_url: avatarUrl
+        })
+      })
+
+      toast({
+        title: 'Perfil actualizado',
+        description: 'Tu perfil ha sido actualizado correctamente'
+      })
+    } catch (error) {
+      toast({
+        title: 'Error al actualizar',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'Hubo un error al actualizar tu perfil',
+        variant: 'destructive'
+      })
+      console.error(error)
+    } finally {
+      setIsLoading(false)
+      router.refresh()
+    }
   }
 
   return (
-    <section className='flex flex-col gap-4 mb-52 md:mb-0'>
+    <section className='flex flex-col gap-4 mb-52 px-4 md:mb-0'>
       <Header.Container>
         <Header.Title>Datos Generales del Usuario</Header.Title>
         <Header.Description>
@@ -61,18 +140,42 @@ export default function GeneralConfig() {
       <Separator />
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
+          <div className=' flex gap-4 items-center'>
+            <AvatarDropzone
+              imagePreviewInit={user?.avatar_url ?? null}
+              onImageDrop={(file) => {
+                form.setValue('avatar_url', file.name, { shouldDirty: true })
+                setAvatarFile(file)
+              }}
+            />
+            <FormField
+              control={form.control}
+              name='username'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nombre de usuario</FormLabel>
+                  <FormControl>
+                    <Input placeholder='Tu nombre de usuario' {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    Este es tu nombre público que se mostrará en tu perfil.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
           <FormField
             control={form.control}
-            name='username'
+            name='full_name'
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nombre de usuario</FormLabel>
+                <FormLabel>Nombre completo</FormLabel>
                 <FormControl>
-                  <Input placeholder='Tu nombre de usuario' {...field} />
+                  <Input placeholder='Tu nombre completo' {...field} />
                 </FormControl>
-                <FormDescription>
-                  Este es tu nombre público que se mostrará en tu perfil.
-                </FormDescription>
+                <FormDescription>Este es tu nombre completo.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -84,7 +187,7 @@ export default function GeneralConfig() {
               <FormItem>
                 <FormLabel>Correo electrónico</FormLabel>
                 <FormControl>
-                  <Input placeholder='tu@ejemplo.com' {...field} />
+                  <Input placeholder='tu@ejemplo.com' disabled {...field} />
                 </FormControl>
                 <FormDescription>
                   Tu dirección de correo electrónico principal.
@@ -93,37 +196,21 @@ export default function GeneralConfig() {
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name='language'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Idioma predeterminado para notebooks</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder='Selecciona un idioma' />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value='es'>🇭🇳 Español</SelectItem>
-                    <SelectItem value='en'>🇺🇸 English</SelectItem>
-                    <SelectItem value='fr'>🇫🇷 Français</SelectItem>
-                    <SelectItem value='de'>🇩🇪 Deutsch</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormDescription>
-                  Este será el idioma predeterminado para tus nuevos notebooks.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <footer className=' flex justify-end'>
-            <Button type='submit'>Guardar cambios</Button>
+
+          <footer className='flex justify-end'>
+            <Button type='submit' disabled={!form.formState.isDirty}>
+              {isLoading ? (
+                <>
+                  <LoaderCircleIcon className='animate-spin size-4 mr-1' />
+                  Guardando...
+                </>
+              ) : (
+                <>
+                  <SaveIcon className='size-4 mr-1' />
+                  Guardar cambios
+                </>
+              )}
+            </Button>
           </footer>
         </form>
       </Form>

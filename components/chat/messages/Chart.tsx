@@ -51,8 +51,6 @@ const Chart: React.FC<ChartProps> = ({ chartData }) => {
   const [activeDataset, setActiveDataset] = useState(0)
   const [error, setError] = useState<string | null>(null)
 
-  console.log('chartData', chartData)
-
   const formatTickValue = (value: number | string): string => {
     if (typeof value === 'number') {
       const isNegative = value < 0

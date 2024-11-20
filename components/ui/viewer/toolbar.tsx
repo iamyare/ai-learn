@@ -16,8 +16,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 import {
   ChevronLeft,
   ChevronRight,
@@ -28,12 +28,11 @@ import {
   DownloadIcon,
   LucideIcon,
   ChevronUp,
-  Menu,
   MoreVertical
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { usePDFContext } from '@/context/useCurrentPageContext'
 import { useMediaQuery } from '@/components/ui/use-media-query'
+import { usePDFStore } from '@/stores/usePDFStore'
 
 interface ToolbarProps {
   toolbarSlot: ToolbarSlot
@@ -98,7 +97,7 @@ export default function Toolbar({ toolbarSlot, className }: ToolbarProps) {
   } = toolbarSlot
 
   const [isOpen, setIsOpen] = useState(true)
-  const { currentPage, setCurrentPage } = usePDFContext()
+  const { currentPage, setCurrentPage } = usePDFStore()
   const isDesktop = useMediaQuery('(min-width: 600px)')
 
   const zoomButtons = (
@@ -133,9 +132,7 @@ export default function Toolbar({ toolbarSlot, className }: ToolbarProps) {
         icon={Maximize}
         render={(renderButton) => (
           <EnterFullScreen>
-            {(props: RenderEnterFullScreenProps) =>
-              renderButton(props.onClick)
-            }
+            {(props: RenderEnterFullScreenProps) => renderButton(props.onClick)}
           </EnterFullScreen>
         )}
         isDesktop={isDesktop}
@@ -233,8 +230,8 @@ export default function Toolbar({ toolbarSlot, className }: ToolbarProps) {
         ) : (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreVertical className="size-4" />
+              <Button variant='ghost' size='icon'>
+                <MoreVertical className='size-4' />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>

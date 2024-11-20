@@ -4,10 +4,7 @@ import { Worker } from '@react-pdf-viewer/core'
 import { toolbarPlugin } from '@react-pdf-viewer/toolbar'
 import { dropPlugin } from '@react-pdf-viewer/drop'
 import { SpecialZoomLevel } from '@react-pdf-viewer/core'
-import {
-  HighlightArea,
-  highlightPlugin,
-} from '@react-pdf-viewer/highlight'
+import { highlightPlugin } from '@react-pdf-viewer/highlight'
 import '@react-pdf-viewer/core/lib/styles/index.css'
 import '@react-pdf-viewer/toolbar/lib/styles/index.css'
 import '@react-pdf-viewer/drop/lib/styles/index.css'
@@ -15,93 +12,109 @@ import '@react-pdf-viewer/drop/lib/styles/index.css'
 import usePDFViewer from './usePDFViewer'
 import Toolbar from './viewer/toolbar'
 import LoadingComponent from './loading-component'
-import { usePDFContext } from '@/context/useCurrentPageContext'
-import { usePDFText } from '@/context/usePDFTextExtractionContext'
+import { usePDFTextStore } from '@/stores/usePDFTextStore'
+import { usePDFStore } from '@/stores/usePDFStore'
+import { useExportStore } from '@/stores/useExportStore'
 
-import {renderHighlightContent, renderHighlightTarget} from './viewer/PDFHighlighter'
+import {
+  renderHighlightContent,
+  renderHighlightTarget
+} from './viewer/PDFHighlighter'
 
 interface PDFViewerProps {
   initialFileUrl: string
 }
 
-
 const PDFViewer: React.FC<PDFViewerProps> = ({ initialFileUrl }) => {
-  const { fileUrl, setFileUrl, setCurrentPage } = usePDFContext()
+  // Usar el store
+  const { extractTextFromPDF } = usePDFTextStore()
+  const { fileUrl, setFileUrl, setCurrentPage } = usePDFStore()
+  const { text } = usePDFTextStore()
+  const { setPdfText, setPdfUrl } = useExportStore()
+
+  useEffect(() => {
+    setPdfText(text)
+    setPdfUrl(initialFileUrl)
+  }, [text, initialFileUrl, setPdfText, setPdfUrl])
 
   const findTextNode = (node: Node): Node | null => {
     if (node.nodeType === Node.TEXT_NODE) {
-      return node;
+      return node
     }
     for (let i = 0; i < node.childNodes.length; i++) {
-      const found = findTextNode(node.childNodes[i]);
+      const found = findTextNode(node.childNodes[i])
       if (found) {
-        return found;
+        return found
       }
     }
-    return null;
-  };
-  
-  const normalizeSelection = useCallback((selection: Selection) => {
-    if (!selection.rangeCount) return null;
+    return null
+  }
 
-    const range = selection.getRangeAt(0);
-    let { startContainer, endContainer, startOffset, endOffset } = range;
+  const normalizeSelection = useCallback((selection: Selection) => {
+    if (!selection.rangeCount) return null
+
+    const range = selection.getRangeAt(0)
+    let { startContainer, endContainer, startOffset, endOffset } = range
 
     // Find the nearest text nodes
-    const startTextNode = findTextNode(startContainer) || startContainer;
-    const endTextNode = findTextNode(endContainer) || endContainer;
+    const startTextNode = findTextNode(startContainer) || startContainer
+    const endTextNode = findTextNode(endContainer) || endContainer
 
-    if (!startTextNode || !endTextNode) return null;
+    if (!startTextNode || !endTextNode) return null
 
     // Adjust offsets if we've changed nodes
     if (startTextNode !== startContainer) {
-      startOffset = 0;
+      startOffset = 0
     }
     if (endTextNode !== endContainer) {
-      endOffset = endTextNode.textContent?.length || 0;
+      endOffset = endTextNode.textContent?.length || 0
     }
 
     // Trim leading and trailing whitespace
-    const startText = startTextNode.textContent || '';
-    const endText = endTextNode.textContent || '';
+    const startText = startTextNode.textContent || ''
+    const endText = endTextNode.textContent || ''
 
-    while (startOffset < startText.length && /\s/.test(startText[startOffset])) {
-      startOffset++;
+    while (
+      startOffset < startText.length &&
+      /\s/.test(startText[startOffset])
+    ) {
+      startOffset++
     }
     while (endOffset > 0 && /\s/.test(endText[endOffset - 1])) {
-      endOffset--;
+      endOffset--
     }
 
     // Create a new range with the adjusted positions
-    const newRange = document.createRange();
+    const newRange = document.createRange()
     try {
-      newRange.setStart(startTextNode, startOffset);
-      newRange.setEnd(endTextNode, endOffset);
+      newRange.setStart(startTextNode, startOffset)
+      newRange.setEnd(endTextNode, endOffset)
     } catch (error) {
-      console.error('Error setting range:', error);
-      return null;
+      console.error('Error setting range:', error)
+      return null
     }
 
-    return newRange;
-  }, []);
+    return newRange
+  }, [])
 
-
-  const handleTextLayerRendered = useCallback((e: CustomEvent) => {
-    const textLayerElement = e.detail.textLayerElement as HTMLElement;
-    textLayerElement.addEventListener('mouseup', () => {
-      const selection = window.getSelection();
-      if (selection) {
-        const normalizedRange = normalizeSelection(selection);
-        if (normalizedRange) {
-          selection.removeAllRanges();
-          selection.addRange(normalizedRange);
+  const handleTextLayerRendered = useCallback(
+    (e: CustomEvent) => {
+      const textLayerElement = e.detail.textLayerElement as HTMLElement
+      textLayerElement.addEventListener('mouseup', () => {
+        const selection = window.getSelection()
+        if (selection) {
+          const normalizedRange = normalizeSelection(selection)
+          if (normalizedRange) {
+            selection.removeAllRanges()
+            selection.addRange(normalizedRange)
+          }
         }
-      }
-    });
-  }, [normalizeSelection]);
+      })
+    },
+    [normalizeSelection]
+  )
 
-
-  const { isPending: isLoading } = usePDFText()
+  const { isPending: isLoading } = usePDFTextStore()
 
   const {
     workerSrc,
@@ -118,8 +131,6 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ initialFileUrl }) => {
     renderHighlightTarget
   })
 
-
-
   const plugins = [
     pageNavigationPluginInstance,
     toolbarPluginInstance,
@@ -128,17 +139,24 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ initialFileUrl }) => {
   ]
 
   useEffect(() => {
-    if (!fileUrl && initialFileUrl) {
+    if (initialFileUrl) {
       setFileUrl(initialFileUrl)
+      extractTextFromPDF(initialFileUrl)
     }
-  }, [initialFileUrl, fileUrl, setFileUrl])
+  }, [initialFileUrl, setFileUrl, extractTextFromPDF])
 
   useEffect(() => {
-    document.addEventListener('textlayerrendered', handleTextLayerRendered as EventListener);
+    document.addEventListener(
+      'textlayerrendered',
+      handleTextLayerRendered as EventListener
+    )
     return () => {
-      document.removeEventListener('textlayerrendered', handleTextLayerRendered as EventListener);
-    };
-  }, [handleTextLayerRendered]);
+      document.removeEventListener(
+        'textlayerrendered',
+        handleTextLayerRendered as EventListener
+      )
+    }
+  }, [handleTextLayerRendered])
 
   const handlePageChange = (e: { currentPage: number }) => {
     setCurrentPage(e.currentPage + 1)

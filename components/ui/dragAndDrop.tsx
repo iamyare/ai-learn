@@ -16,7 +16,6 @@ export default function DragAndDrop() {
 
   const onDrop = async (acceptedFiles: File[]) => {
     // Verifica que se haya seleccionado al menos un archivo
-    console.log('Archivo seleccionado: ', acceptedFiles[0])
     startTransition(async () => {
       const { data, error } = await supabase.storage
         .from('pdf_documents')
@@ -26,8 +25,6 @@ export default function DragAndDrop() {
         console.log('Error al subir el archivo: ', error)
         return
       }
-
-      console.log('Archivo subido correctamente: ', data)
     })
   }
 

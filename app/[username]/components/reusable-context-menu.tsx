@@ -11,7 +11,7 @@ import { deleteFolder, deleteNotebook } from '@/actions'
 import { cn } from '@/lib/utils'
 import { toast } from '@/components/ui/use-toast'
 import { usePathname, useRouter } from 'next/navigation'
-import { useFolderNavigation } from '@/context/useFolderNavigationContext'
+import { useFolderNavigationStore } from '@/stores/useFolderNavigationStore'
 import { Info, Pencil, Trash } from 'lucide-react'
 
 interface ContextMenuProps {
@@ -24,7 +24,7 @@ const ReusableContextMenu: React.FC<ContextMenuProps> = ({
   item
 }) => {
   const [isPending, startTransition] = useTransition()
-  const { reload, currentPath, navigateToFolder } = useFolderNavigation()
+  const { currentPath, navigateToFolder } = useFolderNavigationStore()
 
   const handleEdit = useCallback(() => {
     console.log(`Editing ${item.item_type}: ${item.item_name}`)
@@ -87,7 +87,10 @@ const ReusableContextMenu: React.FC<ContextMenuProps> = ({
           <Pencil className='mr-1 size-3.5' />
           Editar {item.item_type === 'folder' ? 'carpeta' : 'notebook'}
         </ContextMenuItem>
-        <ContextMenuItem onClick={handleDelete} className=' hover:!text-destructive hover:!bg-destructive/10'>
+        <ContextMenuItem
+          onClick={handleDelete}
+          className=' hover:!text-destructive hover:!bg-destructive/10'
+        >
           <Trash className='mr-1 size-3.5' />
           Eliminar {item.item_type === 'folder' ? 'carpeta' : 'notebook'}
         </ContextMenuItem>

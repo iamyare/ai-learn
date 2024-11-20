@@ -15,6 +15,15 @@ export async function logout() {
   return await supabase.auth.signOut()
 }
 
+export async function searchFoldersAndNotebooks({name, userId}: {name: string, userId: string}) {
+  const { data: searchResults, error: errorSearchResults } = await supabase.rpc(
+    'search_by_name',
+    { search_text: name, user_id: userId }
+  )
+
+  return { searchResults, errorSearchResults }
+}
+
 //Obtener usuario y user
 export async function getUserInfo() {
   const { data, error } = await getUser()
@@ -31,6 +40,27 @@ export async function getUserInfo() {
     .from('users')
     .select('*')
     .eq('id', data.user.id)
+    .single()
+
+  return { user, errorUser }
+}
+
+//obtener user por username
+export async function checkUsernameAvailability({ username }: { username: string }) {
+  const { data } = await supabase
+    .from('users')
+    .select('username')
+    .ilike('username', username) 
+  return { data }
+}
+
+//Actualizar usuario
+export async function updateUser({ userData, userId }: { userData: UserUpdate, userId: string }) {
+  const { data: user, error: errorUser } = await supabase
+    .from('users')
+    .update({ ...userData })
+    .eq('id', userId)
+    .select('*')
     .single()
 
   return { user, errorUser }
@@ -271,6 +301,18 @@ export async function createChatNotebook({ notebookId }: { notebookId: string })
     .single()
 
   return { chatInsert, errorChatInsert }
+}
+
+//update notebook
+export async function updateNotebook({ notebookData, notebookId }: { notebookData: NotebookUpdate, notebookId: string }) {
+  const { data: notebook, error: errorNotebook } = await supabase
+    .from('notebooks')
+    .update({ ...notebookData })
+    .eq('notebook_id', notebookId)
+    .select('*')
+    .single()
+
+  return { notebook, errorNotebook }
 }
 
 //Update chat notebook

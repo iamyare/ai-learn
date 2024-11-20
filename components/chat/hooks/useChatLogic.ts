@@ -1,15 +1,15 @@
 import { useState, useEffect, useCallback, useTransition } from 'react'
 import { toast } from '@/components/ui/use-toast'
-import { useApiKey } from '@/context/useAPIKeysContext'
-import { usePDFText } from '@/context/usePDFTextExtractionContext'
-import { usePDFContext } from '@/context/useCurrentPageContext'
-import { useSpeechRecognitionContext } from '@/context/useSpeechRecognitionContext'
-import { useHighlighter, HighlighterAction } from '@/context/useHighlighterContext'
+import { useApiKey } from '@/stores/useApiKeysStore'
+import { useSpeechRecognitionStore } from '@/stores/useSpeechRecognitionStore'
+import { HighlighterAction, useHighlighterStore } from '@/stores/useHighlighterStore'
 import { getChat, createChatNotebook, updateChatNotebook } from '@/actions'
 import { generateImportantEvents } from '@/lib/ai/ai-events'
 import { generateMindMap } from '@/lib/ai/ai-map-mental'
 import { generateChartFromHighlight, explainText, translateText } from '@/lib/ai/ai-highlighter'
-
+import { usePDFStore } from '@/stores/usePDFStore'
+import { usePDFTextStore } from '@/stores/usePDFTextStore'
+import { useExportStore } from '@/stores/useExportStore'
 
 
 
@@ -22,10 +22,11 @@ export function useChatLogic(notebookId: string) {
   const [isMindMapPending, startMindMapTransition] = useTransition()
 
   const geminiKey = useApiKey('gemini_key')
-  const { text, extractTextFromPDF } = usePDFText()
-  const { fileUrl } = usePDFContext()
-  const { history } = useSpeechRecognitionContext()
-  const { setActionHandler } = useHighlighter()
+  const { text, extractTextFromPDF } = usePDFTextStore()
+  const fileUrl = usePDFStore((state) => state.fileUrl)
+  const { history } = useSpeechRecognitionStore()
+  const { setActionHandler } = useHighlighterStore()
+  const setExportMessages = useExportStore(state => state.setMessages)
 
 
 
@@ -98,7 +99,7 @@ export function useChatLogic(notebookId: string) {
   const updateChatInDatabase = useCallback(async (updatedMessages: ChatMessageType[]) => {
 
     try {
-      const { errorChatUpdate } = await updateChatNotebook({
+      const { chatUpdate,errorChatUpdate } = await updateChatNotebook({
         content: JSON.stringify(updatedMessages),
         notebookId
       })
@@ -166,7 +167,6 @@ export function useChatLogic(notebookId: string) {
           apiKey: apiKeyGemini ?? ''
         })
 
-        console.log('mindMap:', mindMap)
 
         if (mindMap) {
           const mindMapMessage: MindMapMessageType = {
@@ -216,7 +216,6 @@ export function useChatLogic(notebookId: string) {
               });
               break;
             case 'translate':
-              console.log('Translating text:', options?.targetLanguage);
               result = await translateText({ 
                 highlightedText: text, 
                 apiKey: apiKeyGemini,
@@ -262,6 +261,10 @@ export function useChatLogic(notebookId: string) {
       setActionHandler(() => {}); // Clean up by setting a no-op function
     };
   }, [apiKeyGemini, setActionHandler, updateChatInDatabase]);
+
+  useEffect(() => {
+    setExportMessages(messages)
+  }, [messages, setExportMessages])
 
   return {
     messages,

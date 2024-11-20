@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
-import { useFolderNavigation } from '@/context/useFolderNavigationContext'
-import { useView } from '@/context/useViewContext'
+import { useFolderNavigationStore } from '@/stores/useFolderNavigationStore'
+import { useViewStore } from '@/stores/useViewStore'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import GridView from './views/grid-view'
 import ListView from './views/list-view'
@@ -63,12 +63,12 @@ function slideInOut(direction: 'forward' | 'backward') {
 }
 
 const ItemList: React.FC<ItemListProps> = ({ items, isLoading }) => {
-  const { currentPath, navigateToFolder } = useFolderNavigation()
-  const { currentView, setView } = useView()
+  const { currentPath, navigateToFolder } = useFolderNavigationStore()
+  const { currentView, setView } = useViewStore((state) => state)
   const pathname = usePathname()
   const router = useRouter()
-  const routerTransition = useTransitionRouter()
   const params = useSearchParams()
+  const routerTransition = useTransitionRouter()
 
   useEffect(() => {
     //cargar la lista de items por los parametros de la URL

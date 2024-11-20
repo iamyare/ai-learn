@@ -1,7 +1,5 @@
 import { getApiKeys, getUserInfo } from '@/actions'
-import { UserProvider } from '@/context/useUserContext'
 import UsernameLayoutClient from './components/layout-client'
-import { ApiKeysProvider } from '@/context/useAPIKeysContext'
 import { cookies } from 'next/headers'
 import ErrorPage from '@/components/error-page'
 import { redirect } from 'next/navigation'
@@ -16,12 +14,10 @@ export default async function UsernameLayout({
   const { user } = await getUserInfo()
 
   if (!user) {
-    // Redirect to login page
     return <ErrorPage title='Error' message='No se ha encontrado el usuario' />
   }
 
   if (user.username !== params.username) {
-    // Redirect to correct username page
     return redirect(`/${user.username}`)
   }
 
@@ -34,15 +30,12 @@ export default async function UsernameLayout({
       : true
 
   return (
-    <UserProvider user={user}>
-      <ApiKeysProvider
-        initialApiKeys={apiKeys ?? undefined}
-        initialUserId={user.id}
-      >
-        <UsernameLayoutClient defaultOpen={defaultOpen} userId={user.id}>
-          {children}
-        </UsernameLayoutClient>
-      </ApiKeysProvider>
-    </UserProvider>
+    <UsernameLayoutClient
+      apiKeys={apiKeys}
+      defaultOpen={defaultOpen}
+      user={user}
+    >
+      {children}
+    </UsernameLayoutClient>
   )
 }

@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 'use client'
 import React, { useState, useEffect, useCallback } from 'react'
-import { Home, Search, ChevronLeft } from 'lucide-react'
+import { Home, Search, ChevronLeft, StarIcon } from 'lucide-react'
 import {
   Sidebar as SidebarComponent,
   SidebarContent,
@@ -17,25 +17,31 @@ import { Tree, Folder, File, TreeViewElement } from '@/components/file-tree'
 import { usePathname } from 'next/navigation'
 import { ScrollArea, ScrollBar } from './ui/scroll-area'
 import Link from 'next/link'
+import { NavMain } from './nav-main'
 
 interface SidebarProps {
   children: React.ReactNode
   userId: string
 }
 
-// const mainNavItems = [
-//   {
-//     title: 'Inicio',
-//     url: '/',
-//     icon: Home,
-//     isActive: true
-//   },
-//   {
-//     title: 'Buscar',
-//     url: '/search',
-//     icon: Search
-//   }
-// ]
+const mainNavItems = [
+  {
+    title: 'Inicio',
+    url: '/',
+    icon: Home,
+    isActive: true
+  },
+  {
+    title: 'Favoritos',
+    url: '?favorites',
+    icon: StarIcon
+  }
+  // {
+  //   title: 'Buscar',
+  //   url: '/search',
+  //   icon: Search
+  // }
+]
 
 export function Sidebar({ children, userId }: SidebarProps) {
   const [rootItems, setRootItems] = useState<TreeViewElement[]>([])
@@ -101,7 +107,7 @@ export function Sidebar({ children, userId }: SidebarProps) {
                 Stick Note
               </span>
             </Link>
-            {/* <NavMain items={mainNavItems} /> */}
+            <NavMain items={mainNavItems} />
           </SidebarHeader>
           <SidebarContent>
             <Tree

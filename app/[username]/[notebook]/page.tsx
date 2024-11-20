@@ -1,23 +1,23 @@
-import { getNotebookInfo } from "@/actions"
-import RenderView from "./render"
+import { getNotebookInfo } from '@/actions'
+import RenderView from './render'
 
-
-export default async function Home({params}: {params: {notebook: string}}) {
+export default async function Home({
+  params
+}: {
+  params: { notebook: string }
+}) {
   // const fileUrl = '/somefile.pdf'
-  const {notebookInfo, errorNotebookInfo} = await getNotebookInfo({notebookId: params.notebook})
-
-
+  const { notebookInfo, errorNotebookInfo } = await getNotebookInfo({
+    notebookId: params.notebook
+  })
 
   if (errorNotebookInfo) {
     return <div>Error</div>
   }
 
-  if (!notebookInfo){
+  if (!notebookInfo) {
     return <div>No se eencontro nada</div>
   }
 
-
-  return (
-    <RenderView notebookInfo={notebookInfo} />
-  )
+  return <RenderView initialNotebook={notebookInfo} />
 }
