@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/sidebar'
 import Link from 'next/link'
 import { useUserStore } from '@/stores/useUserStore'
+import SearchDialog from './search-dialog'
 
 export function NavMain({
   items
@@ -40,6 +41,7 @@ export function NavMain({
           <span>Buscar</span>
         </SidebarMenuButton>
       </SidebarMenuItem>
+      <SearchDialog />
     </SidebarMenu>
   )
 }

@@ -360,6 +360,16 @@ export type Database = {
           updated_at: string
         }[]
       }
+      search_by_name: {
+        Args: {
+          search_text: string
+        }
+        Returns: {
+          id: string
+          name: string
+          type: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
