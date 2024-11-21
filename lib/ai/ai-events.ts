@@ -94,7 +94,6 @@ Si no hay eventos, genera uno con título "No hay eventos importantes".
       schema: schema
     })
 
-    console.log('Important events:', object.importantEvents)
     return { object: object.importantEvents }
   } catch (error) {
     return { object: [] }
