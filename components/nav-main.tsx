@@ -21,6 +21,7 @@ export function NavMain({
     isActive?: boolean
   }[]
 }) {
+  const [open, setOpen] = useState(false)
   const { user } = useUserStore()
   const [commandKey, setCommandKey] = useState('Ctrl')
 
@@ -47,7 +48,13 @@ export function NavMain({
         </SidebarMenuItem>
       ))}
       <SidebarMenuItem>
-        <SidebarMenuButton className='flex justify-between'>
+        <SidebarMenuButton
+          onClick={() => {
+            setOpen(true)
+            console.log('open search dialog')
+          }}
+          className='flex justify-between'
+        >
           <div className='flex items-center gap-2'>
             <Search className='size-4' />
             <span>Buscar</span>
@@ -57,7 +64,7 @@ export function NavMain({
           </kbd>
         </SidebarMenuButton>
       </SidebarMenuItem>
-      <SearchDialog />
+      <SearchDialog open={open} setOpen={setOpen} />
     </SidebarMenu>
   )
 }
