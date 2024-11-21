@@ -3,6 +3,7 @@ import UsernameLayoutClient from './components/layout-client'
 import { cookies } from 'next/headers'
 import ErrorPage from '@/components/error-page'
 import { redirect } from 'next/navigation'
+import QueryProvider from './components/query-provider'
 
 export default async function UsernameLayout({
   children,
@@ -30,12 +31,14 @@ export default async function UsernameLayout({
       : true
 
   return (
-    <UsernameLayoutClient
-      apiKeys={apiKeys}
-      defaultOpen={defaultOpen}
-      user={user}
-    >
-      {children}
-    </UsernameLayoutClient>
+    <QueryProvider>
+      <UsernameLayoutClient
+        apiKeys={apiKeys}
+        defaultOpen={defaultOpen}
+        user={user}
+      >
+        {children}
+      </UsernameLayoutClient>
+    </QueryProvider>
   )
 }
