@@ -363,6 +363,18 @@ export type Database = {
           updated_at: string
         }[]
       }
+      getrecentitems: {
+        Args: {
+          p_user_id: string
+          p_limit?: number
+        }
+        Returns: {
+          id: string
+          name: string
+          type: string
+          path: string
+        }[]
+      }
       search_by_name: {
         Args: {
           search_text: string
@@ -372,6 +384,7 @@ export type Database = {
           id: string
           name: string
           type: string
+          path: string
         }[]
       }
     }

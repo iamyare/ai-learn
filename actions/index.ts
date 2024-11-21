@@ -15,6 +15,15 @@ export async function logout() {
   return await supabase.auth.signOut()
 }
 
+export async function getRecentItems({ userId }: { userId: string }) {
+  const { data: recentItems, error: errorRecentItems } = await supabase.rpc(
+    'getrecentitems',
+    { p_user_id: userId, p_limit: 5 }
+  )
+
+  return { recentItems, errorRecentItems }
+}
+
 export async function searchFoldersAndNotebooks({name, userId}: {name: string, userId: string}) {
   const { data: searchResults, error: errorSearchResults } = await supabase.rpc(
     'search_by_name',

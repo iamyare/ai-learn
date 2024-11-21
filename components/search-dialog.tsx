@@ -8,16 +8,20 @@ import {
   CommandItem,
   CommandList
 } from '@/components/ui/command'
-import { useEffect, useState } from 'react'
-import { searchFoldersAndNotebooks } from '@/actions'
+import { useEffect, useState, useCallback } from 'react'
+import { searchFoldersAndNotebooks, getRecentItems } from '@/actions'
 import { useUserStore } from '@/stores/useUserStore'
 import { useToast } from './ui/use-toast'
 import { cn } from '@/lib/utils'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
-export default function SearchDialog() {
+interface SearchDialogInterface {
+  open: boolean
+  setOpen: (open: boolean) => void
+}
+
+export default function SearchDialog({ open, setOpen }: SearchDialogInterface) {
   const { user } = useUserStore()
-  const [open, setOpen] = useState(false)
   const [searchValue, setSearchValue] = useState('')
   const [results, setResults] = useState<SearchByName[]>([])
   const [isLoading, setLoading] = useState(false)
@@ -31,30 +35,55 @@ export default function SearchDialog() {
     const down = (e: KeyboardEvent) => {
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault()
-        setOpen((open) => !open)
+        setOpen(!open)
       }
     }
 
     document.addEventListener('keydown', down)
     return () => document.removeEventListener('keydown', down)
-  }, [])
+  }, [setOpen, open])
 
-  const handleNavigate = (result: SearchByName) => {
-    if (result.type === 'folder') {
-      const newParams = new URLSearchParams(params)
-      newParams.set('folder_id', result.id)
-      newParams.set('folder_name', result.name)
-      const newPath = `${pathname}?${newParams.toString()}`
-      router.replace(newPath)
-    } else {
-      router.push(`/${user?.username}/${result.id}`)
+  const loadRecentItems = useCallback(async () => {
+    try {
+      setLoading(true)
+      const { recentItems, errorRecentItems } = await getRecentItems({
+        userId: user?.id || ''
+      })
+
+      if (errorRecentItems) {
+        toast({
+          title: 'Error',
+          description: 'Error al cargar items recientes',
+          variant: 'destructive'
+        })
+        setResults([])
+        return
+      }
+
+      setResults(recentItems || [])
+    } catch (err) {
+      toast({
+        title: 'Error',
+        description: 'Error al cargar items recientes',
+        variant: 'destructive'
+      })
+      setResults([])
+    } finally {
+      setLoading(false)
     }
-    setOpen(false)
-  }
+  }, [user?.id, toast])
+
+  useEffect(() => {
+    if (open && user?.id) {
+      loadRecentItems()
+    }
+  }, [open, user?.id, loadRecentItems])
 
   const debouncedSearch = useDebouncedCallback(async (value: string) => {
     if (!value.trim()) {
-      setResults([])
+      if (results.length === 0) {
+        await loadRecentItems()
+      }
       return
     }
 
@@ -91,8 +120,23 @@ export default function SearchDialog() {
 
   const handleSearch = (value: string) => {
     setSearchValue(value)
-    setLoading(true) // Mostrar loading inmediatamente
+    if (value.trim()) {
+      setLoading(true)
+    }
     debouncedSearch(value)
+  }
+
+  const handleNavigate = (result: SearchByName) => {
+    if (result.type === 'folder') {
+      const newParams = new URLSearchParams(params)
+      newParams.set('folder_id', result.id)
+      newParams.set('folder_name', result.name)
+      const newPath = `${pathname}?${newParams.toString()}`
+      router.replace(newPath)
+    } else {
+      router.push(`/${user?.username}/${result.id}`)
+    }
+    setOpen(false)
   }
 
   if (!user) return null
@@ -115,7 +159,7 @@ export default function SearchDialog() {
         />
       </div>
       <CommandList>
-        {isLoading && (
+        {isLoading && searchValue && (
           <CommandGroup heading='Buscando...'>
             {Array.from({ length: 3 }).map((_, index) => (
               <CommandItem
@@ -134,15 +178,24 @@ export default function SearchDialog() {
         )}
 
         {!isLoading && results.length > 0 && (
-          <CommandGroup heading='Resultados'>
+          <CommandGroup heading={searchValue ? 'Resultados' : 'Recientes'}>
             {results.map((result, index) => (
-              <CommandItem key={index} onSelect={() => handleNavigate(result)}>
-                {result.type === 'notebook' ? (
-                  <NotebookPen className='mr-2 h-4 w-4' />
-                ) : (
-                  <Folder className='mr-2 h-4 w-4' />
-                )}
-                <span>{result.name}</span>
+              <CommandItem
+                className='justify-between'
+                key={index}
+                onSelect={() => handleNavigate(result)}
+              >
+                <div className='flex items-center space-x-2'>
+                  {result.type === 'notebook' ? (
+                    <NotebookPen className='mr-2 h-4 w-4' />
+                  ) : (
+                    <Folder className='mr-2 h-4 w-4' />
+                  )}
+                  <span>{result.name}</span>
+                </div>
+                <span className='text-xs text-muted-foreground'>
+                  {result.path}
+                </span>
               </CommandItem>
             ))}
           </CommandGroup>
