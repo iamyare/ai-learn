@@ -26,7 +26,6 @@ interface PDFViewerProps {
 }
 
 const PDFViewer: React.FC<PDFViewerProps> = ({ initialFileUrl }) => {
-  // Usar el store
   const { extractTextFromPDF } = usePDFTextStore()
   const { fileUrl, setFileUrl, setCurrentPage } = usePDFStore()
   const { text } = usePDFTextStore()
@@ -56,13 +55,11 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ initialFileUrl }) => {
     const range = selection.getRangeAt(0)
     let { startContainer, endContainer, startOffset, endOffset } = range
 
-    // Find the nearest text nodes
     const startTextNode = findTextNode(startContainer) || startContainer
     const endTextNode = findTextNode(endContainer) || endContainer
 
     if (!startTextNode || !endTextNode) return null
 
-    // Adjust offsets if we've changed nodes
     if (startTextNode !== startContainer) {
       startOffset = 0
     }
@@ -70,7 +67,6 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ initialFileUrl }) => {
       endOffset = endTextNode.textContent?.length || 0
     }
 
-    // Trim leading and trailing whitespace
     const startText = startTextNode.textContent || ''
     const endText = endTextNode.textContent || ''
 
@@ -84,7 +80,6 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ initialFileUrl }) => {
       endOffset--
     }
 
-    // Create a new range with the adjusted positions
     const newRange = document.createRange()
     try {
       newRange.setStart(startTextNode, startOffset)

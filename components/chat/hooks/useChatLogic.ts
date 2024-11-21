@@ -124,11 +124,10 @@ export function useChatLogic(notebookId: string) {
 
   const handleImportantEvents = useCallback(() => {
     startImportantEventsTransition(async () => {
-      const transcript = history.map((entry) => entry.text).join(' ')
       try {
         const { object } = await generateImportantEvents({
           prompt: 'Lista de eventos importantes para la próxima semana',
-          transcription: transcript,
+          transcription: history,
           textPdf: text,
           apiKey: apiKeyGemini ?? ''
         })

@@ -6,6 +6,16 @@ interface EventListProps {
   events: ImportantEventType[]
 }
 
+const formatWithDynamicUTC = (dateString: string) => {
+  const date = new Date(dateString)
+  // Obtenemos el offset dinámicamente
+  const localOffset = date.getTimezoneOffset()
+  // Ajustamos la fecha a UTC
+  const utcDate = new Date(date.getTime() + localOffset * 60 * 1000)
+  console.log('UTC date:', utcDate)
+  return format(utcDate, 'DD/MM/YY HH:mm A')
+}
+
 const EventList: React.FC<EventListProps> = ({ events }) => (
   <div className='flex flex-col gap-2'>
     <h2 className='text-xl font-semibold'>Eventos importantes</h2>
@@ -22,8 +32,8 @@ const EventList: React.FC<EventListProps> = ({ events }) => (
               <Calendar className='size-3 mr-1' />
               {(() => {
                 try {
-                  const date = new Date(event.date)
-                  return format(date, 'DD/MM/YY HH:mm A')
+                  const date = formatWithDynamicUTC(event.date)
+                  return date
                 } catch (error) {
                   return event.date.toString()
                 }
