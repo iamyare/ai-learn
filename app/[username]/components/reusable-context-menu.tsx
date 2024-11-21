@@ -7,12 +7,13 @@ import {
   ContextMenuTrigger
 } from '@/components/ui/context-menu'
 import { Separator } from '@/components/ui/separator'
-import { deleteFolder, deleteNotebook } from '@/actions'
 import { cn } from '@/lib/utils'
 import { toast } from '@/components/ui/use-toast'
 import { usePathname, useRouter } from 'next/navigation'
 import { useFolderNavigationStore } from '@/stores/useFolderNavigationStore'
 import { Info, Pencil, Trash } from 'lucide-react'
+import { useFolderMutations } from '../hooks/useFolderMutations'
+import { useNotebookMutations } from '../hooks/useNotebookMutations'
 
 interface ContextMenuProps {
   children: React.ReactNode
@@ -23,6 +24,8 @@ const ReusableContextMenu: React.FC<ContextMenuProps> = ({
   children,
   item
 }) => {
+  const { deleteFolderMutation } = useFolderMutations()
+  const { deleteNotebookMutation } = useNotebookMutations()
   const [isPending, startTransition] = useTransition()
   const { currentPath, navigateToFolder } = useFolderNavigationStore()
 
@@ -32,37 +35,11 @@ const ReusableContextMenu: React.FC<ContextMenuProps> = ({
   }, [item])
 
   const handleDelete = () => {
-    console.log(`Deleting ${item.item_type}: ${item.item_name}`)
-    startTransition(async () => {
-      const { error } =
-        item.item_type === 'folder'
-          ? await deleteFolder({ folderId: item.item_id })
-          : await deleteNotebook({ notebookId: item.item_id })
-
-      if (error) {
-        toast({
-          title: 'Error',
-          description: `No se pudo eliminar ${
-            item.item_type === 'folder' ? 'la carpeta' : 'el notebook'
-          }`,
-          variant: 'destructive'
-        })
-        return
-      }
-
-      toast({
-        title: 'Éxito',
-        description: `${
-          item.item_type === 'folder' ? 'Carpeta' : 'Notebook'
-        } eliminado correctamente`,
-        variant: 'default'
-      })
-
-      navigateToFolder(
-        currentPath[currentPath.length - 1].id,
-        currentPath[currentPath.length - 1].name
-      )
-    })
+    if (item.item_type === 'folder') {
+      deleteFolderMutation.mutate(item.item_id)
+    } else {
+      deleteNotebookMutation.mutate(item.item_id)
+    }
   }
 
   const handleViewProperties = useCallback(() => {

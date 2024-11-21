@@ -8,35 +8,28 @@ import { NavActions } from './nav-actions'
 import { useRouter } from 'next/navigation'
 import { format } from '@formkit/tempo'
 import { cn } from '@/lib/utils'
-import { updateNotebook } from '@/actions'
+import { useNotebookMutations } from '../../hooks/useNotebookMutations'
 import { useNotebookStore } from '@/stores/useNotebookStore'
 
 export default function HeaderNotebook({ user }: { user: User }) {
   const router = useRouter()
   const { notebookInfo, setNotebookInfo } = useNotebookStore()
+  const { updateNotebookMutation } = useNotebookMutations()
 
   async function handleFavorite() {
-    try {
-      const { notebook, errorNotebook } = await updateNotebook({
+    updateNotebookMutation.mutate(
+      {
         notebookData: { is_favorite: !notebookInfo.is_favorite },
         notebookId: notebookInfo.notebook_id
-      })
-
-      if (errorNotebook) {
-        console.error('Error updating chat notebook', errorNotebook)
-        return false
+      },
+      {
+        onSuccess: (notebook) => {
+          if (notebook) {
+            setNotebookInfo(notebook)
+          }
+        }
       }
-
-      if (!notebook) {
-        console.error('No notebook returned')
-        return false
-      }
-      setNotebookInfo(notebook)
-      return true
-    } catch (error) {
-      console.error('Error in handleFavorite:', error)
-      return false
-    }
+    )
   }
 
   return (
