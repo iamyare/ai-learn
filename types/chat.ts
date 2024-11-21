@@ -3,7 +3,7 @@ interface ImportantEventType {
   title: string;
   description: string;
   date: string;
-  priority: string;
+  priority: 'Alta' | 'Media' | 'Baja';
 }
 
 // Interfaz base para todos los tipos de mensajes
