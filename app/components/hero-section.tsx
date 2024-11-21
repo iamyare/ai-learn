@@ -4,28 +4,13 @@
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { InView } from 'react-intersection-observer'
 import Link from 'next/link'
-import { useEffect } from 'react'
+import { useCallback } from 'react'
 import { BackgroundLines } from '@/components/ui/background-lines'
 import { RainbowButton } from '@/components/ui/RainbowButton'
 import { RocketIcon } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { GoogleButtonStyle } from '@/components/oauth-buttons'
 
 export default function HeroSection({ user }: { user: User | null }) {
-  const router = useRouter()
-  const handleLogin = () => {
-    router.push('/auth/login')
-  }
-  useEffect(() => {
-    const images = Array.from({ length: 5 }).map(
-      (_, i) => `/phone/device_${i + 1}.png`
-    )
-    images.forEach((src) => {
-      const img = new Image()
-      img.src = src
-    })
-  }, [])
-
   const logoAnimation = {
     initial: {
       scale: 4,
@@ -78,7 +63,7 @@ export default function HeroSection({ user }: { user: User | null }) {
     }
   }
 
-  const phoneAnimation = (index: number) => {
+  const phoneAnimation = useCallback((index: number) => {
     let initialY = 0
     let initialX = 0
 
@@ -107,7 +92,7 @@ export default function HeroSection({ user }: { user: User | null }) {
         }
       }
     }
-  }
+  }, [])
 
   const { scrollYProgress } = useScroll()
 
@@ -141,7 +126,7 @@ export default function HeroSection({ user }: { user: User | null }) {
               <img
                 src='/stick_note_logo.webp'
                 className=' size-24 object-cover mx-auto'
-                alt=''
+                alt='Stick Note Logo'
               />
             </motion.div>
             <motion.div
@@ -203,17 +188,27 @@ export default function HeroSection({ user }: { user: User | null }) {
                         y: inView
                           ? yPosScrolls[index]
                           : yPosScrolls[index].get(),
-                        willChange: 'transform, opacity' // Optimización de rendimiento
+                        willChange: 'transform, opacity'
                       }}
                       className='flex-shrink-0'
                     >
-                      <img
-                        src={`/phone/device_${index + 1}.png`}
-                        alt={`iPhone preview ${index + 1}`}
-                        loading='lazy'
-                        className='h-[333px] object-cover aspect-[2/3] sm:h-[600px] flex-shrink-0'
-                        style={{ willChange: 'transform' }}
-                      />
+                      <picture>
+                        <source
+                          srcSet={`/phone/device_${index + 1}.avif`}
+                          type='image/avif'
+                        />
+                        <source
+                          srcSet={`/phone/device_${index + 1}.webp`}
+                          type='image/webp'
+                        />
+                        <img
+                          src={`/phone/device_${index + 1}.webp`}
+                          alt={`iPhone preview ${index + 1}`}
+                          loading='lazy'
+                          className='h-[333px] object-cover aspect-[2/3] sm:h-[600px] flex-shrink-0'
+                          style={{ willChange: 'transform' }}
+                        />
+                      </picture>
                     </motion.div>
                   ))}
                 </motion.div>

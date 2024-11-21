@@ -51,11 +51,16 @@ export default function FeatureSection() {
             </div>
           </Container>
           <div className='w-full lg:w-1/2'>
-            <img
-              src='/desktop/desktop_1.png'
-              alt='AI-Powered Scheduling'
-              className='w-[100%] object-cover aspect-[4/3] mx-auto'
-            />
+            <picture>
+              <source srcSet='/desktop/desktop_1.avif' type='image/avif' />
+              <source srcSet='/desktop/desktop_1.webp' type='image/webp' />
+              <img
+                src='/desktop/desktop_1.webp'
+                alt='Notebook'
+                className='w-[100%] object-cover aspect-[4/3] mx-auto'
+                loading='lazy'
+              />
+            </picture>
           </div>
         </div>
         <div className='flex flex-col items-center justify-between pb-10 transition-all duration-500 ease-out lg:flex-row'>
@@ -97,11 +102,16 @@ export default function FeatureSection() {
             </div>
           </Container>
           <div className='w-full lg:w-1/2'>
-            <img
-              src='/desktop/desktop_2.png'
-              alt='Smart Time Blocking'
-              className='w-[100%] object-cover aspect-[4/3] mx-auto'
-            />
+            <picture>
+              <source srcSet='/desktop/desktop_2.avif' type='image/avif' />
+              <source srcSet='/desktop/desktop_2.webp' type='image/webp' />
+              <img
+                src='/desktop/desktop_2.webp'
+                alt='Dashboard'
+                className='w-[100%] object-cover aspect-[4/3] mx-auto'
+                loading='lazy'
+              />
+            </picture>
           </div>
         </div>
         <div className='flex flex-col items-center justify-between pb-10 transition-all duration-500 ease-out lg:flex-row-reverse'>
@@ -142,11 +152,16 @@ export default function FeatureSection() {
             </div>
           </Container>
           <div className='w-full lg:w-1/2'>
-            <img
-              src='/phone/device_5.png'
-              alt='Predictive Event Planning'
-              className='w-[70%] object-cover aspect-[2/3] mx-auto'
-            />
+            <picture>
+              <source srcSet='/phone/device_5.avif' type='image/avif' />
+              <source srcSet='/phone/device_5.webp' type='image/webp' />
+              <img
+                src='/phone/device_5.webp'
+                alt='Grafico de barras y eventos del calendario'
+                className='w-[70%] object-cover aspect-[2/3] mx-auto'
+                loading='lazy'
+              />
+            </picture>
           </div>
         </div>
       </div>
