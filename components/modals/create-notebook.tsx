@@ -37,6 +37,8 @@ import {
 import { supabase } from '@/lib/supabase'
 import { cn } from '@/lib/utils'
 import { useFolderNavigationStore } from '@/stores/useFolderNavigationStore'
+import { useUserStore } from '@/stores/useUserStore'
+import { usePdfUploadEnable } from '@/hooks/use-pdf-upload-enable'
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const ACCEPTED_FILE_TYPES = ['application/pdf']
@@ -214,6 +216,8 @@ export default function CreateNotebook({ userId }: { userId: string }) {
     return className
   }
 
+  const isEnable = usePdfUploadEnable()
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -231,10 +235,38 @@ export default function CreateNotebook({ userId }: { userId: string }) {
         </DialogHeader>
         <Form {...form}>
           <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className=' w-full p-1 overflow-hidden space-y-4'
+            onSubmit={
+              isEnable
+                ? form.handleSubmit(onSubmit)
+                : (e) => {
+                    e.preventDefault()
+                  }
+            }
+            className={cn(' w-full p-1 overflow-hidden space-y-4 relative')}
           >
-            <div className='flex flex-col w-full items-center gap-2'>
+            {isEnable ? null : (
+              <div className=' absolute top-0 left-0 inset-0 flex backdrop-blur-[2px] z-50'>
+                <div className=' flex flex-col items-center justify-center gap-2 p-4'>
+                  <p className=' text-lg text-center font-medium'>
+                    Has alcanzado el límite de subida de PDF
+                  </p>
+                  <Button
+                    onClick={() => {
+                      router.push('/settings/subscription')
+                    }}
+                  >
+                    Actualizar plan
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            <div
+              className={cn(
+                'flex flex-col w-full items-center gap-2',
+                isEnable ? '' : 'pointer-events-none opacity-50 grayscale'
+              )}
+            >
               <FormField
                 control={form.control}
                 name='notebook_name'
@@ -318,7 +350,9 @@ export default function CreateNotebook({ userId }: { userId: string }) {
                 )}
               />
             </div>
-            <DialogFooter>
+            <DialogFooter
+              className={cn(isEnable ? '' : 'pointer-events-none opacity-50 ')}
+            >
               <Button type='submit'>
                 {isPending ? (
                   <>

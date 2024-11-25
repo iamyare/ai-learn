@@ -13,6 +13,8 @@ declare global {
   type SearchByName = DB['public']['Functions']['search_by_name']['Returns'][0]
   type User = DB['public']['Tables']['users']['Row']
   type UserUpdate = DB['public']['Tables']['users']['Update']
+  type UserSubscription = DB['public']['Tables']['user_subscription']['Row']
+  type Subscription = DB['public']['Tables']['subscriptions']['Row']
   type Folder = DB['public']['Tables']['folders']['Row']
   type FolderInsert = DB['public']['Tables']['folders']['Insert']
   type Notebook = DB['public']['Tables']['notebooks']['Row']
@@ -24,6 +26,8 @@ declare global {
   type ApiKeys = DB['public']['Tables']['api_keys']['Row']
   type ApiKeysInsert = DB['public']['Tables']['api_keys']['Insert']
   type ApiKeysUpdate = DB['public']['Tables']['api_keys']['Update']
+
+  type UserAndSubscription = User & { user_subscription: UserSubscription & { subscription: Subscription } }
 
   type ViewType = 'grid' | 'list' | 'detail' | 'verticalGrid' | 'squareGrid';
   interface ViewProps {

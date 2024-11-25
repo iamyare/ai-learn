@@ -1,4 +1,8 @@
-import { getApiKeys, getUserInfo } from '@/actions'
+import {
+  countPdfDocuments,
+  getApiKeys,
+  getUserAndSubscriptions
+} from '@/actions'
 import UsernameLayoutClient from './components/layout-client'
 import { cookies } from 'next/headers'
 import ErrorPage from '@/components/error-page'
@@ -11,7 +15,7 @@ export default async function UsernameLayout({
   children: React.ReactNode
   params: { username: string }
 }) {
-  const { user } = await getUserInfo()
+  const { user } = await getUserAndSubscriptions()
 
   if (!user) {
     return <ErrorPage title='Error' message='No se ha encontrado el usuario' />
@@ -22,6 +26,8 @@ export default async function UsernameLayout({
   }
 
   const { apiKeys } = await getApiKeys({ userId: user.id })
+
+  const { count } = await countPdfDocuments({ userId: user.id })
 
   const sidebarIsOpen = cookies().get('sidebar:state')
   const defaultOpen =
@@ -34,6 +40,7 @@ export default async function UsernameLayout({
       apiKeys={apiKeys}
       defaultOpen={defaultOpen}
       user={user}
+      countPdf={count}
     >
       {children}
     </UsernameLayoutClient>

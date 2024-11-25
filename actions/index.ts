@@ -54,6 +54,39 @@ export async function getUserInfo() {
   return { user, errorUser }
 }
 
+export async function getUserAndSubscriptions() {
+  const { data, error } = await getUser()
+
+  if (error) {
+    return { user: null, errorUser: error }
+  }
+
+  if (!data.user?.id) {
+    return { user: null, errorUser: new Error('User ID is undefined') }
+  }
+
+  const { data: user, error: errorUser } = await supabase
+    .from('users')
+    .select('*, user_subscription!inner(*, subscription:subscriptions!inner(*))')
+    .eq('id', data.user.id)
+    .single()
+
+  return { user, errorUser }
+}
+
+//count pdf documents
+export async function countPdfDocuments({ userId }: { userId: string }) {
+  const { count, error } = await supabase
+    .from('pdf_documents')
+    .select(`
+      pdf_id,
+      notebooks!inner(notebook_id)
+    `,{ count: 'exact', head: true })
+    .eq('notebooks.user_id', userId)
+    
+  return {  count, error }
+}
+
 //obtener user por username
 export async function checkUsernameAvailability({ username }: { username: string }) {
   const { data } = await supabase

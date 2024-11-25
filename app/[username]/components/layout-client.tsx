@@ -10,14 +10,17 @@ export default function UsernameLayoutClient({
   apiKeys,
   children,
   user,
-  defaultOpen
+  defaultOpen,
+  countPdf
 }: {
   apiKeys: ApiKeys | null
   children: React.ReactNode
-  user: User
+  user: UserAndSubscription
   defaultOpen: boolean
+  countPdf: number | null
 }) {
-  useUserStore.setState({ user })
+  useUserStore.setState({ user, countPdf: countPdf ?? 5 })
+
   const params = useParams()
   const [isLoaded, setIsLoaded] = useState(false)
 
