@@ -35,38 +35,6 @@ export type Database = {
           },
         ]
       }
-      chat_messages: {
-        Row: {
-          chat_id: string
-          content: Json | null
-          created_at: string
-          message_id: string
-          sender_type: string
-        }
-        Insert: {
-          chat_id?: string
-          content?: Json | null
-          created_at?: string
-          message_id?: string
-          sender_type?: string
-        }
-        Update: {
-          chat_id?: string
-          content?: Json | null
-          created_at?: string
-          message_id?: string
-          sender_type?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "chat_messages_chat_id_fkey"
-            columns: ["chat_id"]
-            isOneToOne: false
-            referencedRelation: "chats"
-            referencedColumns: ["chat_id"]
-          },
-        ]
-      }
       chats: {
         Row: {
           chat_id: string
@@ -227,34 +195,35 @@ export type Database = {
           },
         ]
       }
-      tbl_folders: {
+      subscriptions: {
         Row: {
+          cost: number
           created_at: string
-          folder_name: string
-          id: string
-          id_user: string
+          id: number
+          max_pdf_size: number
+          max_pdf_uploads: number
+          name: string
+          updated_at: string
         }
         Insert: {
+          cost: number
           created_at?: string
-          folder_name: string
-          id?: string
-          id_user: string
+          id?: never
+          max_pdf_size: number
+          max_pdf_uploads: number
+          name: string
+          updated_at?: string
         }
         Update: {
+          cost?: number
           created_at?: string
-          folder_name?: string
-          id?: string
-          id_user?: string
+          id?: never
+          max_pdf_size?: number
+          max_pdf_uploads?: number
+          name?: string
+          updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "tbl_folders_id_user_fkey"
-            columns: ["id_user"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       transcriptions: {
         Row: {
@@ -285,6 +254,51 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "notebooks"
             referencedColumns: ["notebook_id"]
+          },
+        ]
+      }
+      user_subscription: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: number
+          status: string
+          subscription_id: number
+          updated_ad: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: number
+          status?: string
+          subscription_id: number
+          updated_ad?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: number
+          status?: string
+          subscription_id?: number
+          updated_ad?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_subscription_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_subscription_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
           },
         ]
       }
