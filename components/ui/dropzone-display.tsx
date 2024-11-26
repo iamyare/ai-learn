@@ -9,7 +9,7 @@ import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.entry'
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker
 
 export const DropzoneDisplay = {
-  Normal: () => {
+  Normal: ({ size }: { size: number }) => {
     return (
       <div className='flex flex-col gap-4 w-full'>
         <FileTextIcon
@@ -33,7 +33,7 @@ export const DropzoneDisplay = {
             <p className='ps-1 select-none'>o arrastra y suelta</p>
           </div>
           <p className='text-xs leading-5 text-center text-muted-foreground select-none'>
-            Archivos permitido PDF hasta 10MB
+            Archivos permitido PDF hasta {size}MB
           </p>
         </div>
       </div>
@@ -48,14 +48,11 @@ export const DropzoneDisplay = {
         />
         <div className='flex flex-col'>
           <p className='text-center text-sm text-primary'>Suelta el archivo</p>
-          <p className='text-xs text-center leading-5 text-primary select-none'>
-            Archivos permitido PDF hasta 10MB
-          </p>
         </div>
       </div>
     )
   },
-  Reject: () => {
+  Reject: ({ size }: { size: number }) => {
     return (
       <div className='flex flex-col gap-4 w-full'>
         <FileXIcon
@@ -67,7 +64,7 @@ export const DropzoneDisplay = {
             Archivo no permitido
           </p>
           <p className='text-xs text-center leading-5 text-destructive select-none'>
-            Archivos permitido PDF hasta 10MB
+            Archivos permitido PDF hasta {size}MB
           </p>
         </div>
       </div>

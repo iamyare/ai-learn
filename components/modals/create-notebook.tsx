@@ -40,32 +40,37 @@ import { useFolderNavigationStore } from '@/stores/useFolderNavigationStore'
 import { useUserStore } from '@/stores/useUserStore'
 import { usePdfUploadEnable } from '@/hooks/use-pdf-upload-enable'
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const ACCEPTED_FILE_TYPES = ['application/pdf']
-
-const formSchema = z.object({
-  notebook_name: z.string().min(1, 'El nombre del notebook es requerido'),
-  folder_id: z.string().nullable(),
-  user_id: z.string().min(1, 'Falta User id'),
-  file: z
-    .custom<File>((value) => value instanceof File, {
-      message: 'Se requiere un archivo PDF'
-    })
-    .refine(
-      (file) => file.size <= MAX_FILE_SIZE,
-      `El tamaño máximo del archivo es 10MB.`
-    )
-    .refine(
-      (file) => ACCEPTED_FILE_TYPES.includes(file.type),
-      'Solo se permiten archivos PDF'
-    )
-})
 
 export default function CreateNotebook({ userId }: { userId: string }) {
   const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
   const router = useRouter()
   const pathname = usePathname()
+
+  const { user, setCountPdf, countPdf } = useUserStore()
+
+  const MAX_PDF_SIZE = user?.user_subscription.subscription.max_pdf_size ?? 10
+
+  const MAX_FILE_SIZE = MAX_PDF_SIZE * 1024 * 1024 // 10MB
+
+  const formSchema = z.object({
+    notebook_name: z.string().min(1, 'El nombre del notebook es requerido'),
+    folder_id: z.string().nullable(),
+    user_id: z.string().min(1, 'Falta User id'),
+    file: z
+      .custom<File>((value) => value instanceof File, {
+        message: 'Se requiere un archivo PDF'
+      })
+      .refine(
+        (file) => file.size <= MAX_FILE_SIZE,
+        `El tamaño máximo del archivo es ${MAX_PDF_SIZE}MB.`
+      )
+      .refine(
+        (file) => ACCEPTED_FILE_TYPES.includes(file.type),
+        'Solo se permiten archivos PDF'
+      )
+  })
 
   const { currentPath } = useFolderNavigationStore()
 
@@ -157,6 +162,9 @@ export default function CreateNotebook({ userId }: { userId: string }) {
             'No se pudo guardar la información del PDF. Por favor, inténtalo de nuevo.'
           )
         }
+
+        // Actualizar el contador de PDF
+        setCountPdf(countPdf + 1)
 
         toast({
           title: 'Notebook creado con éxito',
@@ -325,7 +333,7 @@ export default function CreateNotebook({ userId }: { userId: string }) {
                                   damping: 50
                                 }}
                               >
-                                <DropzoneDisplay.Reject />
+                                <DropzoneDisplay.Reject size={MAX_PDF_SIZE} />
                               </motion.div>
                             )}
                             {!isDragActive && (
@@ -338,7 +346,7 @@ export default function CreateNotebook({ userId }: { userId: string }) {
                                   damping: 20
                                 }}
                               >
-                                <DropzoneDisplay.Normal />
+                                <DropzoneDisplay.Normal size={MAX_PDF_SIZE} />
                               </motion.div>
                             )}
                           </>
