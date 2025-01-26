@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import { useUserStore } from '@/stores/useUserStore'
 import { useApiKeysStore } from '@/stores/useApiKeysStore'
+import { useFolderNavigationStore } from '@/stores/useFolderNavigationStore'
 
 export default function UsernameLayoutClient({
   apiKeys,
@@ -19,26 +20,33 @@ export default function UsernameLayoutClient({
   defaultOpen: boolean
   countPdf: number | null
 }) {
-  useUserStore.setState({ user, countPdf: countPdf ?? 5 })
-
-  const params = useParams()
+  const { username } = useParams()
+  const { setUsername } = useFolderNavigationStore()
   const [isLoaded, setIsLoaded] = useState(false)
 
-  useApiKeysStore.setState({
-    apiKeys: apiKeys ?? { gemini_key: null },
-    userId: user.id
-  })
+  useEffect(() => {
+    if (username && typeof username === 'string') {
+      setUsername(username)
+    }
+  }, [username]) // Removed setUsername from dependencies
 
   useEffect(() => {
+    useUserStore.setState({ user, countPdf: countPdf ?? 5 })
+    useApiKeysStore.setState({
+      apiKeys: apiKeys ?? { gemini_key: null },
+      userId: user.id
+    })
     setIsLoaded(true)
-  }, [])
+  }, [user, countPdf, apiKeys])
+
+  const params = useParams()
 
   if (params?.notebook) {
     return <div>{children}</div>
   }
 
   if (!isLoaded) {
-    return null // or a loading spinner
+    return null
   }
 
   return (

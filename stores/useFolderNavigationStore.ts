@@ -1,6 +1,4 @@
-
 import { create } from 'zustand'
-import { useRouter } from 'next/navigation'
 
 type FolderPath = {
   id: string
@@ -19,48 +17,25 @@ interface FolderNavigationState {
   folderTree: FolderItem[]
   expandedFolders: Set<string>
   currentItemId: string | null
+  username: string
   setCurrentPath: (path: FolderPath[]) => void
-  navigateToFolder: (folderId: string, folderName: string) => void
-  navigateUp: () => void
-  reload: () => void
+  setCurrentItemId: (id: string) => void
   setFolderTree: (tree: FolderItem[]) => void
   toggleFolder: (folderId: string) => void
+  setUsername: (username: string) => void
 }
 
-export const useFolderNavigationStore = create<FolderNavigationState>((set, get) => ({
+export const useFolderNavigationStore = create<FolderNavigationState>((set) => ({
   currentPath: [{ id: 'root', name: 'Root' }],
   folderTree: [{ id: 'root', name: 'Root', type: 'folder', children: [] }],
   expandedFolders: new Set(['root']),
   currentItemId: null,
+  username: '',
 
   setCurrentPath: (path) => set({ currentPath: path }),
-
-  navigateToFolder: (folderId, folderName) => set((state) => {
-    const index = state.currentPath.findIndex(item => item.id === folderId)
-    const newPath = index !== -1
-      ? state.currentPath.slice(0, index + 1)
-      : [...state.currentPath, { id: folderId, name: folderName }]
-    
-    return {
-      currentPath: newPath,
-      currentItemId: folderId
-    }
-  }),
-
-  navigateUp: () => set((state) => {
-    const newPath = state.currentPath.slice(0, -1)
-    return {
-      currentPath: newPath,
-      currentItemId: newPath[newPath.length - 1].id
-    }
-  }),
-
-  reload: () => {
-    const router = useRouter()
-    router.refresh()
-  },
-
+  setCurrentItemId: (id) => set({ currentItemId: id }),
   setFolderTree: (tree) => set({ folderTree: tree }),
+  setUsername: (username) => set({ username }),
 
   toggleFolder: (folderId) => set((state) => {
     const newSet = new Set(state.expandedFolders)

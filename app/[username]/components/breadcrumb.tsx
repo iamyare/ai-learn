@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { useNavigation } from '@/hooks/useNavigation'
 import {
   Breadcrumb,
   BreadcrumbEllipsis,
@@ -17,15 +18,9 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 
-type FolderPath = {
-  currentPath: { id: string; name: string }[]
-  navigateToFolder: (folderId: string, folderName: string) => void
-}
+export default function RenderBreadcrumb() {
+  const { currentPath, navigateToFolder } = useNavigation()
 
-export default function RenderBreadcrumb({
-  currentPath,
-  navigateToFolder
-}: FolderPath) {
   const maxVisibleItems = 3
 
   // Asegurar que el path esté correctamente ordenado y sin duplicados

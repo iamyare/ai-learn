@@ -1,3 +1,4 @@
+'use client'
 import React, { useEffect } from 'react'
 import { useFolderNavigationStore } from '@/stores/useFolderNavigationStore'
 import { useViewStore } from '@/stores/useViewStore'
@@ -11,6 +12,7 @@ import RenderBreadcrumb from './breadcrumb'
 import ViewButtons from './view-buttons'
 import { ItemListSkeleton } from '@/components/skeletons'
 import { useTransitionRouter } from 'next-view-transitions'
+import { useNavigation } from '@/hooks/useNavigation'
 
 interface ItemListProps {
   items: GetFoldersAndNotebooksFunction[]
@@ -63,31 +65,35 @@ function slideInOut(direction: 'forward' | 'backward') {
 }
 
 const ItemList: React.FC<ItemListProps> = ({ items, isLoading }) => {
-  const { currentPath, navigateToFolder } = useFolderNavigationStore()
+  const { currentPath } = useFolderNavigationStore()
   const { currentView, setView } = useViewStore((state) => state)
   const pathname = usePathname()
   const router = useRouter()
   const params = useSearchParams()
   const routerTransition = useTransitionRouter()
+  const { navigateToFolder } = useNavigation()
 
   useEffect(() => {
-    //cargar la lista de items por los parametros de la URL
-    navigateToFolder(
-      params.get('folder_id') ?? 'root',
-      params.get('folder_name') ?? 'root'
-    )
-  }, [navigateToFolder, params])
+    const folderId = params.get('folder_id')
+    const folderName = params.get('folder_name')
+    
+    if (!folderId || !folderName) {
+      if (currentPath.length > 1) {
+        navigateToFolder('root', 'Root')
+      }
+      return
+    }
+
+    const currentFolder = currentPath[currentPath.length - 1]
+    if (currentFolder?.id !== folderId) {
+      navigateToFolder(folderId, folderName)
+    }
+  }, [params])
 
   const handleItemClick = (item: GetFoldersAndNotebooksFunction) => {
     if (item.item_type === 'folder') {
-      // Construir la nueva URL con los params sin recargar la página
-      const newParams = new URLSearchParams(params)
-      newParams.set('folder_id', item.item_id)
-      newParams.set('folder_name', item.item_name)
-      const newPath = `${pathname}?${newParams.toString()}`
-      router.replace(newPath)
+      navigateToFolder(item.item_id, item.item_name)
     } else {
-      //
       routerTransition.push(`${pathname}/${item.item_id}`, {
         onTransitionReady: () => slideInOut('forward')
       })
@@ -120,10 +126,7 @@ const ItemList: React.FC<ItemListProps> = ({ items, isLoading }) => {
   return (
     <section>
       <div className='mb-4 flex justify-between items-center'>
-        <RenderBreadcrumb
-          currentPath={currentPath}
-          navigateToFolder={navigateToFolder}
-        />
+        <RenderBreadcrumb />
         <ViewButtons currentView={currentView} setView={setView} />
       </div>
       {isLoading ? (

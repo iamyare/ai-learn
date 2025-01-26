@@ -1,32 +1,28 @@
-import { useState, useEffect } from 'react';
 import { useFolderNavigationStore } from '@/stores/useFolderNavigationStore';
-import { getFoldersAndNotebooks } from '@/actions';
+import { useFoldersQuery } from '@/hooks/useFoldersQuery';
+import { useCallback } from 'react';
 
 export const useFolderData = (userId: string) => {
-  const [folders, setFolders] = useState<GetFoldersAndNotebooksFunction[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const { currentPath } = useFolderNavigationStore();
+  const currentFolderId = currentPath[currentPath.length - 1]?.id;
+  
+  const {
+    data: folders = [],
+    error,
+    isLoading,
+    isError,
+    refetch
+  } = useFoldersQuery(userId, currentFolderId === 'root' ? undefined : currentFolderId);
 
-  useEffect(() => {
-    const fetchFolders = async () => {
-      setIsLoading(true);
-      const currentFolderId = currentPath[currentPath.length - 1].id;
-      const { folders, errorFolders } = await getFoldersAndNotebooks({
-        userId,
-        parentFolderId: currentFolderId === 'root' ? undefined : currentFolderId
-      });
+  const memoizedData = {
+    folders,
+    error: isError ? error?.message || 'Error al cargar las carpetas' : null,
+    isLoading,
+    isEmpty: folders.length === 0,
+    refetch: useCallback(() => refetch(), [refetch]),
+    currentFolder: currentPath[currentPath.length - 1],
+    hasItems: folders.length > 0
+  };
 
-      if (errorFolders) {
-        setError('Error al cargar las carpetas');
-      } else {
-        setFolders(folders || []);
-      }
-      setIsLoading(false);
-    };
-
-    fetchFolders();
-  }, [currentPath, userId]);
-
-  return { folders, error, isLoading };
+  return memoizedData;
 };
