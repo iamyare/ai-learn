@@ -1,81 +1,58 @@
 import { useState, useEffect } from 'react'
-import dynamic from 'next/dynamic'
-import { Viewer, SpecialZoomLevel } from '@react-pdf-viewer/core'
-import { pageNavigationPlugin } from '@react-pdf-viewer/page-navigation'
-import type { ViewerProps } from '@react-pdf-viewer/core'
-import { PDFDocumentProxy } from 'pdfjs-dist'
-
-// Dynamically import the Viewer component with correct props
-const DynamicViewer = dynamic(
-  () =>
-    import('@react-pdf-viewer/core').then((mod) => {
-      const DynamicViewerComponent: React.FC<ViewerProps> = (props) => (
-        <Viewer {...props} />
-      )
-      DynamicViewerComponent.displayName = 'DynamicViewerComponent'
-      return DynamicViewerComponent
-    }),
-  { ssr: false }
-)
+import { pdfjs } from 'react-pdf'
+import type { PDFDocumentProxy } from 'pdfjs-dist'
 
 const usePDFViewer = (fileUrl: string) => {
-  const [workerSrc, setWorkerSrc] = useState<string | undefined>(undefined)
+  const [numPages, setNumPages] = useState<number>(0)
+  const [pageNumber, setPageNumber] = useState<number>(1)
   const [pdfDocument, setPdfDocument] = useState<PDFDocumentProxy | null>(null)
-  const pageNavigationPluginInstance = pageNavigationPlugin()
-  const {
-    GoToFirstPage,
-    GoToLastPage,
-    GoToNextPage,
-    GoToPreviousPage,
-    CurrentPageInput,
-    CurrentPageLabel,
-    NumberOfPages
-  } = pageNavigationPluginInstance
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const setupWorker = async () => {
-      if (typeof window === 'undefined') return
-
-      const pdfjsLib = await import('pdfjs-dist')
-      const pdfjsWorker = await import('pdfjs-dist/build/pdf.worker.entry')
-
-      if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
-        pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker.default
-      }
-
-      setWorkerSrc(pdfjsWorker.default)
-
+    const loadPDF = async () => {
       try {
-        const loadingTask = pdfjsLib.getDocument(fileUrl)
-        const pdf = await loadingTask.promise
+        setIsLoading(true)
+        setError(null)
+        
+
+        
+        const pdf = await pdfjs.getDocument(fileUrl).promise
         setPdfDocument(pdf)
-      } catch (error) {
-        console.error('Error loading PDF:', error)
+        setNumPages(pdf.numPages)
+        setIsLoading(false)
+      } catch (err) {
+        setError('Error al cargar el PDF')
+        setIsLoading(false)
+        console.error('Error loading PDF:', err)
       }
     }
 
-    setupWorker()
+    loadPDF()
   }, [fileUrl])
 
-  const viewerProps: ViewerProps = {
-    fileUrl: fileUrl,
-    plugins: [pageNavigationPluginInstance],
-    defaultScale: SpecialZoomLevel.PageFit
+  const goToNextPage = () => {
+    setPageNumber(prev => Math.min(prev + 1, numPages))
+  }
+
+  const goToPreviousPage = () => {
+    setPageNumber(prev => Math.max(prev - 1, 1))
+  }
+
+  const goToPage = (page: number) => {
+    const targetPage = Math.max(1, Math.min(page, numPages))
+    setPageNumber(targetPage)
   }
 
   return {
-    DynamicViewer,
-    viewerProps,
-    pageNavigationPluginInstance,
-    GoToFirstPage,
-    GoToLastPage,
-    GoToNextPage,
-    GoToPreviousPage,
-    CurrentPageInput,
-    CurrentPageLabel,
-    NumberOfPages,
-    workerSrc,
-    pdfDocument
+    pageNumber,
+    numPages,
+    pdfDocument,
+    isLoading,
+    error,
+    goToNextPage,
+    goToPreviousPage,
+    goToPage
   }
 }
 

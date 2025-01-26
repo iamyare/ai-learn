@@ -1,12 +1,14 @@
-/* eslint-disable @next/next/no-img-element */
 'use client'
 
+import { useEffect } from 'react'
 import { FileTextIcon, FileXIcon } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import * as pdfjsLib from 'pdfjs-dist'
-import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.entry'
+import { Document, Page } from 'react-pdf'
+import { configurePdfWorker } from '@/lib/pdf-worker'
+import 'react-pdf/dist/Page/AnnotationLayer.css'
+import 'react-pdf/dist/Page/TextLayer.css'
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker
+// Configura el worker de PDF.js
+configurePdfWorker()
 
 export const DropzoneDisplay = {
   Normal: ({ size }: { size: number }) => {
@@ -71,52 +73,16 @@ export const DropzoneDisplay = {
     )
   },
   Info: ({ file }: { file: File }) => {
-    const [imageSrc, setImageSrc] = useState<string | null>(null)
-
-    useEffect(() => {
-      let cancel = false
-
-      const renderPDF = async () => {
-        const pdf = await pdfjsLib.getDocument(URL.createObjectURL(file))
-          .promise
-        const page = await pdf.getPage(1)
-        const viewport = page.getViewport({ scale: 1.5 })
-        const canvas = document.createElement('canvas')
-        const context = canvas.getContext('2d')
-        if (canvas && context) {
-          canvas.height = viewport.height
-          canvas.width = viewport.width
-          const renderContext = {
-            canvasContext: context,
-            viewport: viewport
-          }
-          if (!cancel) {
-            await page.render(renderContext).promise
-            const imageDataUrl = canvas.toDataURL('image/png')
-            setImageSrc(imageDataUrl)
-          }
-        }
-      }
-      renderPDF()
-
-      return () => {
-        cancel = true
-      }
-    }, [file])
-
     return (
       <div className='flex flex-col gap-2 w-full overflow-hidden'>
-        <div className='flex justify-center h-full w-full bg-top'>
-          {imageSrc ? (
-            <img
-              src={imageSrc}
-              alt='PDF preview'
-              className='h-full w-full object-cover object-top'
-            />
-          ) : (
-            <p>Cargando...</p>
-          )}
-        </div>
+        <Document file={file} className="w-full h-full">
+          <Page 
+            pageNumber={1} 
+            width={300}
+            renderTextLayer={true}
+            renderAnnotationLayer={true}
+          />
+        </Document>
         <p className='text-center max-w-md truncate'>
           PDF Seleccionado: {file.name}
         </p>

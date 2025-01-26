@@ -1,5 +1,5 @@
-
 import { create } from 'zustand'
+import { pdfjs } from 'react-pdf'
 
 interface PDFTextState {
   text: string
@@ -22,19 +22,15 @@ export const usePDFTextStore = create<PDFTextState>((set) => ({
     try {
       set({ isPending: true, error: null })
       
-      const pdfjsLib = await import('pdfjs-dist')
-      const pdfjsWorker = await import('pdfjs-dist/build/pdf.worker.entry')
-      
-      pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker.default
-      
-      const loadingTask = pdfjsLib.getDocument(fileUrl)
-      const pdf = await loadingTask.promise
-      
+      const pdf = await pdfjs.getDocument(fileUrl).promise
       let fullText = ''
+      
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i)
-        const content = await page.getTextContent()
-        const pageText = content.items.map((item: any) => item.str).join(' ')
+        const textContent = await page.getTextContent()
+        const pageText = textContent.items
+          .map((item: any) => item.str)
+          .join(' ')
         fullText += pageText + '\n'
       }
       
