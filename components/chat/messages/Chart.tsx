@@ -113,7 +113,7 @@ const Chart: React.FC<ChartProps> = ({ chartData }) => {
     }
   }, [adaptedData])
 
-  const renderChart = (): React.ReactElement | null => {
+  const renderChart = (): React.ReactElement<any> | null => {
     try {
       const commonProps = {
         data: processedData,
@@ -303,92 +303,90 @@ const Chart: React.FC<ChartProps> = ({ chartData }) => {
     }
   }
 
-  return (
-    <>
-      <CardHeader className='flex flex-col items-stretch space-y-0 border-b p-0'>
-        <div className='flex flex-1 flex-col justify-center gap-1 p-2'>
-          <CardTitle>{adaptedData.title}</CardTitle>
-          <CardDescription>
-            {chartType !== adaptedData.type
-              ? 'Nota: Los datos se han adaptado para ajustarse a este tipo de gráfico.'
-              : 'Mostrando datos para el período seleccionado'}
-          </CardDescription>
-        </div>
-        <div className='flex'>
-          {adaptedData.datasets.map((dataset, index) => (
-            <button
-              key={dataset.label}
-              data-active={activeDataset === index}
-              className='relative flex flex-1 flex-col justify-center gap-1  px-4 py-2 text-left  data-[active=true]:bg-muted/50  '
-              onClick={() => setActiveDataset(index)}
-            >
-              <span className='text-xs text-muted-foreground'>
-                {dataset.label}
-              </span>
-              <span className=' text-lg font-bold leading-none '>
-                {dataset.data.reduce((a, b) => a + b, 0).toLocaleString()}
-              </span>
-            </button>
-          ))}
-        </div>
-      </CardHeader>
-      <CardContent className='px-2 sm:p-6'>
-        {error ? (
-          <Alert variant='destructive'>
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        ) : (
-          <ChartContainer
-            config={chartConfig}
-            className='aspect-auto h-[350px] w-full'
+  return (<>
+    <CardHeader className='flex flex-col items-stretch space-y-0 border-b p-0'>
+      <div className='flex flex-1 flex-col justify-center gap-1 p-2'>
+        <CardTitle>{adaptedData.title}</CardTitle>
+        <CardDescription>
+          {chartType !== adaptedData.type
+            ? 'Nota: Los datos se han adaptado para ajustarse a este tipo de gráfico.'
+            : 'Mostrando datos para el período seleccionado'}
+        </CardDescription>
+      </div>
+      <div className='flex'>
+        {adaptedData.datasets.map((dataset, index) => (
+          <button
+            key={dataset.label}
+            data-active={activeDataset === index}
+            className='relative flex flex-1 flex-col justify-center gap-1  px-4 py-2 text-left  data-[active=true]:bg-muted/50  '
+            onClick={() => setActiveDataset(index)}
           >
-            {renderChart() as React.ReactElement}
-          </ChartContainer>
-        )}
-        <ScrollArea className=' w-full'>
-          <div className='flex items-center justify-center space-x-2 mt-4'>
-            <Button
-              variant='outline'
-              size='sm'
-              onClick={() => setChartType('bar')}
-            >
-              Barra
-            </Button>
-            <Button
-              variant='outline'
-              size='sm'
-              onClick={() => setChartType('line')}
-            >
-              Línea
-            </Button>
-            <Button
-              variant='outline'
-              size='sm'
-              onClick={() => setChartType('pie')}
-            >
-              Pastel
-            </Button>
-            <Button
-              variant='outline'
-              size='sm'
-              onClick={() => setChartType('area')}
-            >
-              Área
-            </Button>
-            <Button
-              variant='outline'
-              size='sm'
-              onClick={() => setChartType('scatter')}
-            >
-              Dispersión
-            </Button>
-          </div>
-          <ScrollBar orientation='horizontal' />
-        </ScrollArea>
-      </CardContent>
-    </>
-  )
+            <span className='text-xs text-muted-foreground'>
+              {dataset.label}
+            </span>
+            <span className=' text-lg font-bold leading-none '>
+              {dataset.data.reduce((a, b) => a + b, 0).toLocaleString()}
+            </span>
+          </button>
+        ))}
+      </div>
+    </CardHeader>
+    <CardContent className='px-2 sm:p-6'>
+      {error ? (
+        <Alert variant='destructive'>
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      ) : (
+        <ChartContainer
+          config={chartConfig}
+          className='aspect-auto h-[350px] w-full'
+        >
+          {renderChart() as React.ReactElement<any>}
+        </ChartContainer>
+      )}
+      <ScrollArea className=' w-full'>
+        <div className='flex items-center justify-center space-x-2 mt-4'>
+          <Button
+            variant='outline'
+            size='sm'
+            onClick={() => setChartType('bar')}
+          >
+            Barra
+          </Button>
+          <Button
+            variant='outline'
+            size='sm'
+            onClick={() => setChartType('line')}
+          >
+            Línea
+          </Button>
+          <Button
+            variant='outline'
+            size='sm'
+            onClick={() => setChartType('pie')}
+          >
+            Pastel
+          </Button>
+          <Button
+            variant='outline'
+            size='sm'
+            onClick={() => setChartType('area')}
+          >
+            Área
+          </Button>
+          <Button
+            variant='outline'
+            size='sm'
+            onClick={() => setChartType('scatter')}
+          >
+            Dispersión
+          </Button>
+        </div>
+        <ScrollBar orientation='horizontal' />
+      </ScrollArea>
+    </CardContent>
+  </>);
 }
 
 export default Chart

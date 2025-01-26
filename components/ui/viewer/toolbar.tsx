@@ -55,7 +55,7 @@ function ToolbarButton<T extends RenderProps>({
 }: {
   tooltip: string
   icon: LucideIcon
-  render: (renderButton: (onClick: () => void) => ReactElement) => ReactElement
+  render: (renderButton: (onClick: () => void) => ReactElement<any>) => ReactElement<any>
   isDesktop: boolean
 }) {
   if (isDesktop) {

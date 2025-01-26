@@ -8,13 +8,18 @@ import { cookies } from 'next/headers'
 import ErrorPage from '@/components/error-page'
 import { redirect } from 'next/navigation'
 
-export default async function UsernameLayout({
-  children,
-  params
-}: {
-  children: React.ReactNode
-  params: { username: string }
-}) {
+export default async function UsernameLayout(
+  props: {
+    children: React.ReactNode
+    params: Promise<{ username: string }>
+  }
+) {
+  const params = await props.params;
+
+  const {
+    children
+  } = props;
+
   const { user } = await getUserAndSubscriptions()
 
   if (!user) {
@@ -29,7 +34,7 @@ export default async function UsernameLayout({
 
   const { count } = await countPdfDocuments({ userId: user.id })
 
-  const sidebarIsOpen = cookies().get('sidebar:state')
+  const sidebarIsOpen = (await cookies()).get('sidebar:state')
   const defaultOpen =
     sidebarIsOpen && sidebarIsOpen.value !== 'undefined'
       ? JSON.parse(sidebarIsOpen.value)
