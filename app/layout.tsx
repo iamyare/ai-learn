@@ -4,6 +4,13 @@ import './globals.css'
 import { ThemeProvider } from '@/components/ui/theme-provider'
 import { Toaster } from '@/components/ui/toaster'
 import { ViewTransitions } from 'next-view-transitions'
+import QueryProvider from '@/hooks/query-provider'
+import {
+  dehydrate,
+  HydrationBoundary,
+  QueryClient
+} from '@tanstack/react-query'
+import { getUserSession } from '@/actions/auth'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
@@ -56,11 +63,19 @@ export const viewport: Viewport = {
   userScalable: false
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const queryClient = new QueryClient()
+
+  // Prefetch session data
+  await queryClient.prefetchQuery({
+    queryKey: ['session'],
+    queryFn: getUserSession
+  })
+
   return (
     <ViewTransitions>
       <html lang='es' suppressHydrationWarning>
@@ -83,7 +98,12 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            {children}
+            <QueryProvider>
+              <HydrationBoundary state={dehydrate(queryClient)}>
+                {children}
+              </HydrationBoundary>
+              <Toaster />
+            </QueryProvider>
             <Toaster />
           </ThemeProvider>
         </body>

@@ -1,9 +1,10 @@
 'use client'
-import { createSupabaseBrowerClient } from '@/lib/supabase'
+
 import { Button } from './ui/button'
 import { cn } from '@/lib/utils'
 import { Icons } from './icons'
 import ShinyButton from './ui/shiny-button'
+import { supabase } from '@/lib/supabase'
 
 type sizeType = 'default' | 'sm' | 'lg' | 'icon' | null | undefined
 
@@ -14,7 +15,6 @@ export function GoogleButton({
   size?: sizeType
   className?: string
 }) {
-  const supabase = createSupabaseBrowerClient()
   const handleSignIn = async () => {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -48,7 +48,6 @@ export function GoogleButtonStyle({
   size?: sizeType
   className?: string
 }) {
-  const supabase = createSupabaseBrowerClient()
   const handleSignIn = async () => {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -79,7 +78,6 @@ export function GitHubButton({
   size?: sizeType
   className?: string
 }) {
-  const supabase = createSupabaseBrowerClient()
   const handleSignIn = async () => {
     await supabase.auth.signInWithOAuth({
       provider: 'github',
@@ -113,7 +111,6 @@ export function FacebookButton({
   size?: sizeType
   className?: string
 }) {
-  const supabase = createSupabaseBrowerClient()
   const handleSignIn = async () => {
     await supabase.auth.signInWithOAuth({
       provider: 'facebook',

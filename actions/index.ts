@@ -1,17 +1,17 @@
 'use server'
 import { supabase } from '@/lib/supabase'
-import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 import { DialogEntry } from '@/types/speechRecognition'
 
 
 export async function getUser() {
-  const supabase = await createSupabaseServerClient()
+  const supabase = await createClient()
   return await supabase.auth.getUser()
 }
 
 //logout
 export async function logout() {
-  const supabase = await createSupabaseServerClient()
+  const supabase = await createClient()
   return await supabase.auth.signOut()
 }
 

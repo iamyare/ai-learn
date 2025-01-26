@@ -9,8 +9,9 @@ import { BackgroundLines } from '@/components/ui/background-lines'
 import { RainbowButton } from '@/components/ui/RainbowButton'
 import { RocketIcon } from 'lucide-react'
 import { GoogleButtonStyle } from '@/components/oauth-buttons'
+import { useSession } from '@/hooks/useSession'
 
-export default function HeroSection({ user }: { user: User | null }) {
+export default function HeroSection() {
   const logoAnimation = {
     initial: {
       scale: 4,
@@ -104,6 +105,8 @@ export default function HeroSection({ user }: { user: User | null }) {
     useTransform(scrollYProgress, [0, 0.2], [40, 0]), // Cuarta imagen
     useTransform(scrollYProgress, [0, 0.2], [90, 0]) // Quinta imagen
   ]
+
+  const user = useSession().data?.data
 
   return (
     <section id='hero' className=' flex relative '>

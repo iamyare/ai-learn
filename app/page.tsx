@@ -1,15 +1,24 @@
-import { getUserInfo } from '@/actions'
+'use client'
+import HeroSection from './components/hero-section'
+import FeatureSection from './components/feature-section'
+import FeatureMoreSection from './components/feacture-more-section'
+import PricingSection from './components/pricing-section'
+import FAQSection from './components/faq-section'
+import Footer from './components/footer'
 
-import PageClient from './page-client'
+export default function Home() {
 
-export default async function Home() {
-
-  const { user, errorUser } = await getUserInfo()
-  if (errorUser) {
-    console.error(errorUser)
-  }
 
   return (
-    <PageClient user={user} />
+    <main className=' flex flex-col'>
+
+    
+    <HeroSection />
+    <FeatureSection />
+    <FeatureMoreSection />
+    <PricingSection />
+    <FAQSection />
+    <Footer />
+    </main>
   )
 }
