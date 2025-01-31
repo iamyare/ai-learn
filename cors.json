@@ -1,0 +1,21 @@
+[
+  {
+    "AllowedOrigins": ["*"],
+    "AllowedMethods": ["PUT", "GET", "HEAD"],
+    "AllowedHeaders": [
+      "content-type",
+      "x-amz-acl",
+      "x-amz-content-sha256",
+      "x-amz-date",
+      "authorization",
+      "x-amz-security-token",
+      "x-amz-user-agent",
+      "x-amz-target",
+      "*"
+    ],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3600
+  }
+]
+
+

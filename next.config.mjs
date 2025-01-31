@@ -10,7 +10,19 @@ const nextConfig = {
         serverActions: {
             bodySizeLimit: '25mb'
         },
-        serverComponentsExternalPackages: ['@react-pdf/renderer'],
+        serverComponentsExternalPackages: ['@aws-sdk/client-s3', '@react-pdf/renderer'],
+    },
+    async headers() {
+        return [
+            {
+                source: '/api/:path*',
+                headers: [
+                    { key: 'Access-Control-Allow-Origin', value: '*' },
+                    { key: 'Access-Control-Allow-Methods', value: 'GET,HEAD,PUT,POST,DELETE' },
+                    { key: 'Access-Control-Allow-Headers', value: 'content-type' }
+                ]
+            }
+        ]
     },
     webpack: (config, { isServer }) => {
         // Copiar el worker de PDF.js a la carpeta public

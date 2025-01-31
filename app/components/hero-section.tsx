@@ -185,7 +185,7 @@ export default function HeroSection() {
                 >
                   {Array.from({ length: 5 }).map((_, index) => (
                     <motion.div
-                      key={index}
+                      key={`phone-${index}`} // Cambiar la clave para que sea única
                       variants={phoneAnimation(index)}
                       style={{
                         y: inView

@@ -39,6 +39,7 @@ import { cn } from '@/lib/utils'
 import { useFolderNavigationStore } from '@/stores/useFolderNavigationStore'
 import { useUserStore } from '@/stores/useUserStore'
 import { usePdfUploadEnable } from '@/hooks/use-pdf-upload-enable'
+import { useUploadPdf } from '@/hooks/use-upload-pdf'
 
 const ACCEPTED_FILE_TYPES = ['application/pdf']
 
@@ -91,100 +92,55 @@ export default function CreateNotebook({ userId }: { userId: string }) {
     form.setValue('folder_id', parentFolderId)
   }, [currentPath, form])
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  const uploadPdfMutation = useUploadPdf()
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     const { file, ...notebookData } = values
 
-    startTransition(async () => {
-      try {
-        // Generar un nombre de archivo único
-        const fileExtension = file.name.split('.').pop()
-        const uniqueFileName = `${Date.now()}-${Math.random()
-          .toString(36)
-          .substring(2, 15)}.${fileExtension}`
+    try {
+      // Usar la mutación de react-query para subir el archivo
+      const uploadResult = await uploadPdfMutation.mutateAsync({
+        file,
+        userId
+      })
 
-        // Subir el archivo
-        const { data: uploadResult, error: errorUploadResult } =
-          await supabase.storage
-            .from('pdf_documents')
-            .upload(uniqueFileName, file)
+      // Crear notebook
+      const { notebook, errorNotebook } = await insertNotebook({
+        notebookData
+      })
 
-        if (errorUploadResult) {
-          throw new Error(
-            `Error al subir el archivo: ${errorUploadResult.message}`
-          )
+      if (errorNotebook) throw new Error(errorNotebook.message)
+
+        if (!notebook) throw new Error('Error al crear el notebook')
+
+      // Crear documento PDF
+      const { pdfDocument, errorPdfDocument } = await insertPdfDocument({
+        pdfData: {
+          notebook_id: notebook.notebook_id,
+          file_path: uploadResult.url,
+          file_name: file.name,
+          file_size: String(file.size)
         }
+      })
 
-        if (!uploadResult) {
-          throw new Error(
-            'No se pudo subir el archivo. Por favor, inténtalo de nuevo.'
-          )
-        }
+      if (errorPdfDocument) throw new Error(errorPdfDocument.message)
 
-        // Insertar el notebook
-        const { notebook, errorNotebook } = await insertNotebook({
-          notebookData
-        })
+      setCountPdf(countPdf + 1)
+      router.push(`${pathname}/${notebook.notebook_id}`)
+      setOpen(false)
 
-        if (errorNotebook) {
-          throw new Error(
-            `Error al crear el notebook: ${errorNotebook.message}`
-          )
-        }
-
-        if (!notebook) {
-          throw new Error(
-            'No se pudo crear el notebook. Por favor, inténtalo de nuevo.'
-          )
-        }
-
-        // Construir la URL completa del archivo
-        const baseURL = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/pdf_documents/`
-        const fullPath = `${baseURL}${uploadResult.path}`
-
-        // Insertar el documento PDF
-        const { pdfDocument, errorPdfDocument } = await insertPdfDocument({
-          pdfData: {
-            notebook_id: notebook.notebook_id,
-            file_path: fullPath,
-            file_name: file.name,
-            file_size: String(file.size)
-          }
-        })
-
-        if (errorPdfDocument) {
-          throw new Error(
-            `Error al guardar la información del PDF: ${errorPdfDocument.message}`
-          )
-        }
-
-        if (!pdfDocument) {
-          throw new Error(
-            'No se pudo guardar la información del PDF. Por favor, inténtalo de nuevo.'
-          )
-        }
-
-        // Actualizar el contador de PDF
-        setCountPdf(countPdf + 1)
-
-        toast({
-          title: 'Notebook creado con éxito',
-          description: `Se ha creado el notebook "${values.notebook_name}" y se ha subido el archivo "${file.name}".`
-        })
-
-        router.push(`${pathname}/${notebook.notebook_id}`)
-        setOpen(false)
-      } catch (error) {
-        console.error('Error en la creación del notebook:', error)
-        toast({
-          title: 'Error al crear el notebook',
-          description:
-            error instanceof Error
-              ? error.message
-              : 'Ocurrió un error inesperado. Por favor, inténtalo de nuevo.',
-          variant: 'destructive'
-        })
-      }
-    })
+      toast({
+        title: 'Notebook creado con éxito',
+        description: `Se ha creado el notebook "${values.notebook_name}"`
+      })
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description:
+          error instanceof Error ? error.message : 'Error desconocido',
+        variant: 'destructive'
+      })
+    }
   }
 
   const onDrop = (acceptedFiles: File[]) => {
