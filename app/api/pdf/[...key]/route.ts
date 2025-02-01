@@ -12,9 +12,10 @@ const s3Client = new S3Client({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { key: string[] } }
+  context: { params: { key: string[] } }
 ) {
   try {
+    const { params } = await context;
     // Asegurarse de que params.key sea un array
     const keyParts = Array.isArray(params.key) ? params.key : [params.key];
     
@@ -55,7 +56,7 @@ export async function GET(
     console.error('Error al obtener archivo:', {
       message: error.message,
       code: error.code,
-      key: params.key
+      key: context.params.key
     });
 
     return new Response(
