@@ -1,14 +1,12 @@
 'use client'
-import { useEffect, useState, useMemo, useRef } from 'react'
-import 'react-pdf/dist/Page/AnnotationLayer.css'
-import 'react-pdf/dist/Page/TextLayer.css'
-import { Button } from './button'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
-
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Document, Page, pdfjs } from 'react-pdf'
 import { ScrollArea } from './scroll-area'
+import { Toolbar } from './toolbar'
+import { usePDFStore } from '@/stores/pdfStore'
+import 'react-pdf/dist/Page/AnnotationLayer.css'
+import 'react-pdf/dist/Page/TextLayer.css'
 
-// Configurar el worker antes de usarlo
 pdfjs.GlobalWorkerOptions.workerSrc = `/api/pdf-helper?url=unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 interface PDFViewerProps {
@@ -16,18 +14,11 @@ interface PDFViewerProps {
 }
 
 export default function PDFViewer({ fileUrl }: PDFViewerProps) {
-  const [numPages, setNumPages] = useState<number>(0)
-  const [pageNumber, setPageNumber] = useState<number>(1)
   const [error, setError] = useState<string | null>(null)
   const pagesRef = useRef<(HTMLDivElement | null)[]>([])
+  const containerRef = useRef<HTMLDivElement>(null)
+  const { scale, setCurrentPage, numPages, setNumPages } = usePDFStore()
 
-  function onDocumentLoadSuccess({ numPages }: { numPages: number }): void {
-    setNumPages(numPages)
-  }
-
-  console.log('fileUrl', fileUrl)
-
-  // Extraer y codificar la ruta del PDF correctamente
   const pdfProxyUrl = useMemo(() => {
     try {
       // Extraer solo la parte después de .com/
@@ -57,40 +48,44 @@ export default function PDFViewer({ fileUrl }: PDFViewerProps) {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const pageNum = Number(entry.target.getAttribute('data-page-number'))
-            if (pageNum) setPageNumber(pageNum)
+            if (pageNum) {
+              setCurrentPage(pageNum)
+            }
           }
         })
       },
       {
-        threshold: 0.5,
-        root: null,
+        threshold: 0.5, // El elemento debe estar 50% visible
+        rootMargin: '-100px 0px' // Ajuste para mejorar la detección
       }
     )
 
-    pagesRef.current.forEach((page) => {
+    // Observar todas las páginas
+    const currentPages = pagesRef.current
+    currentPages.forEach((page) => {
       if (page) observer.observe(page)
     })
 
-    return () => observer.disconnect()
-  }, [numPages])
+    return () => {
+      // Limpiar el observer
+      currentPages.forEach((page) => {
+        if (page) observer.unobserve(page)
+      })
+      observer.disconnect()
+    }
+  }, [numPages, setCurrentPage]) // Recrear observer cuando cambie el número de páginas
 
-  const scrollToPage = (pageNum: number) => {
-    pagesRef.current[pageNum - 1]?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start',
-    })
-  }
-
-  if (error) {
-    return <div className="text-red-500">{error}</div>
-  }
+  if (error) return <div className="text-red-500">{error}</div>
 
   return (
-    <div className="flex flex-col items-center gap-4 relative h-full w-full">
+    <div 
+      ref={containerRef} 
+      className="flex flex-col items-center gap-4 relative h-full w-full"
+    >
       <ScrollArea className="w-full h-full">
         <Document
           file={pdfProxyUrl}
-          onLoadSuccess={onDocumentLoadSuccess}
+          onLoadSuccess={({ numPages }) => setNumPages(numPages)}
           onLoadError={(error) => {
             console.error('Error al cargar PDF:', error)
             setError('Error al cargar el PDF')
@@ -100,51 +95,26 @@ export default function PDFViewer({ fileUrl }: PDFViewerProps) {
           {Array.from(new Array(numPages), (el, index) => (
             <div 
               key={`page_${index + 1}`}
-              ref={el => {
-                pagesRef.current[index] = el;
-              }}
+              ref={el => { pagesRef.current[index] = el }}
               data-page-number={index + 1}
+              className="flex justify-center scroll-mt-4"
             >
               <Page 
                 pageNumber={index + 1}
                 renderTextLayer={true}
                 renderAnnotationLayer={true}
                 className="shadow-lg border border-border/50 my-2 rounded-lg overflow-hidden"
-                width={Math.min(800, window.innerWidth - 80)}
+                width={Math.min(800, window.innerWidth - 80) * scale}
+                scale={scale}
               />
             </div>
           ))}
         </Document>
       </ScrollArea>
-      <div className="flex items-center gap-4 absolute bottom-6 left-1/2 -translate-x-1/2 z-10 bg-white/90 px-4 py-2 rounded-full shadow-lg backdrop-blur-sm">
-        <Button
-          onClick={() => {
-            const newPage = Math.max(pageNumber - 1, 1)
-            setPageNumber(newPage)
-            scrollToPage(newPage)
-          }}
-          disabled={pageNumber <= 1}
-          variant="outline"
-          className="hover:bg-gray-100 transition-colors"
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        <p className="min-w-[100px] text-center font-medium">
-          {pageNumber} de {numPages}
-        </p>
-        <Button
-          onClick={() => {
-            const newPage = Math.min(pageNumber + 1, numPages)
-            setPageNumber(newPage)
-            scrollToPage(newPage)
-          }}
-          disabled={pageNumber >= numPages}
-          variant="outline"
-          className="hover:bg-gray-100 transition-colors"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-      </div>
+      <Toolbar 
+        pagesRef={pagesRef} 
+        containerRef={containerRef as React.RefObject<HTMLDivElement>} 
+      />
     </div>
   )
 }

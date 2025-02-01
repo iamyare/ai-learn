@@ -1,10 +1,5 @@
 import React, { useState, ReactElement } from 'react'
-import { ToolbarSlot } from '@react-pdf-viewer/toolbar'
-import { RenderZoomInProps, RenderZoomOutProps } from '@react-pdf-viewer/zoom'
 import { RenderGoToPageProps } from '@react-pdf-viewer/page-navigation'
-import { RenderEnterFullScreenProps } from '@react-pdf-viewer/full-screen'
-import { RenderDownloadProps } from '@react-pdf-viewer/get-file'
-import { RenderPrintProps } from '@react-pdf-viewer/print'
 import { Button } from '@/components/ui/button'
 import {
   Tooltip,

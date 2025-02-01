@@ -430,3 +430,15 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Estilos para el contenedor en pantalla completa */
+.flex:fullscreen {
+  background-color: white;
+  padding: 1rem;
+}
+
+/* Para navegadores webkit */
+.flex:-webkit-full-screen {
+  background-color: white;
+  padding: 1rem;
+}
