@@ -6,6 +6,7 @@ import { SpecialZoomLevel } from '@react-pdf-viewer/core'
 import { highlightPlugin } from '@react-pdf-viewer/highlight'
 import '@react-pdf-viewer/core/lib/styles/index.css'
 import '@react-pdf-viewer/toolbar/lib/styles/index.css'
+import { usePDFWorker } from '@/hooks/usePDFWorker'
 
 import usePDFViewer from './usePDFViewer'
 import Toolbar from './viewer/toolbar'
@@ -25,14 +26,11 @@ interface PDFViewerProps {
 
 const PDFViewer: React.FC<PDFViewerProps> = ({ initialFileUrl }) => {
   const { extractTextFromPDF } = usePDFTextStore()
-  const { fileUrl, setFileUrl, setCurrentPage } = usePDFStore()
+  const { setFileUrl, setCurrentPage } = usePDFStore()
   const { text } = usePDFTextStore()
   const { setPdfText, setPdfUrl } = useExportStore()
+  const { isWorkerInitialized } = usePDFWorker()
 
-  useEffect(() => {
-    setPdfText(text)
-    setPdfUrl(initialFileUrl)
-  }, [text, initialFileUrl, setPdfText, setPdfUrl])
 
   const findTextNode = (node: Node): Node | null => {
     if (node.nodeType === Node.TEXT_NODE) {
@@ -132,6 +130,13 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ initialFileUrl }) => {
     }
   }, [initialFileUrl])
 
+
+
+  useEffect(() => {
+    setPdfText(text)
+    setPdfUrl(pdfProxyUrl || '')
+  }, [text, pdfProxyUrl, setPdfText, setPdfUrl])
+
   const {
     workerSrc,
     DynamicViewer,
@@ -153,11 +158,11 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ initialFileUrl }) => {
   ]
 
   useEffect(() => {
-    if (initialFileUrl) {
-      setFileUrl(initialFileUrl)
-      extractTextFromPDF(initialFileUrl)
+    if (pdfProxyUrl && isWorkerInitialized) {
+      setFileUrl(pdfProxyUrl)
+      extractTextFromPDF(pdfProxyUrl)
     }
-  }, [initialFileUrl, setFileUrl, extractTextFromPDF])
+  }, [pdfProxyUrl, isWorkerInitialized, setFileUrl, extractTextFromPDF])
 
 
   useEffect(() => {
