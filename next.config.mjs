@@ -24,18 +24,25 @@ const nextConfig = {
             }
         ]
     },
-    webpack: (config, { isServer }) => {
-        // Copiar el worker de PDF.js a la carpeta public
-        if (!isServer) {
-            const workerPath = require.resolve('pdfjs-dist/build/pdf.worker.min.js');
-            const publicWorkerPath = path.join(__dirname, 'public', 'pdf.worker.min.js');
-            
-            if (!fs.existsSync(publicWorkerPath)) {
-                fs.copyFileSync(workerPath, publicWorkerPath);
-            }
-        }
+    webpack: function (config) {
+        /**
+         * Critical: prevents " ⨯ ./node_modules/canvas/build/Release/canvas.node
+         * Module parse failed: Unexpected character '�' (1:0)" error
+         */
+        config.resolve.alias.canvas = false;
+
+        // You may not need this, it's just to support moduleResolution: 'node16'
+        config.resolve.extensionAlias = {
+            '.js': ['.js', '.ts', '.tsx'],
+        };
+
+        config.module.rules.push({
+            test: /\.svg$/,
+            use: ['@svgr/webpack'],
+        });
+
         return config;
-    }
+    },
 };
 
 const isDev = process.env.NODE_ENV === 'development';

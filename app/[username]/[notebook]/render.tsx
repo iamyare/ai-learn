@@ -35,7 +35,7 @@ export default function RenderView({
   const toggleChat = useCallback(() => setChatOpen((prev) => !prev), [])
 
   const pdfViewerContent = useMemo(
-    () => <PDFViewer fileUrl={'https://www.se.gob.hn/media/files/leyes/LC_BTf7DGE.pdf'} />,
+    () => <PDFViewer fileUrl={initialNotebook.pdf_document.file_path} />,
     [initialNotebook.pdf_document.file_path]
   )
 
