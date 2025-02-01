@@ -35,7 +35,7 @@ export default function RenderView({
   const toggleChat = useCallback(() => setChatOpen((prev) => !prev), [])
 
   const pdfViewerContent = useMemo(
-    () => <PDFViewer fileUrl={initialNotebook.pdf_document.file_path} />,
+    () => <PDFViewer initialFileUrl={initialNotebook.pdf_document.file_path} />,
     [initialNotebook.pdf_document.file_path]
   )
 
