@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useSpeechRecognition } from '../ui/useSpeechRecognition'
 import { useSpeechRecognitionStore } from '@/stores/useSpeechRecognitionStore'
-import { usePDFStore } from '@/stores/usePDFStore'
+import { usePDFStore } from '@/stores/pdfStore'
 
 export const SpeechRecognitionProvider = ({
   children

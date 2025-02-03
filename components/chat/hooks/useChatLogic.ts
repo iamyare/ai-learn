@@ -7,7 +7,7 @@ import { getChat, createChatNotebook, updateChatNotebook } from '@/actions'
 import { generateImportantEvents } from '@/lib/ai/ai-events'
 import { generateMindMap } from '@/lib/ai/ai-map-mental'
 import { generateChartFromHighlight, explainText, translateText } from '@/lib/ai/ai-highlighter'
-import { usePDFStore } from '@/stores/usePDFStore'
+import { usePDFStore } from '@/stores/pdfStore'
 import { usePDFTextStore } from '@/stores/usePDFTextStore'
 import { useExportStore } from '@/stores/useExportStore'
 
