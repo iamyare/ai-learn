@@ -17,7 +17,7 @@ export default function PDFViewer({ fileUrl }: PDFViewerProps) {
   const [error, setError] = useState<string | null>(null)
   const pagesRef = useRef<(HTMLDivElement | null)[]>([])
   const containerRef = useRef<HTMLDivElement>(null)
-  const { scale, setCurrentPage, numPages, setNumPages } = usePDFStore()
+  const { scale, setCurrentPage, numPages, setNumPages, setPDFBuffer } = usePDFStore()
 
   const pdfProxyUrl = useMemo(() => {
     try {
@@ -41,6 +41,23 @@ export default function PDFViewer({ fileUrl }: PDFViewerProps) {
       return null;
     }
   }, [fileUrl])
+
+  useEffect(() => {
+    const loadPDFBuffer = async () => {
+      if (pdfProxyUrl) {
+        try {
+          const response = await fetch(pdfProxyUrl);
+          const buffer = await response.arrayBuffer();
+          setPDFBuffer(buffer);
+        } catch (err) {
+          console.error('Error cargando buffer del PDF:', err);
+          setError('Error al cargar el buffer del PDF');
+        }
+      }
+    };
+
+    loadPDFBuffer();
+  }, [pdfProxyUrl, setPDFBuffer]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(

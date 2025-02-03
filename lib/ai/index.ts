@@ -1,6 +1,6 @@
 'use server'
 import { createGoogleGenerativeAI } from '@ai-sdk/google'
-import { streamText } from 'ai'
+import { CoreMessage, streamText } from 'ai'
 import { createStreamableValue } from 'ai/rsc'
 
 interface MessageType {
@@ -14,6 +14,7 @@ interface AiStreamParams {
   textPdf?: string
   messageHistory: MessageType[]
   apiKey: string
+  pdfBuffer?: ArrayBuffer | null
 }
 
 const MAX_MESSAGES = 10
@@ -99,10 +100,29 @@ export async function aiStream(params: AiStreamParams) {
       apiKey: params.apiKey
     })
 
+    const messages: CoreMessage[] = [
+      {
+        role: 'user',
+        content: params.pdfBuffer 
+          ? [
+              { type: 'text', text: userPrompt },
+              {
+                type: 'file',
+                mimeType: 'application/pdf',
+                data: params.pdfBuffer,
+              },
+            ]
+          : userPrompt,
+      },
+    ]
+
+
+    console.log('Iniciando stream de texto...', params.pdfBuffer)
+
     const {textStream} = await streamText({
-      model: google('models/gemini-1.5-pro-latest'), // Changed to pro version
+      model: google('models/gemini-1.5-pro-latest'),
       system: SYSTEM_PROMPT,
-      prompt: userPrompt,
+      messages: messages,
     })
 
 

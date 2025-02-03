@@ -14,6 +14,7 @@ import { toast } from '../ui/use-toast'
 import { usePDFTextStore } from '@/stores/usePDFTextStore'
 import { useSpeechRecognitionStore } from '@/stores/useSpeechRecognitionStore'
 import { useNotebookStore } from '@/stores/useNotebookStore'
+import { usePDFStore } from '@/stores/pdfStore'
 
 interface ChatInputProps {
   updateChatInDatabase: (updatedMessages: ChatMessageType[]) => Promise<void>
@@ -36,6 +37,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const { text } = usePDFTextStore()
   const [isPending, startTransition] = useTransition()
   const { updateNotebookInfo } = useNotebookStore()
+  const {  pdfBuffer} = usePDFStore();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -59,6 +61,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
           content: msg.content
         }))
 
+
       startTransition(async () => {
         try {
           const { textStream } = await aiStream({
@@ -66,6 +69,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
             transcription: transcript,
             textPdf: text,
             messageHistory: messageHistory,
+            pdfBuffer: pdfBuffer,
             apiKey: apiKeyGemini ?? ''
           })
 
@@ -113,16 +117,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
       })
       form.reset()
     },
-    [
-      setMessages,
-      history,
-      messages,
-      form,
-      text,
-      apiKeyGemini,
-      updateChatInDatabase,
-      updateNotebookInfo
-    ]
+    [setMessages, history, messages, form, text, pdfBuffer, apiKeyGemini, updateChatInDatabase, updateNotebookInfo]
   )
 
   return (
