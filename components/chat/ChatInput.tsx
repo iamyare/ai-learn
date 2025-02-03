@@ -57,7 +57,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
       const messageHistory = messages
         .filter((msg): msg is MessageType => 'content' in msg)
         .map((msg) => ({
-          role: msg.isUser ? 'user' : 'assistant',
+          role: msg.isUser ? ('user' as const) : ('assistant' as const),
           content: msg.content
         }))
 

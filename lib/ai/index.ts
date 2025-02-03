@@ -1,11 +1,11 @@
 'use server'
 import { createGoogleGenerativeAI } from '@ai-sdk/google'
-import { CoreMessage, streamText } from 'ai'
+import { CoreMessage, streamText, convertToCoreMessages } from 'ai'
 import { createStreamableValue } from 'ai/rsc'
 
 interface MessageType {
-  role: string
-  content: string
+  role: 'user' | 'assistant'
+  content: string | Array<{ type: string; text?: string; file?: { type: string; data: ArrayBuffer } }>
 }
 
 interface AiStreamParams {
@@ -52,7 +52,6 @@ Eres un asistente educativo diseñado para proporcionar respuestas concisas y di
 Recuerda: El objetivo es proporcionar la información más relevante de la manera más eficiente posible.
 `
 
-
 function truncateHistory(history: MessageType[]): MessageType[] {
   const isLongConversation = history.some(
     (msg) => msg.content.length > MESSAGE_LENGTH_THRESHOLD
@@ -68,7 +67,6 @@ function buildPrompt(params: AiStreamParams): string {
   if (transcription) {
     userPrompt += `Transcripción del docente: ${transcription}\n\n`
   }
-
 
   const truncatedHistory = truncateHistory(messageHistory)
   if (truncatedHistory.length > 0) {
@@ -86,38 +84,55 @@ function buildPrompt(params: AiStreamParams): string {
   return userPrompt.trim() || 'No se ha proporcionado ninguna información específica.'
 }
 
+function buildCoreMessages(params: AiStreamParams): CoreMessage[] {
+  const { prompt, transcription, messageHistory, pdfBuffer } = params
+  
+  // Convertir el historial existente
+  const historyCoreMessages = convertToCoreMessages(
+    truncateHistory(messageHistory).map((msg) => ({
+      ...msg,
+      content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content),
+    }))
+  )
+  
+  // Construir el contenido del nuevo mensaje
+  const newMessageContent: any[] = [{ type: 'text', text: buildPrompt(params) }]
+  
+  // Agregar el PDF si existe
+  if (pdfBuffer) {
+    newMessageContent.push({
+      type: 'file',
+      mimeType: 'application/pdf',
+      data: pdfBuffer,
+    })
+  }
+  
+  // Agregar el nuevo mensaje al historial
+  return [
+    ...historyCoreMessages,
+    {
+      role: 'user',
+      content: newMessageContent,
+    },
+  ]
+}
+
 export async function aiStream(params: AiStreamParams) {
   'use server'
   const stream = createStreamableValue()
 
   try {
-    const userPrompt = buildPrompt(params)
     const google = createGoogleGenerativeAI({
       apiKey: params.apiKey
     })
 
-    const messages: CoreMessage[] = [
-      {
-        role: 'user',
-        content: params.pdfBuffer 
-          ? [
-              { type: 'text', text: userPrompt },
-              {
-                type: 'file',
-                mimeType: 'application/pdf',
-                data: params.pdfBuffer,
-              },
-            ]
-          : userPrompt,
-      },
-    ]
+    const messages = buildCoreMessages(params)
 
     const {textStream} = await streamText({
-      model: google('models/gemini-1.5-pro-latest'),
+      model: google('models/gemini-1.5-flash-002'),
       system: SYSTEM_PROMPT,
-      messages: messages,
+      messages,
     })
-
 
     if (!textStream) {
       throw new Error('No se pudo iniciar el stream de texto')

@@ -43,7 +43,7 @@
     "@tanstack/react-query-devtools": "^5.64.2",
     "@tsparticles/slim": "^3.5.0",
     "@types/dom-speech-recognition": "^0.0.4",
-    "ai": "^4.1.16",
+    "ai": "^4.1.17",
     "ansi-html": "^0.0.9",
     "braces": "^3.0.3",
     "canvas-confetti": "^1.9.3",
