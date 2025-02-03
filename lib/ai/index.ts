@@ -11,7 +11,6 @@ interface MessageType {
 interface AiStreamParams {
   prompt: string
   transcription?: string
-  textPdf?: string
   messageHistory: MessageType[]
   apiKey: string
   pdfBuffer?: ArrayBuffer | null
@@ -63,16 +62,13 @@ function truncateHistory(history: MessageType[]): MessageType[] {
 }
 
 function buildPrompt(params: AiStreamParams): string {
-  const { prompt, transcription, textPdf, messageHistory } = params
+  const { prompt, transcription, messageHistory } = params
   let userPrompt = ''
 
   if (transcription) {
     userPrompt += `Transcripción del docente: ${transcription}\n\n`
   }
 
-  if (textPdf) {
-    userPrompt += `Contenido del PDF de la clase: ${textPdf}\n\n`
-  }
 
   const truncatedHistory = truncateHistory(messageHistory)
   if (truncatedHistory.length > 0) {
@@ -115,9 +111,6 @@ export async function aiStream(params: AiStreamParams) {
           : userPrompt,
       },
     ]
-
-
-    console.log('Iniciando stream de texto...', params.pdfBuffer)
 
     const {textStream} = await streamText({
       model: google('models/gemini-1.5-pro-latest'),

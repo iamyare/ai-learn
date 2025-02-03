@@ -67,7 +67,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
           const { textStream } = await aiStream({
             prompt: values.message ?? 'Realiza un resumen de todo el contenido',
             transcription: transcript,
-            textPdf: text,
             messageHistory: messageHistory,
             pdfBuffer: pdfBuffer,
             apiKey: apiKeyGemini ?? ''
@@ -117,7 +116,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
       })
       form.reset()
     },
-    [setMessages, history, messages, form, text, pdfBuffer, apiKeyGemini, updateChatInDatabase, updateNotebookInfo]
+    [setMessages, history, messages, form, pdfBuffer, apiKeyGemini, updateChatInDatabase, updateNotebookInfo]
   )
 
   return (
