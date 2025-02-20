@@ -162,28 +162,40 @@ export type Database = {
       }
       pdf_documents: {
         Row: {
+          cache_expiration: string | null
+          cache_id: string | null
           created_at: string
           file_name: string
           file_path: string
           file_size: string
           notebook_id: string
           pdf_id: string
+          pdf_temp_expiration: string | null
+          pdf_temp_path: string | null
         }
         Insert: {
+          cache_expiration?: string | null
+          cache_id?: string | null
           created_at?: string
           file_name: string
           file_path: string
           file_size: string
           notebook_id: string
           pdf_id?: string
+          pdf_temp_expiration?: string | null
+          pdf_temp_path?: string | null
         }
         Update: {
+          cache_expiration?: string | null
+          cache_id?: string | null
           created_at?: string
           file_name?: string
           file_path?: string
           file_size?: string
           notebook_id?: string
           pdf_id?: string
+          pdf_temp_expiration?: string | null
+          pdf_temp_path?: string | null
         }
         Relationships: [
           {
@@ -260,7 +272,7 @@ export type Database = {
       user_subscription: {
         Row: {
           created_at: string
-          expires_at: string
+          expires_at: string | null
           id: number
           status: string
           subscription_id: number
@@ -269,7 +281,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          expires_at: string
+          expires_at?: string | null
           id?: number
           status?: string
           subscription_id: number
@@ -278,7 +290,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          expires_at?: string
+          expires_at?: string | null
           id?: number
           status?: string
           subscription_id?: number
