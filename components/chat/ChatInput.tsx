@@ -17,8 +17,7 @@ import { useNotebookStore } from '@/stores/useNotebookStore'
 import { usePDFStore } from '@/stores/pdfStore'
 
 interface ChatInputProps {
-  updateChatInDatabase: (updatedMessages: ChatMessageType[]) => Promise<void>
-  setMessages: React.Dispatch<React.SetStateAction<ChatMessageType[]>>
+  onSendMessage: (message: string) => void
   apiKeyGemini?: string
   messages: ChatMessageType[]
 }
@@ -28,8 +27,7 @@ const formSchema = z.object({
 })
 
 const ChatInput: React.FC<ChatInputProps> = ({
-  updateChatInDatabase,
-  setMessages,
+  onSendMessage,
   apiKeyGemini,
   messages
 }) => {
@@ -37,7 +35,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const { text } = usePDFTextStore()
   const [isPending, startTransition] = useTransition()
   const { updateNotebookInfo } = useNotebookStore()
-  const {  pdfBuffer} = usePDFStore();
+  const { pdfBuffer } = usePDFStore()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -46,12 +44,9 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
   const onSubmit = useCallback(
     async (values: z.infer<typeof formSchema>) => {
-      const userMessage: MessageType = {
-        content: values.message,
-        isUser: true,
-        timestamp: new Date().toISOString()
-      }
-      setMessages((prev) => [...prev, userMessage])
+      if (!values.message.trim()) return
+
+      onSendMessage(values.message)
       const transcript = history.map((entry) => entry.text).join(' ')
 
       const messageHistory = messages
@@ -61,48 +56,21 @@ const ChatInput: React.FC<ChatInputProps> = ({
           content: msg.content
         }))
 
-
       startTransition(async () => {
         try {
           const { textStream } = await aiStream({
-            prompt: values.message ?? 'Realiza un resumen de todo el contenido',
+            prompt: values.message,
             transcription: transcript,
             messageHistory: messageHistory,
             pdfBuffer: pdfBuffer,
             apiKey: apiKeyGemini ?? ''
           })
 
-          const aiMessage: MessageType = {
-            content: '',
-            isUser: false,
-            timestamp: new Date().toISOString()
-          }
-
-          // Agregar mensaje inicial vacío
-          setMessages((prev) => [...prev, aiMessage])
-
           let accumulatedText = ''
           for await (const delta of readStreamableValue(textStream)) {
             accumulatedText += delta
-            setMessages((prev) => {
-              const newMessages = [...prev]
-              const lastIndex = newMessages.length - 1
-              if (lastIndex >= 0 && !newMessages[lastIndex].isUser) {
-                newMessages[lastIndex] = {
-                  ...newMessages[lastIndex],
-                  content: accumulatedText
-                }
-              }
-              return newMessages
-            })
           }
 
-          // Actualizar la base de datos con el mensaje completo
-          await updateChatInDatabase([
-            ...messages,
-            userMessage,
-            { ...aiMessage, content: accumulatedText }
-          ])
           updateNotebookInfo({ updated_at: new Date().toISOString() })
         } catch (err) {
           console.error('Error en el flujo de AI:', err)
@@ -116,7 +84,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
       })
       form.reset()
     },
-    [setMessages, history, messages, form, pdfBuffer, apiKeyGemini, updateChatInDatabase, updateNotebookInfo]
+    [history, messages, form, pdfBuffer, apiKeyGemini, onSendMessage, updateNotebookInfo]
   )
 
   return (
