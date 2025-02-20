@@ -1,7 +1,8 @@
 'use server'
-import { createGoogleGenerativeAI } from '@ai-sdk/google'
-import { CoreMessage, streamText, convertToCoreMessages } from 'ai'
 import { createStreamableValue } from 'ai/rsc'
+import { CoreMessage, convertToCoreMessages } from 'ai'
+import { logger } from '@/lib/utils/logger'
+import { GeminiService, createGeminiService } from '@/lib/services/gemini'
 
 interface MessageType {
   role: 'user' | 'assistant'
@@ -54,7 +55,7 @@ Recuerda: El objetivo es proporcionar la información más relevante de la maner
 
 function truncateHistory(history: MessageType[]): MessageType[] {
   const isLongConversation = history.some(
-    (msg) => msg.content.length > MESSAGE_LENGTH_THRESHOLD
+    (msg) => typeof msg.content === 'string' && msg.content.length > MESSAGE_LENGTH_THRESHOLD
   )
   const limit = isLongConversation ? MAX_MESSAGES_LONG : MAX_MESSAGES
   return history.slice(-limit)
@@ -72,9 +73,10 @@ function buildPrompt(params: AiStreamParams): string {
   if (truncatedHistory.length > 0) {
     userPrompt += 'Historial de la conversación:\n'
     truncatedHistory.forEach((message) => {
-      userPrompt += `${message.role === 'user' ? 'Usuario' : 'Asistente'}: ${
-        message.content
-      }\n`
+      const content = typeof message.content === 'string' 
+        ? message.content 
+        : message.content.map(c => c.text || '').join(' ')
+      userPrompt += `${message.role === 'user' ? 'Usuario' : 'Asistente'}: ${content}\n`
     })
     userPrompt += '\n'
   }
@@ -122,37 +124,44 @@ export async function aiStream(params: AiStreamParams) {
   const stream = createStreamableValue()
 
   try {
-    const google = createGoogleGenerativeAI({
-      apiKey: params.apiKey
-    })
-
+    const service = await createGeminiService(params.apiKey)
     const messages = buildCoreMessages(params)
 
-    const {textStream} = await streamText({
-      model: google('models/gemini-1.5-flash-002'),
-      system: SYSTEM_PROMPT,
-      messages,
+    logger.info('Starting AI stream', {
+      messageCount: messages.length,
+      hasPDF: !!params.pdfBuffer,
+      hasTranscription: !!params.transcription
     })
 
-    if (!textStream) {
-      throw new Error('No se pudo iniciar el stream de texto')
-    }
+    const { content, tokenUsage } = await service.generateContent({
+      prompt: buildPrompt(params),
+      systemPrompt: SYSTEM_PROMPT,
+      temperature: 0.7
+    })
 
+    // Transmitir la respuesta
     ;(async () => {
       try {
-        for await (const text of textStream) {
-          stream.update(text)
-        }
+        stream.update(content)
         stream.done()
+
+        logger.info('AI stream completed', {
+          tokenUsage,
+          messageCount: messages.length
+        })
       } catch (error) {
-        console.error('Error en el stream:', error)
+        logger.error('Error in stream', {
+          error: error instanceof Error ? error.message : 'Unknown error'
+        })
         stream.error(error)
       }
     })()
 
-    return { textStream: stream.value}
+    return { textStream: stream.value }
   } catch (error) {
-    console.error('Error en aiStream:', error)
+    logger.error('Error in aiStream', {
+      error: error instanceof Error ? error.message : 'Unknown error'
+    })
     stream.error(error)
     return { textStream: stream.value }
   }
