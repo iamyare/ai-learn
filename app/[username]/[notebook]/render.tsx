@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useMediaQuery } from '@/components/ui/use-media-query'
 import SpeechRecognition from './components/SpeechRecognition'
-import PDFViewer from '@/components/ui/PDFViewer'
+import DynamicPDFViewer from '@/components/ui/DynamicPDFViewer'
 import {
   ResizableHandle,
   ResizablePanel,
@@ -35,7 +35,7 @@ export default function RenderView({
   const toggleChat = useCallback(() => setChatOpen((prev) => !prev), [])
 
   const pdfViewerContent = useMemo(
-    () => <PDFViewer fileUrl={initialNotebook.pdf_document.file_path} />,
+    () => <DynamicPDFViewer fileUrl={initialNotebook.pdf_document.file_path} />,
     [initialNotebook.pdf_document.file_path]
   )
 

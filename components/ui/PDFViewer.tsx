@@ -7,8 +7,6 @@ import { usePDFStore } from '@/stores/pdfStore'
 import 'react-pdf/dist/Page/AnnotationLayer.css'
 import 'react-pdf/dist/Page/TextLayer.css'
 
-pdfjs.GlobalWorkerOptions.workerSrc = `/api/pdf-helper?url=unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
-
 interface PDFViewerProps {
   fileUrl: string
 }
@@ -18,6 +16,10 @@ export default function PDFViewer({ fileUrl }: PDFViewerProps) {
   const pagesRef = useRef<(HTMLDivElement | null)[]>([])
   const containerRef = useRef<HTMLDivElement>(null)
   const { scale, setCurrentPage, numPages, setNumPages, setPDFBuffer } = usePDFStore()
+
+  useEffect(() => {
+    pdfjs.GlobalWorkerOptions.workerSrc = `/api/pdf-helper?url=unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
+  }, [])
 
   const pdfProxyUrl = useMemo(() => {
     try {
