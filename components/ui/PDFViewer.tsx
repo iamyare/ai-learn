@@ -15,7 +15,8 @@ export default function PDFViewer({ fileUrl }: PDFViewerProps) {
   const [error, setError] = useState<string | null>(null)
   const pagesRef = useRef<(HTMLDivElement | null)[]>([])
   const containerRef = useRef<HTMLDivElement>(null)
-  const { scale, setCurrentPage, numPages, setNumPages, setPDFBuffer } = usePDFStore()
+  const scrollAreaRef = useRef<HTMLDivElement>(null)
+  const { scale, setCurrentPage, currentPage, numPages, setNumPages, setPDFBuffer } = usePDFStore()
 
   useEffect(() => {
     pdfjs.GlobalWorkerOptions.workerSrc = `/api/pdf-helper?url=unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`
@@ -62,37 +63,53 @@ export default function PDFViewer({ fileUrl }: PDFViewerProps) {
   }, [pdfProxyUrl, setPDFBuffer]);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const pageNum = Number(entry.target.getAttribute('data-page-number'))
-            if (pageNum) {
-              setCurrentPage(pageNum)
-            }
-          }
-        })
-      },
-      {
-        threshold: 0.5, // El elemento debe estar 50% visible
-        rootMargin: '-100px 0px' // Ajuste para mejorar la detección
-      }
-    )
+    const scrollArea = document.querySelector('[data-radix-scroll-area-viewport]')
+    if (!scrollArea) return
 
-    // Observar todas las páginas
-    const currentPages = pagesRef.current
-    currentPages.forEach((page) => {
-      if (page) observer.observe(page)
-    })
+    const calculateVisiblePage = () => {
+      const scrollTop = scrollArea.scrollTop
+      const containerHeight = scrollArea.clientHeight
+      const scrollAreaRect = scrollArea.getBoundingClientRect()
+      
+      let maxVisibility = 0
+      let visiblePage = 1
+
+      pagesRef.current.forEach((pageDiv, index) => {
+        if (!pageDiv) return
+
+        const rect = pageDiv.getBoundingClientRect()
+        const pageTop = rect.top - scrollAreaRect.top + scrollArea.scrollTop
+        const pageBottom = pageTop + rect.height
+
+        // Calcular la intersección con el viewport
+        const visibleTop = Math.max(scrollTop, pageTop)
+        const visibleBottom = Math.min(scrollTop + containerHeight, pageBottom)
+        const visibleHeight = Math.max(0, visibleBottom - visibleTop)
+
+        // Calcular el porcentaje visible de la página
+        const pageVisibility = visibleHeight / rect.height
+
+        if (pageVisibility > maxVisibility) {
+          maxVisibility = pageVisibility
+          visiblePage = index + 1
+        }
+      })
+
+      setCurrentPage(visiblePage)
+    }
+
+    const handleScroll = () => {
+      requestAnimationFrame(calculateVisiblePage)
+    }
+
+    scrollArea.addEventListener('scroll', handleScroll, { passive: true })
+    // Calcular la página inicial después de que el documento se cargue
+    setTimeout(calculateVisiblePage, 100)
 
     return () => {
-      // Limpiar el observer
-      currentPages.forEach((page) => {
-        if (page) observer.unobserve(page)
-      })
-      observer.disconnect()
+      scrollArea.removeEventListener('scroll', handleScroll)
     }
-  }, [numPages, setCurrentPage]) // Recrear observer cuando cambie el número de páginas
+  }, [numPages, setCurrentPage])
 
   if (error) return <div className="text-red-500">{error}</div>
 
