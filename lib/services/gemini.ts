@@ -16,8 +16,8 @@ export interface GeminiResponse {
 
 export class GeminiService {
   private client: ReturnType<typeof createGoogleGenerativeAI>
-  private readonly COST_PER_1K_TOKENS = 0.0005 // Costo por cada 1000 tokens según la documentación de Gemini
-  
+  private readonly COST_PER_1K_TOKENS = 0.0005
+
   constructor(apiKey: string) {
     this.client = createGoogleGenerativeAI({ apiKey })
   }
@@ -26,56 +26,14 @@ export class GeminiService {
     return (tokens / 1000) * this.COST_PER_1K_TOKENS
   }
 
-  private async getTokenCount(text: string): Promise<number> {
-    // Estimación aproximada: 1 token ≈ 4 caracteres para idiomas basados en latín
-    return Math.ceil(text.length / 4)
-  }
-
-  private async trackTokenUsage(
-    promptText: string,
-    completionText: string
-  ): Promise<TokenUsage> {
-    const promptTokens = await this.getTokenCount(promptText)
-    const completionTokens = await this.getTokenCount(completionText)
-    const totalTokens = promptTokens + completionTokens
-    
-    const usage: TokenUsage = {
-      promptTokens,
-      completionTokens,
-      totalTokens,
-      estimatedCost: this.calculateCost(totalTokens)
-    }
-
-    logger.info('Token usage tracked', { usage })
-    return usage
-  }
-
-  private async buildMessageContent(params: {
-    prompt: string,
-    pdfBuffer?: ArrayBuffer | null
-  }) {
-    const { prompt, pdfBuffer } = params
-    const content: any[] = [{ type: 'text', text: prompt }]
-
-    if (pdfBuffer) {
-      content.push({
-        type: 'file',
-        mimeType: 'application/pdf',
-        data: pdfBuffer
-      })
-    }
-
-    return content
-  }
-
-  async generateContent(params: {
+  async generateStreamingContent(params: {
     prompt: string
     systemPrompt?: string
     temperature?: number
     maxTokens?: number
     stopSequences?: string[]
     pdfBuffer?: ArrayBuffer | null
-  }): Promise<GeminiResponse> {
+  }) {
     const {
       prompt,
       systemPrompt,
@@ -86,7 +44,7 @@ export class GeminiService {
     } = params
 
     try {
-      logger.info('Generating content', { 
+      logger.info('Starting streaming content generation', { 
         promptPreview: prompt.substring(0, 100) + '...',
         temperature,
         maxTokens,
@@ -94,52 +52,56 @@ export class GeminiService {
       })
       
       const startTime = Date.now()
-      
       const model = this.client('models/gemini-1.5-flash-002')
-      const messageContent = await this.buildMessageContent({ prompt, pdfBuffer })
+      
+      const content: any[] = [{ type: 'text', text: prompt }]
+      if (pdfBuffer) {
+        content.push({
+          type: 'file',
+          mimeType: 'application/pdf',
+          data: pdfBuffer
+        })
+      }
+
+      let tokenUsage: TokenUsage | null = null
       
       const { textStream } = await streamText({
         model,
         messages: [{
           role: 'user',
-          content: messageContent
+          content
         }],
         system: systemPrompt,
         temperature,
         maxTokens,
-        stopSequences
+        stopSequences,
+        onFinish: ({usage}) => {
+          tokenUsage = {
+            promptTokens: usage.promptTokens,
+            completionTokens: usage.completionTokens,
+            totalTokens: usage.totalTokens,
+            estimatedCost: this.calculateCost(usage.totalTokens)
+          }
+          
+          const endTime = Date.now()
+          logger.info('Streaming completed', {
+            duration: endTime - startTime,
+            tokens: usage.totalTokens,
+            cost: tokenUsage.estimatedCost
+          })
+        }
       })
 
       if (!textStream) {
         throw new Error('No se pudo iniciar el stream de texto')
       }
 
-      let fullResponse = ''
-      for await (const text of textStream) {
-        fullResponse += text
-      }
-
-      logger.info('Content generated successfully', {
-        fullResponsePreview: fullResponse.substring(0, 100) + '...'
-      })
-
-      const endTime = Date.now()
-      const duration = endTime - startTime
-
-      const tokenUsage = await this.trackTokenUsage(prompt, fullResponse)
-
-      logger.info('Content generated successfully', {
-        duration,
-        tokens: tokenUsage.totalTokens,
-        cost: tokenUsage.estimatedCost
-      })
-
       return {
-        content: fullResponse,
-        tokenUsage
+        stream: textStream,
+        getTokenUsage: () => tokenUsage
       }
     } catch (error) {
-      logger.error('Error generating content', {
+      logger.error('Error in streaming content', {
         error: error instanceof Error ? error.message : 'Unknown error',
         promptPreview: prompt.substring(0, 100) + '...'
       })
@@ -149,7 +111,6 @@ export class GeminiService {
 
   private handleError(error: unknown): Error {
     if (error instanceof Error) {
-      // Manejar errores específicos de la API
       if (error.message.includes('quota')) {
         return new Error('Se ha excedido la cuota de la API')
       }
@@ -172,10 +133,14 @@ export class GeminiService {
 
   async validateApiKey(): Promise<boolean> {
     try {
-      await this.generateContent({
+      const { stream } = await this.generateStreamingContent({
         prompt: 'test',
         maxTokens: 1
       })
+      for await (const _ of stream) {
+        // Solo necesitamos verificar que el stream funciona
+        break
+      }
       return true
     } catch (error) {
       logger.error('API key validation failed', {
@@ -186,7 +151,6 @@ export class GeminiService {
   }
 }
 
-// Funciones de utilidad para trabajar con el servicio
 export async function createGeminiService(apiKey: string): Promise<GeminiService> {
   if (!apiKey) {
     throw new Error('API key es requerida para crear el servicio de Gemini')

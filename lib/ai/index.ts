@@ -1,6 +1,6 @@
 'use server'
 import { createStreamableValue } from 'ai/rsc'
-import { CoreMessage, convertToCoreMessages } from 'ai'
+import { convertToCoreMessages } from 'ai'
 import { logger } from '@/lib/utils/logger'
 import { GeminiService, createGeminiService } from '@/lib/services/gemini'
 
@@ -19,7 +19,7 @@ interface AiStreamParams {
 
 const MAX_MESSAGES = 10
 const MAX_MESSAGES_LONG = 5
-const MESSAGE_LENGTH_THRESHOLD = 3500 // Caracteres
+const MESSAGE_LENGTH_THRESHOLD = 3500
 
 const SYSTEM_PROMPT = `
 # Asistente Educativo IA
@@ -99,23 +99,29 @@ export async function aiStream(params: AiStreamParams) {
       hasTranscription: !!params.transcription
     })
 
-    const { content, tokenUsage } = await service.generateContent({
+    const { stream: textStream, getTokenUsage } = await service.generateStreamingContent({
       prompt: buildPrompt(params),
       systemPrompt: SYSTEM_PROMPT,
       temperature: 0.7,
       pdfBuffer: params.pdfBuffer
     })
 
-    // Transmitir la respuesta
+    // Transmitir la respuesta chunk por chunk
     ;(async () => {
       try {
-        stream.update(content)
+        for await (const chunk of textStream) {
+          stream.update(chunk)
+        }
         stream.done()
 
-        logger.info('AI stream completed', {
-          tokenUsage,
-          messageCount: params.messageHistory.length
-        })
+        // Obtener y registrar el uso de tokens después de completar el stream
+        const tokenUsage = getTokenUsage()
+        if (tokenUsage) {
+          logger.info('AI stream completed', {
+            tokenUsage,
+            messageCount: params.messageHistory.length
+          })
+        }
       } catch (error) {
         logger.error('Error in stream', {
           error: error instanceof Error ? error.message : 'Unknown error'
