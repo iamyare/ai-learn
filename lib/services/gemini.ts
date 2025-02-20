@@ -1,6 +1,10 @@
 import { createGoogleGenerativeAI } from '@ai-sdk/google'
-import { streamText } from 'ai'
+import { streamText, CoreMessage, CoreUserMessage } from 'ai'
 import { logger } from '@/lib/utils/logger'
+import { GoogleAICacheManager, GoogleAIFileManager, FileState } from '@google/generative-ai/server'
+import { writeFileSync, unlinkSync } from 'fs'
+import { join } from 'path'
+import os from 'os'
 
 export interface TokenUsage {
   promptTokens: number
@@ -14,16 +18,129 @@ export interface GeminiResponse {
   tokenUsage: TokenUsage
 }
 
+type CacheableModels = 'models/gemini-1.5-flash-001' | 'models/gemini-1.5-flash-002'
+
+interface MessageContent {
+  type: string
+  text?: string
+  mimeType?: string
+  data?: ArrayBuffer
+}
+
 export class GeminiService {
   private client: ReturnType<typeof createGoogleGenerativeAI>
+  private cacheManager: GoogleAICacheManager
+  private fileManager: GoogleAIFileManager
   private readonly COST_PER_1K_TOKENS = 0.0005
+  private readonly DEFAULT_CACHE_TTL = 60 * 60 // 1 hora en segundos
+  private readonly MODEL: CacheableModels = 'models/gemini-1.5-flash-002'
+  private readonly RETRY_ATTEMPTS = 3
+  private readonly RETRY_DELAY = 2000 // 2 segundos
 
   constructor(apiKey: string) {
     this.client = createGoogleGenerativeAI({ apiKey })
+    this.cacheManager = new GoogleAICacheManager(apiKey)
+    this.fileManager = new GoogleAIFileManager(apiKey)
   }
 
   private calculateCost(tokens: number): number {
     return (tokens / 1000) * this.COST_PER_1K_TOKENS
+  }
+
+  private async wait(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms))
+  }
+
+  private async uploadAndProcessPDF(
+    pdfBuffer: ArrayBuffer,
+    systemPrompt?: string
+  ): Promise<string | undefined> {
+    const tempPath = join(os.tmpdir(), `pdf-${Date.now()}.pdf`)
+    
+    try {
+      // Calcular un hash para identificar el PDF
+      const hash = Buffer.from(pdfBuffer).slice(0, 32).toString('hex')
+      
+      // Guardar temporalmente el PDF
+      writeFileSync(tempPath, new Uint8Array(pdfBuffer))
+      
+      // Subir el PDF
+      const fileResult = await this.fileManager.uploadFile(tempPath, {
+        mimeType: 'application/pdf',
+        displayName: `pdf-${hash.substring(0, 8)}`
+      })
+
+      if (!fileResult.file?.uri) {
+        logger.warn('File upload failed - no URI returned', { pdfHash: hash })
+        return undefined
+      }
+
+      // Esperar a que el archivo se procese
+      let file = await this.fileManager.getFile(fileResult.file.name)
+      let attempts = 0
+
+      while (file.state === FileState.PROCESSING && attempts < this.RETRY_ATTEMPTS) {
+        logger.info('Waiting for PDF processing', { 
+          attempt: attempts + 1,
+          pdfHash: hash
+        })
+        
+        await this.wait(this.RETRY_DELAY)
+        file = await this.fileManager.getFile(fileResult.file.name)
+        attempts++
+      }
+
+      if (file.state !== FileState.ACTIVE) {
+        logger.warn('PDF processing failed or timed out', {
+          state: file.state,
+          pdfHash: hash
+        })
+        return undefined
+      }
+
+      // Crear el caché con el archivo procesado
+      const cacheResult = await this.cacheManager.create({
+        model: this.MODEL,
+        systemInstruction: systemPrompt,
+        contents: [{
+          role: 'user',
+          parts: [{
+            fileData: {
+              mimeType: 'application/pdf',
+              fileUri: fileResult.file.uri
+            }
+          }]
+        }],
+        ttlSeconds: this.DEFAULT_CACHE_TTL
+      })
+
+      if (cacheResult.name) {
+        const cacheId = cacheResult.name.split('/').pop()
+        logger.info('PDF content cached', {
+          pdfHash: hash,
+          cacheId
+        })
+        return cacheResult.name
+      }
+
+      return undefined
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+      logger.warn('Failed to process PDF', {
+        error: errorMessage,
+        errorType: error instanceof Error ? error.constructor.name : 'Unknown'
+      })
+      return undefined
+    } finally {
+      // Limpiar el archivo temporal
+      try {
+        unlinkSync(tempPath)
+      } catch (error) {
+        logger.warn('Failed to cleanup temporary PDF file', {
+          path: tempPath
+        })
+      }
+    }
   }
 
   async generateStreamingContent(params: {
@@ -44,38 +161,46 @@ export class GeminiService {
     } = params
 
     try {
-      logger.info('Starting streaming content generation', { 
-        promptPreview: prompt.substring(0, 100) + '...',
-        temperature,
-        maxTokens,
-        hasPDF: !!pdfBuffer
-      })
-      
       const startTime = Date.now()
-      const model = this.client('models/gemini-1.5-flash-002')
-      
-      const content: any[] = [{ type: 'text', text: prompt }]
+      let model = this.client(this.MODEL)
+      let cachedContent: string | undefined
+
       if (pdfBuffer) {
-        content.push({
-          type: 'file',
-          mimeType: 'application/pdf',
-          data: pdfBuffer
+        logger.info('Processing PDF', { 
+          pdfSize: Math.round(pdfBuffer.byteLength / 1024) + 'KB'
         })
+        
+        cachedContent = await this.uploadAndProcessPDF(pdfBuffer, systemPrompt)
+        if (cachedContent) {
+          model = this.client(this.MODEL, { cachedContent })
+        }
       }
+
+      // Preparar los mensajes según si estamos usando caché o no
+      const userMessage: CoreUserMessage = {
+        role: 'user',
+        content: prompt,
+        ...(pdfBuffer && !cachedContent ? {
+          data: {
+            type: 'file',
+            mimeType: 'application/pdf',
+            content: pdfBuffer
+          }
+        } : {})
+      }
+
+      const messages: CoreMessage[] = [userMessage]
 
       let tokenUsage: TokenUsage | null = null
       
       const { textStream } = await streamText({
         model,
-        messages: [{
-          role: 'user',
-          content
-        }],
-        system: systemPrompt,
+        messages,
         temperature,
         maxTokens,
         stopSequences,
-        onFinish: ({usage}) => {
+        ...(systemPrompt && !cachedContent ? { system: systemPrompt } : {}),
+        onFinish: ({usage}: any) => {
           tokenUsage = {
             promptTokens: usage.promptTokens,
             completionTokens: usage.completionTokens,
@@ -87,7 +212,8 @@ export class GeminiService {
           logger.info('Streaming completed', {
             duration: endTime - startTime,
             tokens: usage.totalTokens,
-            cost: tokenUsage.estimatedCost
+            cost: tokenUsage.estimatedCost,
+            usedCache: !!cachedContent
           })
         }
       })
@@ -101,9 +227,8 @@ export class GeminiService {
         getTokenUsage: () => tokenUsage
       }
     } catch (error) {
-      logger.error('Error in streaming content', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        promptPreview: prompt.substring(0, 100) + '...'
+      logger.error('Streaming error', {
+        error: error instanceof Error ? error.message : 'Unknown error'
       })
       throw this.handleError(error)
     }
@@ -138,7 +263,6 @@ export class GeminiService {
         maxTokens: 1
       })
       for await (const _ of stream) {
-        // Solo necesitamos verificar que el stream funciona
         break
       }
       return true
