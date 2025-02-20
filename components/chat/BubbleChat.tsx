@@ -13,6 +13,35 @@ interface BubbleChatProps {
   message: ChatMessageType
 }
 
+// Type guards para los diferentes tipos de mensajes
+function isMessageType(message: ChatMessageType): message is MessageType {
+  return 'content' in message
+}
+
+function isEventMessageType(message: ChatMessageType): message is EventMessageType {
+  return 'events' in message
+}
+
+function isMindMapMessageType(message: ChatMessageType): message is MindMapMessageType {
+  return 'mindMap' in message
+}
+
+function isChartMessageType(message: ChatMessageType): message is ChartMessageType {
+  return 'chartData' in message
+}
+
+function isNoteMessageType(message: ChatMessageType): message is NoteMessageType {
+  return 'noteText' in message
+}
+
+function isExplanationMessageType(message: ChatMessageType): message is ExplanationMessageType {
+  return 'explanation' in message
+}
+
+function isTranslationMessageType(message: ChatMessageType): message is TranslationMessageType {
+  return 'translation' in message
+}
+
 const BubbleChat: React.FC<BubbleChatProps> = ({ message }) => {
   const messageClass = useMemo(
     () => cn('flex flex-col', message.isUser ? 'items-end' : 'items-start'),
@@ -30,25 +59,47 @@ const BubbleChat: React.FC<BubbleChatProps> = ({ message }) => {
   )
 
   const renderMessageContent = () => {
-    if ('content' in message) {
+    // Si es un mensaje regular
+    if (isMessageType(message)) {
       return message.isUser ? (
         <p>{message.content}</p>
       ) : (
         <MessageContent content={message.content} />
       )
-    } else if ('events' in message) {
+    }
+    
+    // Si es un mensaje de eventos
+    if (isEventMessageType(message)) {
       return <EventList events={message.events} />
-    } else if ('mindMap' in message) {
+    }
+    
+    // Si es un mapa mental
+    if (isMindMapMessageType(message)) {
       return <MindMap mindMap={message.mindMap} />
-    } else if ('chartData' in message) {
+    }
+    
+    // Si es un gráfico
+    if (isChartMessageType(message)) {
       return <Chart chartData={message.chartData} />
-    } else if ('noteText' in message) {
+    }
+    
+    // Si es una nota
+    if (isNoteMessageType(message)) {
       return <Note noteText={message.noteText} />
-    } else if ('explanation' in message) {
+    }
+    
+    // Si es una explicación
+    if (isExplanationMessageType(message)) {
       return <Explanation explanation={message.explanation} />
-    } else if ('translation' in message) {
+    }
+    
+    // Si es una traducción
+    if (isTranslationMessageType(message)) {
       return <Translation translation={message.translation} />
     }
+
+    // Por defecto, mostrar un mensaje de error
+    return <p className="text-red-500">Tipo de mensaje no soportado</p>
   }
 
   return (
@@ -64,4 +115,4 @@ const BubbleChat: React.FC<BubbleChatProps> = ({ message }) => {
   )
 }
 
-export default BubbleChat
+export default React.memo(BubbleChat)

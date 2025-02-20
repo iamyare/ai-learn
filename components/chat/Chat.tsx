@@ -14,6 +14,25 @@ import ChatInput from './ChatInput'
 import ChatLoading from './ChatLoading'
 import AIFunctions from './AIFunctions'
 
+// Función auxiliar para generar timestamps únicos
+const generateUniqueTimestamp = (() => {
+  let lastTimestamp = 0
+  return () => {
+    const now = Date.now()
+    if (now <= lastTimestamp) {
+      lastTimestamp += 1
+    } else {
+      lastTimestamp = now
+    }
+    return new Date(lastTimestamp).toISOString()
+  }
+})()
+
+// Type guard para MessageType
+function isMessageType(message: ChatMessageType): message is MessageType {
+  return 'content' in message
+}
+
 export default function Chat({
   notebookId,
   className
@@ -25,7 +44,7 @@ export default function Chat({
   const geminiKey = useApiKey('gemini_key')
   const { text } = usePDFTextStore()
   const { history } = useSpeechRecognitionStore()
-  const [streamingMessage, setStreamingMessage] = useState<ChatMessageType | null>(null)
+  const [streamingMessage, setStreamingMessage] = useState<MessageType | null>(null)
 
   const { data: messages = [], isLoading } = useQuery({
     queryKey: chatKeys.chat(notebookId),
@@ -63,19 +82,19 @@ export default function Chat({
   })
 
   const handleSendMessage = useCallback((content: string) => {
-    // Mensaje del usuario
-    const userMessage: ChatMessageType = {
+    // Mensaje del usuario con timestamp único
+    const userMessage: MessageType = {
       content,
       isUser: true,
-      timestamp: new Date().toISOString()
+      timestamp: generateUniqueTimestamp()
     }
     messageMutation.mutate(userMessage)
 
-    // Preparar mensaje del asistente para streaming
-    const assistantMessage: ChatMessageType = {
+    // Mensaje del asistente con timestamp único posterior
+    const assistantMessage: MessageType = {
       content: '',
       isUser: false,
-      timestamp: new Date().toISOString()
+      timestamp: generateUniqueTimestamp()
     }
     setStreamingMessage(assistantMessage)
   }, [messageMutation])
@@ -92,7 +111,7 @@ export default function Chat({
 
   const handleStreamComplete = useCallback((finalContent: string) => {
     if (streamingMessage) {
-      const finalMessage = {
+      const finalMessage: MessageType = {
         ...streamingMessage,
         content: finalContent
       }
@@ -108,7 +127,10 @@ export default function Chat({
     }
     try {
       const message = await createEventMessage({ history, text, apiKey: geminiKey })
-      messageMutation.mutate(message)
+      messageMutation.mutate({
+        ...message,
+        timestamp: generateUniqueTimestamp()
+      })
     } catch (error) {
       toast({
         title: 'Error',
@@ -125,7 +147,10 @@ export default function Chat({
     }
     try {
       const message = await createMindMapMessage({ history, text, apiKey: geminiKey })
-      messageMutation.mutate(message)
+      messageMutation.mutate({
+        ...message,
+        timestamp: generateUniqueTimestamp()
+      })
     } catch (error) {
       toast({
         title: 'Error',
@@ -137,8 +162,8 @@ export default function Chat({
 
   if (isLoading) return <ChatLoading className={className} />
 
-  // Combinar mensajes guardados con mensaje en streaming
-  const allMessages = streamingMessage 
+  // Solo incluir el mensaje en streaming si tiene contenido y es de tipo MessageType
+  const allMessages = streamingMessage?.content
     ? [...messages, streamingMessage]
     : messages
 

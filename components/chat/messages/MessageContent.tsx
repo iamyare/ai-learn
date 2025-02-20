@@ -3,30 +3,49 @@ import { MarkdownRenderer } from '@/components/ui/markdown-reader'
 import React, { useEffect, useState, useRef } from 'react'
 
 const MessageContent: React.FC<{ content: string }> = ({ content }) => {
-  const [renderedContent, setRenderedContent] = useState<React.ReactNode>('')
+  const [renderedContent, setRenderedContent] = useState<React.ReactNode>(null)
   const lastContentRef = useRef(content)
+  const isStreamingRef = useRef(false)
 
   useEffect(() => {
-    // Solo renderizar si el contenido ha cambiado
+    // Detectar si estamos en modo streaming
     if (content !== lastContentRef.current) {
-      const renderContent = async () => {
-        try {
-          const rendered = <MarkdownRenderer content={content} />
-          setRenderedContent(rendered)
-          lastContentRef.current = content
-        } catch (error) {
-          console.error('Error rendering markdown:', error)
-          // Fallback a texto plano si hay error
-          setRenderedContent(<pre className="whitespace-pre-wrap">{content}</pre>)
-        }
-      }
-      
-      // Usar requestAnimationFrame para mejor rendimiento en actualizaciones frecuentes
-      requestAnimationFrame(() => {
-        renderContent()
-      })
+      isStreamingRef.current = true
     }
+
+    const renderContent = async () => {
+      try {
+        // Si el contenido está vacío y estamos streaming, no mostrar nada
+        if (!content && isStreamingRef.current) {
+          return
+        }
+
+        // Renderizar el contenido usando Markdown
+        const rendered = <MarkdownRenderer content={content} />
+        setRenderedContent(rendered)
+        lastContentRef.current = content
+
+        // Si el contenido no está vacío, ya no estamos en streaming inicial
+        if (content) {
+          isStreamingRef.current = false
+        }
+      } catch (error) {
+        console.error('Error rendering markdown:', error)
+        // Fallback a texto plano si hay error
+        setRenderedContent(<pre className="whitespace-pre-wrap">{content}</pre>)
+      }
+    }
+    
+    // Usar requestAnimationFrame para mejor rendimiento en actualizaciones frecuentes
+    requestAnimationFrame(() => {
+      renderContent()
+    })
   }, [content])
+
+  // Si no hay contenido y no estamos streaming, retornar null
+  if (!content && !isStreamingRef.current) {
+    return null
+  }
 
   return (
     <div className="relative">
