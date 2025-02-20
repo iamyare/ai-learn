@@ -18,6 +18,8 @@ import { usePDFStore } from '@/stores/pdfStore'
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void
+  onStreamUpdate: (content: string) => void
+  onStreamComplete: (finalContent: string) => void
   apiKeyGemini?: string
   messages: ChatMessageType[]
 }
@@ -28,6 +30,8 @@ const formSchema = z.object({
 
 const ChatInput: React.FC<ChatInputProps> = ({
   onSendMessage,
+  onStreamUpdate,
+  onStreamComplete,
   apiKeyGemini,
   messages
 }) => {
@@ -69,8 +73,10 @@ const ChatInput: React.FC<ChatInputProps> = ({
           let accumulatedText = ''
           for await (const delta of readStreamableValue(textStream)) {
             accumulatedText += delta
+            onStreamUpdate(accumulatedText)
           }
 
+          onStreamComplete(accumulatedText)
           updateNotebookInfo({ updated_at: new Date().toISOString() })
         } catch (err) {
           console.error('Error en el flujo de AI:', err)
@@ -84,7 +90,17 @@ const ChatInput: React.FC<ChatInputProps> = ({
       })
       form.reset()
     },
-    [history, messages, form, pdfBuffer, apiKeyGemini, onSendMessage, updateNotebookInfo]
+    [
+      onSendMessage,
+      onStreamUpdate,
+      onStreamComplete,
+      history,
+      messages,
+      form,
+      pdfBuffer,
+      apiKeyGemini,
+      updateNotebookInfo
+    ]
   )
 
   return (

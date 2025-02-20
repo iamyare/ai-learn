@@ -50,34 +50,60 @@ export class GeminiService {
     return usage
   }
 
+  private async buildMessageContent(params: {
+    prompt: string,
+    pdfBuffer?: ArrayBuffer | null
+  }) {
+    const { prompt, pdfBuffer } = params
+    const content: any[] = [{ type: 'text', text: prompt }]
+
+    if (pdfBuffer) {
+      content.push({
+        type: 'file',
+        mimeType: 'application/pdf',
+        data: pdfBuffer
+      })
+    }
+
+    return content
+  }
+
   async generateContent(params: {
     prompt: string
     systemPrompt?: string
     temperature?: number
     maxTokens?: number
     stopSequences?: string[]
+    pdfBuffer?: ArrayBuffer | null
   }): Promise<GeminiResponse> {
     const {
       prompt,
       systemPrompt,
       temperature = 0.7,
       maxTokens,
-      stopSequences
+      stopSequences,
+      pdfBuffer
     } = params
 
     try {
       logger.info('Generating content', { 
         promptPreview: prompt.substring(0, 100) + '...',
         temperature,
-        maxTokens 
+        maxTokens,
+        hasPDF: !!pdfBuffer
       })
       
       const startTime = Date.now()
       
       const model = this.client('models/gemini-1.5-flash-002')
+      const messageContent = await this.buildMessageContent({ prompt, pdfBuffer })
+      
       const { textStream } = await streamText({
         model,
-        messages: [{ role: 'user', content: prompt }],
+        messages: [{
+          role: 'user',
+          content: messageContent
+        }],
         system: systemPrompt,
         temperature,
         maxTokens,
@@ -92,6 +118,10 @@ export class GeminiService {
       for await (const text of textStream) {
         fullResponse += text
       }
+
+      logger.info('Content generated successfully', {
+        fullResponsePreview: fullResponse.substring(0, 100) + '...'
+      })
 
       const endTime = Date.now()
       const duration = endTime - startTime
@@ -131,6 +161,9 @@ export class GeminiService {
       }
       if (error.message.includes('rate')) {
         return new Error('Has excedido el límite de solicitudes por minuto')
+      }
+      if (error.message.includes('file')) {
+        return new Error('Error al procesar el archivo PDF')
       }
       return error
     }

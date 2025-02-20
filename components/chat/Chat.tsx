@@ -1,13 +1,12 @@
 'use client'
-import React, { useCallback } from 'react'
+import React, { useCallback, useState } from 'react'
 import { cn } from '@/lib/utils'
+import { useApiKey } from '@/stores/useApiKeysStore'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { chatKeys, fetchChat, updateChat } from '@/lib/queries/chat'
-import { createEventMessage, createMindMapMessage, processHighlightedText } from '@/lib/mutations/chat'
-import { useApiKey } from '@/stores/useApiKeysStore'
+import { createEventMessage, createMindMapMessage } from '@/lib/mutations/chat'
 import { useSpeechRecognitionStore } from '@/stores/useSpeechRecognitionStore'
 import { usePDFTextStore } from '@/stores/usePDFTextStore'
-// import { useHighlighterStore } from '@/stores/useHighlighterStore'
 import { toast } from '@/components/ui/use-toast'
 import ChatHeader from './ChatHeader'
 import ChatMessages from './ChatMessages'
@@ -26,7 +25,7 @@ export default function Chat({
   const geminiKey = useApiKey('gemini_key')
   const { text } = usePDFTextStore()
   const { history } = useSpeechRecognitionStore()
-  // const { setActionHandler } = useHighlighterStore()
+  const [streamingMessage, setStreamingMessage] = useState<ChatMessageType | null>(null)
 
   const { data: messages = [], isLoading } = useQuery({
     queryKey: chatKeys.chat(notebookId),
@@ -64,13 +63,43 @@ export default function Chat({
   })
 
   const handleSendMessage = useCallback((content: string) => {
-    const newMessage: ChatMessageType = {
+    // Mensaje del usuario
+    const userMessage: ChatMessageType = {
       content,
       isUser: true,
       timestamp: new Date().toISOString()
     }
-    messageMutation.mutate(newMessage)
+    messageMutation.mutate(userMessage)
+
+    // Preparar mensaje del asistente para streaming
+    const assistantMessage: ChatMessageType = {
+      content: '',
+      isUser: false,
+      timestamp: new Date().toISOString()
+    }
+    setStreamingMessage(assistantMessage)
   }, [messageMutation])
+
+  const handleStreamUpdate = useCallback((content: string) => {
+    setStreamingMessage(prev => {
+      if (!prev) return null
+      return {
+        ...prev,
+        content
+      }
+    })
+  }, [])
+
+  const handleStreamComplete = useCallback((finalContent: string) => {
+    if (streamingMessage) {
+      const finalMessage = {
+        ...streamingMessage,
+        content: finalContent
+      }
+      messageMutation.mutate(finalMessage)
+      setStreamingMessage(null)
+    }
+  }, [streamingMessage, messageMutation])
 
   const handleImportantEvents = useCallback(async () => {
     if (!geminiKey) {
@@ -83,7 +112,7 @@ export default function Chat({
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Error al generar eventos',
+        description: error instanceof Error ? error.message : 'Error al generar eventos',
         variant: 'destructive'
       })
     }
@@ -100,39 +129,18 @@ export default function Chat({
     } catch (error) {
       toast({
         title: 'Error',
-        description: 'Error al generar mapa mental',
+        description: error instanceof Error ? error.message : 'Error al generar mapa mental',
         variant: 'destructive'
       })
     }
   }, [geminiKey, history, text, messageMutation])
 
-  // React.useEffect(() => {
-  //   const handleHighlighterAction = async (
-  //     action: string, 
-  //     text: string, 
-  //     options?: { chartType?: string, targetLanguage?: string }
-  //   ) => {
-  //     if (!geminiKey) {
-  //       toast({ title: 'Error', description: 'API key not found' })
-  //       return
-  //     }
-  //     try {
-  //       const message = await processHighlightedText({ action, text, apiKey: geminiKey, options })
-  //       messageMutation.mutate(message)
-  //     } catch (error) {
-  //       toast({
-  //         title: 'Error',
-  //         description: 'Error al procesar texto',
-  //         variant: 'destructive'
-  //       })
-  //     }
-  //   }
-
-  //   setActionHandler(handleHighlighterAction)
-  //   return () => setActionHandler(() => {})
-  // }, [geminiKey, messageMutation, setActionHandler])
-
   if (isLoading) return <ChatLoading className={className} />
+
+  // Combinar mensajes guardados con mensaje en streaming
+  const allMessages = streamingMessage 
+    ? [...messages, streamingMessage]
+    : messages
 
   return (
     <section className='flex flex-col h-full max-h-full relative'>
@@ -146,7 +154,7 @@ export default function Chat({
       ) : (
         <>
           <ChatMessages
-            messages={messages}
+            messages={allMessages}
             className={className}
             isPending={messageMutation.isPending}
           />
@@ -159,6 +167,8 @@ export default function Chat({
             <ChatInput
               messages={messages}
               onSendMessage={handleSendMessage}
+              onStreamUpdate={handleStreamUpdate}
+              onStreamComplete={handleStreamComplete}
               apiKeyGemini={geminiKey}
             />
           </div>

@@ -86,49 +86,15 @@ function buildPrompt(params: AiStreamParams): string {
   return userPrompt.trim() || 'No se ha proporcionado ninguna información específica.'
 }
 
-function buildCoreMessages(params: AiStreamParams): CoreMessage[] {
-  const { prompt, transcription, messageHistory, pdfBuffer } = params
-  
-  // Convertir el historial existente
-  const historyCoreMessages = convertToCoreMessages(
-    truncateHistory(messageHistory).map((msg) => ({
-      ...msg,
-      content: typeof msg.content === 'string' ? msg.content : JSON.stringify(msg.content),
-    }))
-  )
-  
-  // Construir el contenido del nuevo mensaje
-  const newMessageContent: any[] = [{ type: 'text', text: buildPrompt(params) }]
-  
-  // Agregar el PDF si existe
-  if (pdfBuffer) {
-    newMessageContent.push({
-      type: 'file',
-      mimeType: 'application/pdf',
-      data: pdfBuffer,
-    })
-  }
-  
-  // Agregar el nuevo mensaje al historial
-  return [
-    ...historyCoreMessages,
-    {
-      role: 'user',
-      content: newMessageContent,
-    },
-  ]
-}
-
 export async function aiStream(params: AiStreamParams) {
   'use server'
   const stream = createStreamableValue()
 
   try {
     const service = await createGeminiService(params.apiKey)
-    const messages = buildCoreMessages(params)
 
     logger.info('Starting AI stream', {
-      messageCount: messages.length,
+      messageCount: params.messageHistory.length,
       hasPDF: !!params.pdfBuffer,
       hasTranscription: !!params.transcription
     })
@@ -136,7 +102,8 @@ export async function aiStream(params: AiStreamParams) {
     const { content, tokenUsage } = await service.generateContent({
       prompt: buildPrompt(params),
       systemPrompt: SYSTEM_PROMPT,
-      temperature: 0.7
+      temperature: 0.7,
+      pdfBuffer: params.pdfBuffer
     })
 
     // Transmitir la respuesta
@@ -147,7 +114,7 @@ export async function aiStream(params: AiStreamParams) {
 
         logger.info('AI stream completed', {
           tokenUsage,
-          messageCount: messages.length
+          messageCount: params.messageHistory.length
         })
       } catch (error) {
         logger.error('Error in stream', {
