@@ -1,78 +1,77 @@
 'use server'
+
 import { supabase } from '@/lib/supabase'
 
 export interface PDFCache {
-  hash: string
-  cache_id: string | null
   notebook_id: string
-  cache_expiration?: string | null
+  cache_id: string | null
+  cache_expiration: string | null
+  pdf_hash: string | null
 }
 
-export async function getPDFCache(hash: string): Promise<PDFCache | null> {
-  const { data, error } = await supabase
-    .from('pdf_documents')
-    .select('cache_id, notebook_id, cache_expiration')
-    .eq('pdf_hash', hash)
-    .not('cache_id', 'is', null)
-    .not('cache_expiration', 'is', null)
-    .maybeSingle()
+export async function getPDFCache(notebook_id: string): Promise<PDFCache | null> {
+  try {
+    const { data, error } = await supabase
+      .from('pdf_documents')
+      .select('notebook_id, cache_id, cache_expiration, pdf_hash')
+      .eq('notebook_id', notebook_id)
+      .single()
 
-  if (error || !data) return null
-
-  const now = new Date()
-  const expiration = data.cache_expiration ? new Date(data.cache_expiration) : null
-  const isExpired = expiration && expiration < now
-
-  if (!isExpired) {
-    return {
-      hash,
-      cache_id: `cachedContents/${data.cache_id?.replace(/^(caches\/|cachedContents\/)/g, '') ?? ''}`,
-      notebook_id: data.notebook_id ?? '',
-      cache_expiration: data.cache_expiration
+    if (error || !data) {
+      return null
     }
-  }
 
-  return null
+    return data
+  } catch (error) {
+    console.error('Error getting PDF cache:', error)
+    return null
+  }
 }
 
-export async function updatePDFCache({
-  hash,
-  cache_id,
-  ttl = 3600
-}: {
-  hash: string
-  cache_id: string
-  ttl?: number
-}): Promise<PDFCache | null> {
-  const expirationDate = new Date()
-  expirationDate.setSeconds(expirationDate.getSeconds() + ttl)
+export async function setPDFHash(params: {
+  notebook_id: string
+  pdf_hash: string
+}) {
+  const { notebook_id, pdf_hash } = params
 
-  // Normalizar el cache_id antes de guardar
-  const normalizedCacheId = cache_id.replace(/^(caches\/|cachedContents\/|projects\/-\/locations\/[^\/]+\/cachedContents\/)/g, '')
+  try {
+    const { error } = await supabase
+      .from('pdf_documents')
+      .update({
+        pdf_hash
+      })
+      .eq('notebook_id', notebook_id)
 
-  const { data, error } = await supabase
-    .from('pdf_documents')
-    .update({
-      cache_id: normalizedCacheId,
-      cache_expiration: expirationDate.toISOString()
-    })
-    .eq('pdf_hash', hash)
-    .select()
-    .maybeSingle()
-
-    console.log('log',{
-data
+    if (error) {
+      throw error
     }
-    )
 
-  if (error) {
-    throw new Error(`Failed to update PDF cache: ${error.message}`)
+    return { success: true }
+  } catch (error) {
+    console.error('Error setting PDF hash:', error)
+    return { success: false }
   }
+}
 
-  return data ? {
-    hash,
-    cache_id: `cachedContents/${normalizedCacheId}`,
-    notebook_id: data.notebook_id,
-    cache_expiration: data.cache_expiration
-  } : null
+type PDFCacheUpdate = Pick<PDFDocuments, 'notebook_id' | 'cache_id' | 'cache_expiration'>
+
+export async function updatePDFCache(params: PDFCacheUpdate) {
+  try {
+    const { error } = await supabase
+      .from('pdf_documents')
+      .update({
+        cache_id: params.cache_id,
+        cache_expiration: params.cache_expiration
+      })
+      .eq('notebook_id', params.notebook_id)
+
+    if (error) {
+      throw error
+    }
+
+    return { success: true }
+  } catch (error) {
+    console.error('Error updating PDF cache:', error)
+    return { success: false }
+  }
 }

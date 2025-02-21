@@ -1,5 +1,5 @@
 'use client'
-import React, { useCallback, useTransition } from 'react'
+import React, { useCallback, useEffect, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form'
 import { Textarea } from '@/components/ui/textarea'
@@ -37,12 +37,17 @@ const ChatInput: React.FC<ChatInputProps> = ({
   messages
 }) => {
   const { history } = useSpeechRecognitionStore()
-  const { text } = usePDFTextStore()
   const [isPending, startTransition] = useTransition()
-  const { updateNotebookInfo, updatePDFDocument, notebookInfo } = useNotebookStore()
+  const { updateNotebookInfo, notebookInfo, updatePDFDocument } = useNotebookStore()
   const { pdfBuffer } = usePDFStore()
-  const pdfHash = pdfBuffer ? Buffer.from(pdfBuffer).slice(0, 32).toString('hex') : null
-  const { cache, updateCache } = usePDFCache(pdfHash || '')
+  const { cache, setHash, updateCache } = usePDFCache(notebookInfo.notebook_id)
+
+  useEffect(() => {
+    if (pdfBuffer) {
+      const hash = Buffer.from(pdfBuffer).slice(0, 32).toString('hex')
+      setHash(hash)
+    }
+  }, [pdfBuffer, setHash])
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -80,29 +85,15 @@ const ChatInput: React.FC<ChatInputProps> = ({
             onStreamUpdate(accumulatedText)
           }
 
-          console.log('log',{
-            notebookInfo,
-            pdfHash,
-            newCacheId
-          })
-
           // Actualizar el cache si se generó uno nuevo
-          if (pdfHash && newCacheId && notebookInfo.notebook_id) {
-            await updateCache({
-              hash: pdfHash,
-              cache_id: newCacheId,
-              notebook_id: notebookInfo.notebook_id
-            })
-
-            // Actualizar el store con la nueva información del caché
-            updatePDFDocument({
-              cache_id: newCacheId,
-              cache_expiration: new Date().toISOString() // Expira en 1 hora
-            })
+          if (newCacheId) {
+            await updateCache({ cache_id: newCacheId })
+            updatePDFDocument({cache_id: newCacheId})
           }
 
           onStreamComplete(accumulatedText)
-          updateNotebookInfo({ updated_at: new Date().toISOString() })
+
+
         } catch (err) {
           console.error('Error en el flujo de AI:', err)
           toast({
@@ -115,7 +106,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
       })
       form.reset()
     },
-    [onSendMessage, history, messages, form, pdfBuffer, apiKeyGemini, cache?.cache_id, notebookInfo, pdfHash, onStreamComplete, updateNotebookInfo, onStreamUpdate, updateCache, updatePDFDocument]
+    [onSendMessage, history, messages, form, pdfBuffer, apiKeyGemini, cache?.cache_id, onStreamComplete, onStreamUpdate, updateCache, updatePDFDocument]
   )
 
   return (
