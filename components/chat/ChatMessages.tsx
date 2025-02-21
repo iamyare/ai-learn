@@ -11,6 +11,7 @@ import BubbleChat from './BubbleChat'
 import MessageLoading from './messages/MessageLoading'
 import { usePresence } from 'framer-motion'
 import { ChatMessageType } from '@/types/chat'
+import { AnimatedShinyText } from '../ui/animated-shiny-text'
 
 interface ChatMessagesProps {
   isPending?: boolean
@@ -21,14 +22,16 @@ interface ChatMessagesProps {
 
 interface AnimatedMessageProps {
   message: ChatMessageType
+  isThinking?: boolean
 }
 
 interface MessageGroupProps {
   date: string
   messages: ChatMessageType[]
+  isThinking?: boolean
 }
 
-const AnimatedMessage = memo(({ message }: AnimatedMessageProps) => {
+const AnimatedMessage = memo(({ message, isThinking }: AnimatedMessageProps) => {
   const [isPresent, safeToRemove] = usePresence()
 
   useEffect(() => {
@@ -38,6 +41,13 @@ const AnimatedMessage = memo(({ message }: AnimatedMessageProps) => {
   }, [isPresent, safeToRemove])
 
   return (
+    <div className='flex flex-col'>
+
+{isThinking && (
+<AnimatedShinyText speed={4} className=' m-2 text-xs w-fit'>
+<span>✨ Pensando...</span>
+</AnimatedShinyText>)}
+
     <div
       className='animated-message'
       style={{
@@ -46,12 +56,13 @@ const AnimatedMessage = memo(({ message }: AnimatedMessageProps) => {
     >
       <BubbleChat message={message} />
     </div>
+    </div>
   )
 })
 
 AnimatedMessage.displayName = 'AnimatedMessage'
 
-const MessageGroup = memo(({ date, messages }: MessageGroupProps) => (
+const MessageGroup = memo(({ date, messages, isThinking }: MessageGroupProps) => (
   <div key={date}>
     <p className='text-sm font-medium mx-auto bg-muted rounded-lg size-fit px-6 py-1 shadow-sm my-4'>
       {formatRelativeDate(date)}
@@ -61,6 +72,7 @@ const MessageGroup = memo(({ date, messages }: MessageGroupProps) => (
         <AnimatedMessage
           key={`${message.timestamp}-${index}`}
           message={message}
+          isThinking={isThinking}
         />
       ))}
     </div>
@@ -124,7 +136,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
     >
       {Object.keys(groupedMessages).length > 0 ? (
         Object.entries(groupedMessages).map(([date, dateMessages]) => (
-          <MessageGroup key={date} date={date} messages={dateMessages} />
+          <MessageGroup isThinking={thinking} key={date} date={date} messages={dateMessages} />
         ))
       ) : (
         <p className='text-center text-muted-foreground'>
@@ -132,9 +144,6 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
         </p>
       )}
 
-      {thinking && (
-        <MessageLoading text="Pensando..." />
-      )}
       {isPending && !messages.some(m => 'content' in m && m.content === '') && (
         <MessageLoading text="Generando..." />
       )}
