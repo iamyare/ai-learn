@@ -39,7 +39,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const { history } = useSpeechRecognitionStore()
   const { text } = usePDFTextStore()
   const [isPending, startTransition] = useTransition()
-  const { updateNotebookInfo, notebookInfo } = useNotebookStore()
+  const { updateNotebookInfo, updatePDFDocument, notebookInfo } = useNotebookStore()
   const { pdfBuffer } = usePDFStore()
   const pdfHash = pdfBuffer ? Buffer.from(pdfBuffer).slice(0, 32).toString('hex') : null
   const { cache, updateCache } = usePDFCache(pdfHash || '')
@@ -93,6 +93,12 @@ const ChatInput: React.FC<ChatInputProps> = ({
               cache_id: newCacheId,
               notebook_id: notebookInfo.notebook_id
             })
+
+            // Actualizar el store con la nueva información del caché
+            updatePDFDocument({
+              cache_id: newCacheId,
+              cache_expiration: new Date().toISOString() // Expira en 1 hora
+            })
           }
 
           onStreamComplete(accumulatedText)
@@ -109,7 +115,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
       })
       form.reset()
     },
-    [onSendMessage, history, messages, form, pdfBuffer, apiKeyGemini, cache?.cache_id, pdfHash, notebookInfo.notebook_id, onStreamComplete, updateNotebookInfo, onStreamUpdate, updateCache]
+    [onSendMessage, history, messages, form, pdfBuffer, apiKeyGemini, cache?.cache_id, notebookInfo, pdfHash, onStreamComplete, updateNotebookInfo, onStreamUpdate, updateCache, updatePDFDocument]
   )
 
   return (

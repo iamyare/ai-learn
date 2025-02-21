@@ -94,12 +94,6 @@ export async function aiStream(params: AiStreamParams) {
   try {
     const service = await createGeminiService(params.apiKey)
 
-    logger.info('Starting AI stream', {
-      messageCount: params.messageHistory.length,
-      hasPDF: !!params.pdfBuffer,
-      hasTranscription: !!params.transcription,
-      existingCacheId: params.existingCacheId
-    })
 
     const { stream: textStream, getTokenUsage, newCacheId } = await service.generateStreamingContent({
       prompt: buildPrompt(params),

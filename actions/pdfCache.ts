@@ -60,6 +60,11 @@ export async function updatePDFCache({
     .select()
     .maybeSingle()
 
+    console.log('log',{
+data
+    }
+    )
+
   if (error) {
     throw new Error(`Failed to update PDF cache: ${error.message}`)
   }

@@ -1,4 +1,3 @@
-
 import { create } from 'zustand'
 
 
@@ -7,6 +6,7 @@ interface NotebookStore {
   notebookInfo: NotebookInfo;
   setNotebookInfo: (info: NotebookInfo) => void;
   updateNotebookInfo: (data: Partial<NotebookInfo>) => void;
+  updatePDFDocument: (data: Partial<NotebookInfo['pdf_document']>) => void;
 }
 
 const initialNotebook: NotebookInfo = {
@@ -39,5 +39,15 @@ export const useNotebookStore = create<NotebookStore>((set) => ({
   
   updateNotebookInfo: (data) => set((state) => ({
     notebookInfo: { ...state.notebookInfo, ...data }
+  })),
+
+  updatePDFDocument: (data) => set((state) => ({
+    notebookInfo: {
+      ...state.notebookInfo,
+      pdf_document: {
+        ...state.notebookInfo.pdf_document,
+        ...data
+      }
+    }
   }))
 }));
