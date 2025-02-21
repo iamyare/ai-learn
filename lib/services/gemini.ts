@@ -1,5 +1,5 @@
 import { createGoogleGenerativeAI } from '@ai-sdk/google'
-import { streamText, CoreMessage, CoreUserMessage } from 'ai'
+import { streamText, CoreUserMessage } from 'ai'
 import { logger } from '@/lib/utils/logger'
 import { GoogleAICacheManager, GoogleAIFileManager, FileState } from '@google/generative-ai/server'
 import { writeFileSync, unlinkSync } from 'fs'
@@ -51,24 +51,17 @@ export class GeminiService {
   }
 
   private normalizeCacheId(cacheId: string): string {
-    // Remover prefijos si existen
-    const normalizedId = cacheId
-      .replace('caches/', '')
-      .replace('cachedContents/', '')
-      .trim()
-    return normalizedId
+    // Eliminar todos los prefijos posibles y devolver solo el ID
+    return cacheId
+      .replace(/^(projects\/-\/locations\/[^\/]+\/)?cachedContents\//g, '')
+      .replace(/^caches\//g, '')
+      .trim();
   }
 
-  private formatCacheId(id: string): string {
-    // Si ya comienza con "cachedContents/", lo retorna tal cual
-    if (id.startsWith('cachedContents/')) return id;
-    return `cachedContents/${id}`;
-  }
-
-  private extractCacheId(fullPath: string): string {
-    // Extraer solo el ID simple
-    const matches = fullPath.match(/cachedContents\/([^\/]+)$/);
-    return matches ? matches[1] : fullPath;
+  private formatApiCacheId(id: string): string {
+    // Formato requerido por la API de Google
+    const normalizedId = this.normalizeCacheId(id);
+    return `cachedContents/${normalizedId}`;
   }
 
   private async uploadAndProcessPDF(
@@ -84,12 +77,12 @@ export class GeminiService {
       
       // Usar cache existente si está disponible
       if (existingCacheId) {
-        const formattedCacheId = this.formatCacheId(existingCacheId)
+        const formattedCacheId = this.formatApiCacheId(existingCacheId);
         logger.info('Using existing PDF cache', {
           pdfHash: hash,
           cacheId: formattedCacheId
-        })
-        return formattedCacheId
+        });
+        return formattedCacheId;
       }
 
       // Guardar temporalmente el PDF
@@ -146,12 +139,12 @@ export class GeminiService {
       })
 
       if (cacheResult.name) {
-        const simpleId = this.extractCacheId(cacheResult.name)
+        const formattedId = this.formatApiCacheId(cacheResult.name);
         logger.info('PDF content cached', {
           pdfHash: hash,
-          cacheId: `cachedContents/${simpleId}`
-        })
-        return this.formatCacheId(simpleId)
+          cacheId: formattedId
+        });
+        return formattedId;
       }
 
       return undefined
@@ -194,7 +187,6 @@ export class GeminiService {
     } = params
 
     try {
-      const startTime = Date.now()
       let model = this.client(this.MODEL)
       let cachedContent: string | undefined
       let streamOptions: any
@@ -255,16 +247,31 @@ export class GeminiService {
       }
 
       let tokenUsage: TokenUsage | null = null
-      const { textStream } = await streamText(streamOptions)
+      const { textStream } = await streamText({...streamOptions,
+         onFinish: ({usage}) => {
+          tokenUsage = {
+            promptTokens: usage.promptTokens,
+            completionTokens: usage.completionTokens,
+            totalTokens: usage.promptTokens + usage.completionTokens,
+            estimatedCost: this.calculateCost(usage.promptTokens + usage.completionTokens)
+          }
+        }
+      })
 
       if (!textStream) {
         throw new Error('No se pudo iniciar el stream de texto')
       }
 
+      logger.info('Streaming content generated', {
+        promptLength: prompt.length,
+        pdfSize: pdfBuffer ? Math.round(pdfBuffer.byteLength / 1024) + 'KB' : 'none',
+        tokenUsage: tokenUsage
+      })
+
       return {
         stream: textStream,
         getTokenUsage: () => tokenUsage,
-        newCacheId: cachedContent ? this.extractCacheId(cachedContent) : undefined
+        newCacheId: cachedContent ? this.normalizeCacheId(cachedContent) : undefined
       }
     } catch (error) {
       logger.error('Streaming error', {

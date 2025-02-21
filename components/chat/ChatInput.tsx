@@ -76,7 +76,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
             messageHistory: messageHistory,
             pdfBuffer: pdfBuffer,
             apiKey: apiKeyGemini ?? '',
-            existingCacheId: cache?.cache_id ?? undefined
+            existingCacheId: cache?.cache_id ? cache.cache_id.replace(/^caches\//, '') : undefined
           })
 
           let accumulatedText = ''
@@ -88,7 +88,10 @@ const ChatInput: React.FC<ChatInputProps> = ({
           // Actualizar el cache si se generó uno nuevo
           if (newCacheId) {
             await updateCache({ cache_id: newCacheId })
-            updatePDFDocument({cache_id: newCacheId})
+            updatePDFDocument({ 
+              cache_id: `caches/${newCacheId}`,
+              cache_expiration: new Date(Date.now() + 3600000).toISOString() // 1 hora
+            })
           }
 
           onStreamComplete(accumulatedText)

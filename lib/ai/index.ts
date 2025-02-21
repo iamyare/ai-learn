@@ -117,15 +117,6 @@ export async function aiStream(params: AiStreamParams) {
           stream.update(chunk)
         }
         stream.done()
-
-        // Obtener y registrar el uso de tokens después de completar el stream
-        const tokenUsage = getTokenUsage()
-        if (tokenUsage) {
-          logger.info('AI stream completed', {
-            tokenUsage,
-            messageCount: params.messageHistory.length
-          })
-        }
       } catch (error) {
         logger.error('Error in stream', {
           error: error instanceof Error ? error.message : 'Unknown error'
@@ -133,6 +124,15 @@ export async function aiStream(params: AiStreamParams) {
         stream.error(error)
       }
     })()
+
+            // Obtener y registrar el uso de tokens después de completar el stream
+            const tokenUsage = getTokenUsage()
+            if (tokenUsage) {
+              logger.info('AI stream completed', {
+                tokenUsage,
+                messageCount: params.messageHistory.length
+              })
+            }
 
     return { textStream: stream.value, newCacheId }
   } catch (error) {
