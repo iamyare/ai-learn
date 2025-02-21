@@ -48,8 +48,11 @@ export function useChat({ notebookId, apiKey }: UseChatProps) {
         variant: 'destructive'
       })
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: chatKeys.chat(notebookId) })
+    onSuccess: () => {
+      // Solo invalidamos si no es un mensaje de stream
+      if (!streamingMessage) {
+        queryClient.invalidateQueries({ queryKey: chatKeys.chat(notebookId) })
+      }
     }
   })
 
@@ -83,10 +86,33 @@ export function useChat({ notebookId, apiKey }: UseChatProps) {
         ...streamingMessage,
         content: finalContent
       }
-      messageMutation.mutate(finalMessage)
+      
+      // Primero actualizamos el query data localmente
+      queryClient.setQueryData<ChatMessageType[]>(
+        chatKeys.chat(notebookId),
+        messages => {
+          if (!messages) return [finalMessage]
+          return [...messages, finalMessage]
+        }
+      )
+
+      // Luego persistimos en la base de datos
+      updateChat({
+        notebookId,
+        content: JSON.stringify(
+          queryClient.getQueryData<ChatMessageType[]>(chatKeys.chat(notebookId))
+        )
+      }).catch(error => {
+        toast({
+          title: 'Error',
+          description: 'Error al guardar el mensaje',
+          variant: 'destructive'
+        })
+      })
+
       setStreamingMessage(null)
     }
-  }, [streamingMessage, messageMutation])
+  }, [streamingMessage, notebookId, queryClient])
 
   const handleImportantEvents = useCallback(async (params: { history: string[], text: string }) => {
     if (!apiKey) {

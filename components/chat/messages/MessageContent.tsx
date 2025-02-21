@@ -52,7 +52,7 @@ const MessageContent: React.FC<{ content: string }> = ({ content }) => {
       <div className="min-h-[20px]">
         {renderedContent}
       </div>
-      <div className="absolute top-0 right-0">
+      <div className="absolute bottom-0 right-0">
         <CopyButton content={content} />
       </div>
     </div>

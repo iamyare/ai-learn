@@ -139,9 +139,14 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
         </p>
       )}
 
-      {isPending && !messages.some(m => 'content' in m && m.content === '') && (
-        <MessageLoading text="Generando..." />
-      )}
+      {isPending && messages.length > 0 && (() => {
+        const lastMessage = messages[messages.length - 1];
+        const isSpecialType = 'events' in lastMessage ||
+                            'mindMap' in lastMessage ||
+                            'translation' in lastMessage ||
+                            'chartData' in lastMessage;
+        return isSpecialType ? <MessageLoading text="Generando..." /> : null;
+      })()}
       <div ref={messagesEndRef} />
     </div>
   )

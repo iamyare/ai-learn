@@ -115,6 +115,7 @@ const BubbleChat: React.FC<BubbleChatProps> = ({ message, isThinking }) => {
     <div className={messageClass}>
       <Card className={bubbleClass}>
         <div className='text-sm'>{renderMessageContent()}</div>
+        
       </Card>
 
       <span className='text-xs mx-2 mt-1 text-muted-foreground'>
