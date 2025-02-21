@@ -32,7 +32,6 @@ export class GeminiService {
   private cacheManager: GoogleAICacheManager
   private fileManager: GoogleAIFileManager
   private readonly COST_PER_1K_TOKENS = 0.0005
-  private readonly DEFAULT_CACHE_TTL = 60 * 60 // 1 hora en segundos
   private readonly MODEL: CacheableModels = 'models/gemini-1.5-flash-002'
   private readonly RETRY_ATTEMPTS = 3
   private readonly RETRY_DELAY = 2000 // 2 segundos
@@ -53,7 +52,8 @@ export class GeminiService {
 
   private async uploadAndProcessPDF(
     pdfBuffer: ArrayBuffer,
-    systemPrompt?: string
+    systemPrompt?: string,
+    existingCacheId?: string
   ): Promise<string | undefined> {
     const tempPath = join(os.tmpdir(), `pdf-${Date.now()}.pdf`)
     
@@ -61,6 +61,15 @@ export class GeminiService {
       // Calcular un hash para identificar el PDF
       const hash = Buffer.from(pdfBuffer).slice(0, 32).toString('hex')
       
+      // Usar cache existente si está disponible
+      if (existingCacheId) {
+        logger.info('Using existing PDF cache', {
+          pdfHash: hash,
+          cacheId: existingCacheId
+        })
+        return existingCacheId
+      }
+
       // Guardar temporalmente el PDF
       writeFileSync(tempPath, new Uint8Array(pdfBuffer))
       
@@ -98,10 +107,9 @@ export class GeminiService {
         return undefined
       }
 
-      // Crear el caché con el archivo procesado
+      // Crear el caché solo con el archivo PDF, sin system prompt
       const cacheResult = await this.cacheManager.create({
         model: this.MODEL,
-        systemInstruction: systemPrompt,
         contents: [{
           role: 'user',
           parts: [{
@@ -110,17 +118,16 @@ export class GeminiService {
               fileUri: fileResult.file.uri
             }
           }]
-        }],
-        ttlSeconds: this.DEFAULT_CACHE_TTL
+        }]
       })
 
       if (cacheResult.name) {
-        const cacheId = cacheResult.name.split('/').pop()
+        const newCacheId = cacheResult.name.split('/').pop()
         logger.info('PDF content cached', {
           pdfHash: hash,
-          cacheId
+          newCacheId
         })
-        return cacheResult.name
+        return newCacheId
       }
 
       return undefined
@@ -150,6 +157,7 @@ export class GeminiService {
     maxTokens?: number
     stopSequences?: string[]
     pdfBuffer?: ArrayBuffer | null
+    existingCacheId?: string
   }) {
     const {
       prompt,
@@ -157,66 +165,68 @@ export class GeminiService {
       temperature = 0.7,
       maxTokens,
       stopSequences,
-      pdfBuffer
+      pdfBuffer,
+      existingCacheId
     } = params
 
     try {
       const startTime = Date.now()
       let model = this.client(this.MODEL)
       let cachedContent: string | undefined
+      let streamOptions: any
 
       if (pdfBuffer) {
         logger.info('Processing PDF', { 
           pdfSize: Math.round(pdfBuffer.byteLength / 1024) + 'KB'
         })
         
-        cachedContent = await this.uploadAndProcessPDF(pdfBuffer, systemPrompt)
+        cachedContent = await this.uploadAndProcessPDF(pdfBuffer, systemPrompt, existingCacheId)
+        
         if (cachedContent) {
-          model = this.client(this.MODEL, { cachedContent })
+          // Configuración cuando usamos caché - sin system prompt
+          model = this.client(this.MODEL, {
+            cachedContent: `caches/${cachedContent}`
+          })
+          
+          streamOptions = {
+            model,
+            messages: [{
+              role: 'user',
+              content: prompt
+            }],
+            temperature,
+            maxTokens,
+            stopSequences
+          }
         }
       }
 
-      // Preparar los mensajes según si estamos usando caché o no
-      const userMessage: CoreUserMessage = {
-        role: 'user',
-        content: prompt,
-        ...(pdfBuffer && !cachedContent ? {
-          data: {
-            type: 'file',
-            mimeType: 'application/pdf',
-            content: pdfBuffer
-          }
-        } : {})
-      }
+      // Si no hay caché, usar configuración normal con system prompt
+      if (!streamOptions) {
+        const userMessage: CoreUserMessage = {
+          role: 'user',
+          content: prompt,
+          ...(pdfBuffer ? {
+            data: {
+              type: 'file',
+              mimeType: 'application/pdf',
+              content: pdfBuffer
+            }
+          } : {})
+        }
 
-      const messages: CoreMessage[] = [userMessage]
+        streamOptions = {
+          model,
+          messages: [userMessage],
+          temperature,
+          maxTokens,
+          stopSequences,
+          system: systemPrompt
+        }
+      }
 
       let tokenUsage: TokenUsage | null = null
-      
-      const { textStream } = await streamText({
-        model,
-        messages,
-        temperature,
-        maxTokens,
-        stopSequences,
-        ...(systemPrompt && !cachedContent ? { system: systemPrompt } : {}),
-        onFinish: ({usage}: any) => {
-          tokenUsage = {
-            promptTokens: usage.promptTokens,
-            completionTokens: usage.completionTokens,
-            totalTokens: usage.totalTokens,
-            estimatedCost: this.calculateCost(usage.totalTokens)
-          }
-          
-          const endTime = Date.now()
-          logger.info('Streaming completed', {
-            duration: endTime - startTime,
-            tokens: usage.totalTokens,
-            cost: tokenUsage.estimatedCost,
-            usedCache: !!cachedContent
-          })
-        }
-      })
+      const { textStream } = await streamText(streamOptions)
 
       if (!textStream) {
         throw new Error('No se pudo iniciar el stream de texto')
@@ -224,7 +234,8 @@ export class GeminiService {
 
       return {
         stream: textStream,
-        getTokenUsage: () => tokenUsage
+        getTokenUsage: () => tokenUsage,
+        newCacheId: cachedContent
       }
     } catch (error) {
       logger.error('Streaming error', {

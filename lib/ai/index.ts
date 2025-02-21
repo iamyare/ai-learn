@@ -15,6 +15,7 @@ interface AiStreamParams {
   messageHistory: MessageType[]
   apiKey: string
   pdfBuffer?: ArrayBuffer | null
+  existingCacheId?: string
 }
 
 const MAX_MESSAGES = 10
@@ -93,20 +94,33 @@ export async function aiStream(params: AiStreamParams) {
   try {
     const service = await createGeminiService(params.apiKey)
 
+    // Ajustar el system prompt según si estamos usando caché o no
+    const effectiveSystemPrompt = params.existingCacheId 
+      ? undefined // No enviar system prompt si usamos caché
+      : SYSTEM_PROMPT
+
     logger.info('Starting AI stream', {
       messageCount: params.messageHistory.length,
       hasPDF: !!params.pdfBuffer,
       hasTranscription: !!params.transcription
     })
 
-    const { stream: textStream, getTokenUsage } = await service.generateStreamingContent({
+    const { stream: textStream, getTokenUsage, newCacheId } = await service.generateStreamingContent({
       prompt: buildPrompt(params),
-      systemPrompt: SYSTEM_PROMPT,
+      systemPrompt: effectiveSystemPrompt,
       temperature: 0.7,
-      pdfBuffer: params.pdfBuffer
+      pdfBuffer: params.pdfBuffer,
+      existingCacheId: params.existingCacheId
     })
 
-    // Transmitir la respuesta chunk por chunk
+    logger.info('Service response', {
+      hasCache: !!params.existingCacheId,
+      newCacheId,
+      pdfSize: params.pdfBuffer ? Math.round(params.pdfBuffer.byteLength / 1024) + 'KB' : 'none',
+      existingCacheId: params.existingCacheId || 'none'
+    })
+
+    // Retornar el newCacheId junto con el stream
     ;(async () => {
       try {
         for await (const chunk of textStream) {
@@ -130,12 +144,12 @@ export async function aiStream(params: AiStreamParams) {
       }
     })()
 
-    return { textStream: stream.value }
+    return { textStream: stream.value, newCacheId }
   } catch (error) {
     logger.error('Error in aiStream', {
       error: error instanceof Error ? error.message : 'Unknown error'
     })
     stream.error(error)
-    return { textStream: stream.value }
+    return { textStream: stream.value, newCacheId: undefined }
   }
 }

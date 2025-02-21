@@ -15,6 +15,7 @@ import { usePDFTextStore } from '@/stores/usePDFTextStore'
 import { useSpeechRecognitionStore } from '@/stores/useSpeechRecognitionStore'
 import { useNotebookStore } from '@/stores/useNotebookStore'
 import { usePDFStore } from '@/stores/pdfStore'
+import { usePDFCache } from '@/hooks/usePDFCache'
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void
@@ -38,8 +39,10 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const { history } = useSpeechRecognitionStore()
   const { text } = usePDFTextStore()
   const [isPending, startTransition] = useTransition()
-  const { updateNotebookInfo } = useNotebookStore()
+  const { updateNotebookInfo, notebookInfo } = useNotebookStore()
   const { pdfBuffer } = usePDFStore()
+  const pdfHash = pdfBuffer ? Buffer.from(pdfBuffer).slice(0, 32).toString('hex') : null
+  const { cache, updateCache } = usePDFCache(pdfHash || '')
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -62,18 +65,34 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
       startTransition(async () => {
         try {
-          const { textStream } = await aiStream({
+          const { textStream, newCacheId } = await aiStream({
             prompt: values.message,
             transcription: transcript,
             messageHistory: messageHistory,
             pdfBuffer: pdfBuffer,
-            apiKey: apiKeyGemini ?? ''
+            apiKey: apiKeyGemini ?? '',
+            existingCacheId: cache?.cache_id ?? undefined
           })
 
           let accumulatedText = ''
           for await (const delta of readStreamableValue(textStream)) {
             accumulatedText += delta
             onStreamUpdate(accumulatedText)
+          }
+
+          console.log('log',{
+            notebookInfo,
+            pdfHash,
+            newCacheId
+          })
+
+          // Actualizar el cache si se generó uno nuevo
+          if (pdfHash && newCacheId && notebookInfo.notebook_id) {
+            await updateCache({
+              hash: pdfHash,
+              cache_id: newCacheId,
+              notebook_id: notebookInfo.notebook_id
+            })
           }
 
           onStreamComplete(accumulatedText)
@@ -90,17 +109,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
       })
       form.reset()
     },
-    [
-      onSendMessage,
-      onStreamUpdate,
-      onStreamComplete,
-      history,
-      messages,
-      form,
-      pdfBuffer,
-      apiKeyGemini,
-      updateNotebookInfo
-    ]
+    [onSendMessage, history, messages, form, pdfBuffer, apiKeyGemini, cache?.cache_id, pdfHash, notebookInfo.notebook_id, onStreamComplete, updateNotebookInfo, onStreamUpdate, updateCache]
   )
 
   return (
