@@ -56,8 +56,11 @@ const MessageGroup = memo(({ date, messages }: MessageGroupProps) => (
       {formatRelativeDate(date)}
     </p>
     <div className='flex flex-col gap-4'>
-      {messages.map((message) => (
-        <AnimatedMessage key={message.timestamp} message={message} />
+      {messages.map((message, index) => (
+        <AnimatedMessage
+          key={`${message.timestamp}-${index}`}
+          message={message}
+        />
       ))}
     </div>
   </div>

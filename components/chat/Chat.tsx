@@ -19,14 +19,16 @@ import type { ChatMessageType, MessageType } from '@/types/chat'
 // Función auxiliar para generar timestamps únicos
 const generateUniqueTimestamp = (() => {
   let lastTimestamp = 0
+  let counter = 0
   return () => {
     const now = Date.now()
-    if (now <= lastTimestamp) {
-      lastTimestamp += 1
+    if (now === lastTimestamp) {
+      counter++
     } else {
       lastTimestamp = now
+      counter = 0
     }
-    return new Date(lastTimestamp).toISOString()
+    return `${new Date(lastTimestamp).toISOString()}.${counter}`
   }
 })()
 

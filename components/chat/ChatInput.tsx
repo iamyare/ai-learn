@@ -80,6 +80,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
               cache_expiration: new Date(Date.now() + 3600000).toISOString()
             })
           }
+          // Limpiar el formulario
           form.reset()
         }
       })
