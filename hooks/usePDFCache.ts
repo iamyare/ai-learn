@@ -28,13 +28,13 @@ export function usePDFCache(notebook_id: string) {
 
   // Actualizar cache
   const { mutate: updateCache } = useMutation({
-    mutationFn: async ({ cache_id }: { cache_id: string }) => {
+    mutationFn: async ({ cache_id }: { cache_id: string | null }) => {
       const expirationDate = new Date()
       expirationDate.setSeconds(expirationDate.getSeconds() + DEFAULT_CACHE_TTL)
 
       return updatePDFCache({
         notebook_id,
-        cache_id: cache_id.startsWith('caches/') ? cache_id : `caches/${cache_id}`,
+        cache_id: cache_id && cache_id.startsWith('caches/') ? cache_id : `caches/${cache_id}`,
         cache_expiration: expirationDate.toISOString()
       })
     },

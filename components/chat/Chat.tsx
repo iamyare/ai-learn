@@ -1,5 +1,5 @@
 'use client'
-import React from 'react'
+import React, { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { useApiKey } from '@/stores/useApiKeysStore'
 import { useSpeechRecognitionStore } from '@/stores/useSpeechRecognitionStore'
@@ -20,6 +20,8 @@ export default function Chat({ notebookId, className }: ChatProps) {
   const geminiKey = useApiKey('gemini_key')
   const { text } = usePDFTextStore()
   const { history } = useSpeechRecognitionStore()
+
+  const [isThinking, setIsThinking] = useState(false)
 
   const {
     messages,
@@ -52,6 +54,7 @@ export default function Chat({ notebookId, className }: ChatProps) {
             messages={messages}
             className={className}
             isPending={isPending}
+            thinking={isThinking}
           />
           <div className='flex flex-col space-y-2 p-2 absolute bottom-0 left-0 w-full'>
             <AIFunctions
@@ -65,6 +68,7 @@ export default function Chat({ notebookId, className }: ChatProps) {
               onStreamUpdate={handleStreamUpdate}
               onStreamComplete={handleStreamComplete}
               apiKeyGemini={geminiKey}
+              onThinking = {setIsThinking}
             />
           </div>
         </>

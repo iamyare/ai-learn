@@ -22,6 +22,7 @@ interface ChatInputProps {
   onStreamComplete: (finalContent: string) => void
   apiKeyGemini?: string
   messages: ChatMessageType[]
+  onThinking: (state: boolean) => void
 }
 
 const formSchema = z.object({
@@ -33,7 +34,8 @@ const ChatInput: React.FC<ChatInputProps> = ({
   onStreamUpdate,
   onStreamComplete,
   apiKeyGemini,
-  messages
+  messages,
+  onThinking
 }) => {
   const { history } = useSpeechRecognitionStore()
   const { notebookInfo, updatePDFDocument } = useNotebookStore()
@@ -65,6 +67,18 @@ const ChatInput: React.FC<ChatInputProps> = ({
       onSendMessage(values.message)
       const transcript = history.map((entry) => entry.text).join(' ')
 
+      if (cache?.cache_expiration) {
+        const expiration = new Date(cache.cache_expiration)
+        if (expiration < new Date()) {
+          updateCache({ cache_id: null })
+          updatePDFDocument({
+            cache_id: null,
+            cache_expiration: null
+          })
+          onThinking(true)
+        }
+      }
+
       stream({
         prompt: values.message,
         transcription: transcript,
@@ -74,18 +88,20 @@ const ChatInput: React.FC<ChatInputProps> = ({
       }, {
         onSuccess: ({ newCacheId }) => {
           if (newCacheId && cache?.cache_id !== `caches/${newCacheId}`) {
+            onThinking(true)
             updateCache({ cache_id: newCacheId })
             updatePDFDocument({
               cache_id: `caches/${newCacheId}`,
               cache_expiration: new Date(Date.now() + 3600000).toISOString()
             })
+            onThinking(false)
           }
           // Limpiar el formulario
           form.reset()
         }
       })
     },
-    [onSendMessage, history, messages, stream, pdfBuffer, cache?.cache_id, updateCache, updatePDFDocument, form]
+    [onSendMessage, history, cache?.cache_expiration, cache?.cache_id, stream, messages, pdfBuffer, updateCache, updatePDFDocument, onThinking, form]
   )
 
   return (

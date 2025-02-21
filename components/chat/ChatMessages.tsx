@@ -16,6 +16,7 @@ interface ChatMessagesProps {
   isPending?: boolean
   messages: ChatMessageType[]
   className?: string
+  thinking?: boolean
 }
 
 interface AnimatedMessageProps {
@@ -71,7 +72,8 @@ MessageGroup.displayName = 'MessageGroup'
 const ChatMessages: React.FC<ChatMessagesProps> = ({
   messages,
   className,
-  isPending
+  isPending,
+  thinking
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
@@ -130,7 +132,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
         </p>
       )}
 
-      {messages.some(m => 'content' in m && m.content === '') && (
+      {thinking && (
         <MessageLoading text="Pensando..." />
       )}
       {isPending && !messages.some(m => 'content' in m && m.content === '') && (
