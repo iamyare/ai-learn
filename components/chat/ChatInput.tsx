@@ -23,21 +23,28 @@ interface ChatInputProps {
   onStreamComplete: (finalContent: string) => void
   apiKeyGemini?: string
   messages: ChatMessageType[]
+  onThinking: (isThinking: boolean) => void
 }
 
 const formSchema = z.object({
   message: z.string()
 })
-
 const ChatInput: React.FC<ChatInputProps> = ({
   onSendMessage,
   onStreamUpdate,
   onStreamComplete,
   apiKeyGemini,
-  messages
+  messages,
+  onThinking
 }) => {
   const { history } = useSpeechRecognitionStore()
-  const [isPending, startTransition] = useTransition()
+  const [isThinking, startTransition] = useTransition()
+
+  useEffect(() => {
+    onThinking(isThinking)
+  }, [isThinking, onThinking])
+
+
   const { updateNotebookInfo, notebookInfo, updatePDFDocument } = useNotebookStore()
   const { pdfBuffer } = usePDFStore()
   const { cache, setHash, updateCache } = usePDFCache(notebookInfo.notebook_id)
@@ -70,6 +77,11 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
       startTransition(async () => {
         try {
+
+                    // Desactivar estado de "pensando" cuando comienza el stream
+                    onThinking(false)
+
+          // Iniciar configuración
           const { textStream, newCacheId } = await aiStream({
             prompt: values.message,
             transcription: transcript,
@@ -79,26 +91,37 @@ const ChatInput: React.FC<ChatInputProps> = ({
             existingCacheId: cache?.cache_id ? cache.cache_id.replace(/^caches\//, '') : undefined
           })
 
+
+          //Si newCacheId es distinto a notebookInfo.cache_id, estara pensando
+          if (newCacheId && newCacheId !== notebookInfo.pdf_document.cache_id) {
+            onThinking(true)
+
+              await updateCache({ cache_id: newCacheId })
+              updatePDFDocument({ 
+                cache_id: `caches/${newCacheId}`,
+                cache_expiration: //expira en 1 hora
+                  new Date(Date.now() + 60 * 60 * 1000).toISOString()
+              })
+          }
+
+          onThinking(false)
+            
+
+
           let accumulatedText = ''
           for await (const delta of readStreamableValue(textStream)) {
             accumulatedText += delta
             onStreamUpdate(accumulatedText)
           }
 
-          // Actualizar el cache si se generó uno nuevo
-          if (newCacheId) {
-            await updateCache({ cache_id: newCacheId })
-            updatePDFDocument({ 
-              cache_id: `caches/${newCacheId}`,
-              cache_expiration: new Date(Date.now() + 3600000).toISOString() // 1 hora
-            })
-          }
 
           onStreamComplete(accumulatedText)
 
 
         } catch (err) {
           console.error('Error en el flujo de AI:', err)
+          // Asegurarse de resetear el estado de "pensando" en caso de error
+          onThinking(false)
           toast({
             title: 'Error',
             description:
@@ -109,7 +132,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
       })
       form.reset()
     },
-    [onSendMessage, history, messages, form, pdfBuffer, apiKeyGemini, cache?.cache_id, onStreamComplete, onStreamUpdate, updateCache, updatePDFDocument]
+    [onSendMessage, history, messages, form, onThinking, pdfBuffer, apiKeyGemini, cache?.cache_id, notebookInfo.pdf_document.cache_id, onStreamComplete, updateCache, updatePDFDocument, onStreamUpdate]
   )
 
   return (
@@ -147,9 +170,9 @@ const ChatInput: React.FC<ChatInputProps> = ({
               size={'icon'}
               variant={'ghost'}
               className='absolute top-1/2 -translate-y-1/2 right-1.5 backdrop-blur-sm bg-background/0 p-2 size-8'
-              disabled={isPending}
+              disabled={isThinking}
             >
-              {isPending ? (
+              {isThinking ? (
                 <Loader className='size-4 animate-spin' />
               ) : (
                 <Send className='size-4' />

@@ -45,6 +45,7 @@ export default function Chat({
   const { text } = usePDFTextStore()
   const { history } = useSpeechRecognitionStore()
   const [streamingMessage, setStreamingMessage] = useState<MessageType | null>(null)
+  const [isThinking, setIsThinking] = useState(false)
 
   const { data: messages = [], isLoading } = useQuery({
     queryKey: chatKeys.chat(notebookId),
@@ -182,6 +183,7 @@ export default function Chat({
             messages={allMessages}
             className={className}
             isPending={messageMutation.isPending}
+            isThinking={isThinking}
           />
           <div className='flex flex-col space-y-2 p-2 absolute bottom-0 left-0 w-full'>
             <AIFunctions
@@ -195,6 +197,7 @@ export default function Chat({
               onStreamUpdate={handleStreamUpdate}
               onStreamComplete={handleStreamComplete}
               apiKeyGemini={geminiKey}
+              onThinking={setIsThinking}
             />
           </div>
         </>

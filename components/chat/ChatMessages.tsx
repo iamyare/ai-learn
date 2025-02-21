@@ -13,6 +13,7 @@ import { usePresence } from 'framer-motion'
 
 interface ChatMessagesProps {
   isPending?: boolean
+  isThinking?: boolean
   messages: ChatMessageType[]
   className?: string
 }
@@ -67,7 +68,8 @@ MessageGroup.displayName = 'MessageGroup'
 const ChatMessages: React.FC<ChatMessagesProps> = ({
   messages,
   className,
-  isPending
+  isPending,
+  isThinking
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
@@ -126,7 +128,10 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
         </p>
       )}
 
-      {isPending && <MessageLoading />}
+      {isThinking && <MessageLoading text="Pensando..." />}
+      {isPending && !isThinking && !messages.some(m => 'content' in m && m.content === '') && (
+        <MessageLoading text="Generando..." />
+      )}
       <div ref={messagesEndRef} />
     </div>
   )
