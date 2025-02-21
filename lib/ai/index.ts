@@ -94,20 +94,16 @@ export async function aiStream(params: AiStreamParams) {
   try {
     const service = await createGeminiService(params.apiKey)
 
-    // Ajustar el system prompt según si estamos usando caché o no
-    const effectiveSystemPrompt = params.existingCacheId 
-      ? undefined // No enviar system prompt si usamos caché
-      : SYSTEM_PROMPT
-
     logger.info('Starting AI stream', {
       messageCount: params.messageHistory.length,
       hasPDF: !!params.pdfBuffer,
-      hasTranscription: !!params.transcription
+      hasTranscription: !!params.transcription,
+      existingCacheId: params.existingCacheId
     })
 
     const { stream: textStream, getTokenUsage, newCacheId } = await service.generateStreamingContent({
       prompt: buildPrompt(params),
-      systemPrompt: effectiveSystemPrompt,
+      systemPrompt: params.existingCacheId ? undefined : SYSTEM_PROMPT,
       temperature: 0.7,
       pdfBuffer: params.pdfBuffer,
       existingCacheId: params.existingCacheId

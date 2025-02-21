@@ -28,6 +28,7 @@ const initialNotebook: NotebookInfo = {
       pdf_id: '',
       pdf_temp_expiration: '',
       pdf_temp_path: '',
+      pdf_hash: '',
     }
 };
 

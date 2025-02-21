@@ -169,6 +169,7 @@ export type Database = {
           file_path: string
           file_size: string
           notebook_id: string
+          pdf_hash: string | null
           pdf_id: string
           pdf_temp_expiration: string | null
           pdf_temp_path: string | null
@@ -181,6 +182,7 @@ export type Database = {
           file_path: string
           file_size: string
           notebook_id: string
+          pdf_hash?: string | null
           pdf_id?: string
           pdf_temp_expiration?: string | null
           pdf_temp_path?: string | null
@@ -193,6 +195,7 @@ export type Database = {
           file_path?: string
           file_size?: string
           notebook_id?: string
+          pdf_hash?: string | null
           pdf_id?: string
           pdf_temp_expiration?: string | null
           pdf_temp_path?: string | null

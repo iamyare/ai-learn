@@ -50,6 +50,27 @@ export class GeminiService {
     return new Promise(resolve => setTimeout(resolve, ms))
   }
 
+  private normalizeCacheId(cacheId: string): string {
+    // Remover prefijos si existen
+    const normalizedId = cacheId
+      .replace('caches/', '')
+      .replace('cachedContents/', '')
+      .trim()
+    return normalizedId
+  }
+
+  private formatCacheId(id: string): string {
+    // Si ya comienza con "cachedContents/", lo retorna tal cual
+    if (id.startsWith('cachedContents/')) return id;
+    return `cachedContents/${id}`;
+  }
+
+  private extractCacheId(fullPath: string): string {
+    // Extraer solo el ID simple
+    const matches = fullPath.match(/cachedContents\/([^\/]+)$/);
+    return matches ? matches[1] : fullPath;
+  }
+
   private async uploadAndProcessPDF(
     pdfBuffer: ArrayBuffer,
     systemPrompt?: string,
@@ -63,11 +84,12 @@ export class GeminiService {
       
       // Usar cache existente si está disponible
       if (existingCacheId) {
+        const formattedCacheId = this.formatCacheId(existingCacheId)
         logger.info('Using existing PDF cache', {
           pdfHash: hash,
-          cacheId: existingCacheId
+          cacheId: formattedCacheId
         })
-        return existingCacheId
+        return formattedCacheId
       }
 
       // Guardar temporalmente el PDF
@@ -110,6 +132,7 @@ export class GeminiService {
       // Crear el caché solo con el archivo PDF, sin system prompt
       const cacheResult = await this.cacheManager.create({
         model: this.MODEL,
+        displayName: `pdf-${hash.substring(0, 8)}`,
         contents: [{
           role: 'user',
           parts: [{
@@ -118,16 +141,17 @@ export class GeminiService {
               fileUri: fileResult.file.uri
             }
           }]
-        }]
+        }],
+        ttlSeconds: 3600 // 1 hora
       })
 
       if (cacheResult.name) {
-        const newCacheId = cacheResult.name.split('/').pop()
+        const simpleId = this.extractCacheId(cacheResult.name)
         logger.info('PDF content cached', {
           pdfHash: hash,
-          newCacheId
+          cacheId: `cachedContents/${simpleId}`
         })
-        return newCacheId
+        return this.formatCacheId(simpleId)
       }
 
       return undefined
@@ -184,8 +208,13 @@ export class GeminiService {
         
         if (cachedContent) {
           // Configuración cuando usamos caché - sin system prompt
+          logger.info('Using cached content', {
+            cacheId: cachedContent,
+            model: this.MODEL
+          })
+
           model = this.client(this.MODEL, {
-            cachedContent: `caches/${cachedContent}`
+            cachedContent: cachedContent // Ya está en formato completo
           })
           
           streamOptions = {
@@ -235,7 +264,7 @@ export class GeminiService {
       return {
         stream: textStream,
         getTokenUsage: () => tokenUsage,
-        newCacheId: cachedContent
+        newCacheId: cachedContent ? this.extractCacheId(cachedContent) : undefined
       }
     } catch (error) {
       logger.error('Streaming error', {
