@@ -97,10 +97,11 @@ const ChatInput: React.FC<ChatInputProps> = ({
         onSuccess: ({ newCacheId }) => {
           if (newCacheId && cache?.cache_id !== `caches/${newCacheId}`) {
             onThinking(true)
-            updateCache({ cache_id: newCacheId })
+            const expiration = new Date(Date.now() + 60 * 60 * 1000).toISOString() // 1 hora
+            updateCache({ cache_id: newCacheId, cache_expiration: expiration })
             updatePDFDocument({
               cache_id: `caches/${newCacheId}`,
-              cache_expiration: new Date(Date.now() + 3600000).toISOString()
+              cache_expiration: expiration
             })
             onThinking(false)
           }

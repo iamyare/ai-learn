@@ -9,9 +9,11 @@ import Translation from './messages/Translation'
 import Note from './messages/Note'
 import { Card } from '../ui/card'
 import { ChartMessageType, ChatMessageType, EventMessageType, ExplanationMessageType, MessageType, MindMapMessageType, NoteMessageType, TranslationMessageType } from '@/types/chat'
+import { AnimatedShinyText } from '../ui/animated-shiny-text'
 
 interface BubbleChatProps {
   message: ChatMessageType
+  isThinking?: boolean
 }
 
 // Type guards para los diferentes tipos de mensajes
@@ -43,7 +45,7 @@ function isTranslationMessageType(message: ChatMessageType): message is Translat
   return 'translation' in message
 }
 
-const BubbleChat: React.FC<BubbleChatProps> = ({ message }) => {
+const BubbleChat: React.FC<BubbleChatProps> = ({ message, isThinking }) => {
   const messageClass = useMemo(
     () => cn('flex flex-col', message.isUser ? 'items-end' : 'items-start'),
     [message.isUser]
@@ -104,6 +106,12 @@ const BubbleChat: React.FC<BubbleChatProps> = ({ message }) => {
   }
 
   return (
+    <div className='flex flex-col'>
+
+{isThinking && (
+<AnimatedShinyText speed={4} className=' m-2 text-xs w-fit'>
+<span>✨ Pensando...</span>
+</AnimatedShinyText>)}
     <div className={messageClass}>
       <Card className={bubbleClass}>
         <div className='text-sm'>{renderMessageContent()}</div>
@@ -112,6 +120,7 @@ const BubbleChat: React.FC<BubbleChatProps> = ({ message }) => {
       <span className='text-xs mx-2 mt-1 text-muted-foreground'>
         {new Date(message.timestamp).toLocaleTimeString()}
       </span>
+    </div>
     </div>
   )
 }

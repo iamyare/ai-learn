@@ -41,12 +41,7 @@ const AnimatedMessage = memo(({ message, isThinking }: AnimatedMessageProps) => 
   }, [isPresent, safeToRemove])
 
   return (
-    <div className='flex flex-col'>
 
-{isThinking && (
-<AnimatedShinyText speed={4} className=' m-2 text-xs w-fit'>
-<span>✨ Pensando...</span>
-</AnimatedShinyText>)}
 
     <div
       className='animated-message'
@@ -54,9 +49,9 @@ const AnimatedMessage = memo(({ message, isThinking }: AnimatedMessageProps) => 
         animation: isPresent ? 'slideIn 0.3s ease-out' : 'slideOut 0.3s ease-in'
       }}
     >
-      <BubbleChat message={message} />
+      <BubbleChat isThinking={isThinking} message={message} />
     </div>
-    </div>
+
   )
 })
 
