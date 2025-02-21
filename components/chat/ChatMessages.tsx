@@ -14,7 +14,6 @@ import { ChatMessageType } from '@/types/chat'
 
 interface ChatMessagesProps {
   isPending?: boolean
-  isThinking?: boolean
   messages: ChatMessageType[]
   className?: string
 }
@@ -69,8 +68,7 @@ MessageGroup.displayName = 'MessageGroup'
 const ChatMessages: React.FC<ChatMessagesProps> = ({
   messages,
   className,
-  isPending,
-  isThinking
+  isPending
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
@@ -129,8 +127,10 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
         </p>
       )}
 
-      {isThinking && <MessageLoading text="Pensando..." />}
-      {isPending && !isThinking && !messages.some(m => 'content' in m && m.content === '') && (
+      {messages.some(m => 'content' in m && m.content === '') && (
+        <MessageLoading text="Pensando..." />
+      )}
+      {isPending && !messages.some(m => 'content' in m && m.content === '') && (
         <MessageLoading text="Generando..." />
       )}
       <div ref={messagesEndRef} />

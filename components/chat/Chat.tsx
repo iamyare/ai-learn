@@ -183,7 +183,7 @@ export default function Chat({
           <ChatMessages
             messages={allMessages}
             className={className}
-            isPending={messageMutation.isPending}
+            isPending={messages.some((m: ChatMessageType) => 'events' in m || 'mindMap' in m)}
           />
           <div className='flex flex-col space-y-2 p-2 absolute bottom-0 left-0 w-full'>
             <AIFunctions
