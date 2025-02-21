@@ -247,13 +247,18 @@ export class GeminiService {
       }
 
       let tokenUsage: TokenUsage | null = null
-      const { textStream } = await streamText({...streamOptions,
-         onFinish: ({usage}) => {
-          tokenUsage = {
-            promptTokens: usage.promptTokens,
-            completionTokens: usage.completionTokens,
-            totalTokens: usage.promptTokens + usage.completionTokens,
-            estimatedCost: this.calculateCost(usage.promptTokens + usage.completionTokens)
+
+      // Modificamos la llamada a streamText para capturar el uso de tokens
+      const { textStream } = await streamText({
+        ...streamOptions,
+        onFinish: ({ usage }: { usage: any }) => {
+          if (usage) {
+            tokenUsage = {
+              promptTokens: usage.promptTokens || 0,
+              completionTokens: usage.completionTokens || 0,
+              totalTokens: (usage.promptTokens || 0) + (usage.completionTokens || 0),
+              estimatedCost: this.calculateCost((usage.promptTokens || 0) + (usage.completionTokens || 0))
+            }
           }
         }
       })

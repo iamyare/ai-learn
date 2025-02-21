@@ -116,6 +116,18 @@ export async function aiStream(params: AiStreamParams) {
         for await (const chunk of textStream) {
           stream.update(chunk)
         }
+        
+        // Obtener y registrar el uso de tokens después de completar el stream
+        const tokenUsage = getTokenUsage()
+        if (tokenUsage) {
+          logger.info('AI stream completed', {
+            tokenUsage,
+            messageCount: params.messageHistory.length
+          })
+        } else {
+          logger.warn('No token usage data available')
+        }
+
         stream.done()
       } catch (error) {
         logger.error('Error in stream', {
@@ -124,15 +136,6 @@ export async function aiStream(params: AiStreamParams) {
         stream.error(error)
       }
     })()
-
-            // Obtener y registrar el uso de tokens después de completar el stream
-            const tokenUsage = getTokenUsage()
-            if (tokenUsage) {
-              logger.info('AI stream completed', {
-                tokenUsage,
-                messageCount: params.messageHistory.length
-              })
-            }
 
     return { textStream: stream.value, newCacheId }
   } catch (error) {
