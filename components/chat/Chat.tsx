@@ -1,5 +1,5 @@
 'use client'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback } from 'react'
 import { cn } from '@/lib/utils'
 import { useApiKey } from '@/stores/useApiKeysStore'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -13,6 +13,8 @@ import ChatMessages from './ChatMessages'
 import ChatInput from './ChatInput'
 import ChatLoading from './ChatLoading'
 import AIFunctions from './AIFunctions'
+import { useState } from 'react'
+import type { ChatMessageType, MessageType } from '@/types/chat'
 
 // Función auxiliar para generar timestamps únicos
 const generateUniqueTimestamp = (() => {
@@ -45,7 +47,6 @@ export default function Chat({
   const { text } = usePDFTextStore()
   const { history } = useSpeechRecognitionStore()
   const [streamingMessage, setStreamingMessage] = useState<MessageType | null>(null)
-  const [isThinking, setIsThinking] = useState(false)
 
   const { data: messages = [], isLoading } = useQuery({
     queryKey: chatKeys.chat(notebookId),
@@ -183,7 +184,6 @@ export default function Chat({
             messages={allMessages}
             className={className}
             isPending={messageMutation.isPending}
-            isThinking={isThinking}
           />
           <div className='flex flex-col space-y-2 p-2 absolute bottom-0 left-0 w-full'>
             <AIFunctions
@@ -197,7 +197,6 @@ export default function Chat({
               onStreamUpdate={handleStreamUpdate}
               onStreamComplete={handleStreamComplete}
               apiKeyGemini={geminiKey}
-              onThinking={setIsThinking}
             />
           </div>
         </>

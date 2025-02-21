@@ -10,6 +10,7 @@ import { cn, formatRelativeDate } from '@/lib/utils'
 import BubbleChat from './BubbleChat'
 import MessageLoading from './messages/MessageLoading'
 import { usePresence } from 'framer-motion'
+import { ChatMessageType } from '@/types/chat'
 
 interface ChatMessagesProps {
   isPending?: boolean

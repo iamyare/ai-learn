@@ -1,5 +1,5 @@
 // Definición de ImportantEventType
-interface ImportantEventType {
+export interface ImportantEventType {
   title: string;
   description: string;
   date: string;
@@ -7,28 +7,28 @@ interface ImportantEventType {
 }
 
 // Interfaz base para todos los tipos de mensajes
-interface BaseMessageType {
+export interface BaseMessageType {
   isUser: boolean;
   timestamp: string;
 }
 
 // Tipo para mensajes regulares
-interface MessageType extends BaseMessageType {
+export interface MessageType extends BaseMessageType {
   content: string;
 }
 
 // Tipo para mensajes de eventos
-interface EventMessageType extends BaseMessageType {
+export interface EventMessageType extends BaseMessageType {
   events: ImportantEventType[];
 }
 
 // Tipo para mensajes de mapas mentales
-interface MindMapMessageType extends BaseMessageType {
+export interface MindMapMessageType extends BaseMessageType {
   mindMap: string;
 }
 
 // Definición de ChartData
-interface ChartData {
+export interface ChartData {
   type: 'bar' | 'line' | 'pie' | 'scatter' | 'area';
   title: string;
   labels: string[];
@@ -41,26 +41,24 @@ interface ChartData {
 }
 
 // Tipo para mensajes de gráficos
-interface ChartMessageType extends BaseMessageType {
+export interface ChartMessageType extends BaseMessageType {
   chartData: ChartData;
 }
 
 // Tipo para mensajes de notas
-interface NoteMessageType extends BaseMessageType {
+export interface NoteMessageType extends BaseMessageType {
   noteText: string;
 }
 
 // Tipo para mensajes de explicación
-interface ExplanationMessageType extends BaseMessageType {
+export interface ExplanationMessageType extends BaseMessageType {
   explanation: {
     context: string;
     explanation: string;
   };
 }
 
-
-
-interface TranslationProps {
+export interface TranslationProps {
   translation: {
     original: string;
     translated: string;
@@ -68,9 +66,9 @@ interface TranslationProps {
     targetLanguage: string;
   };
 }
-// Tipo para mensajes de traducción
 
-interface TranslationMessageType extends BaseMessageType, TranslationProps {}
+// Tipo para mensajes de traducción
+export interface TranslationMessageType extends BaseMessageType, TranslationProps {}
 
 // Tipo unión para usar en componentes que manejan todos los tipos de mensajes
-type ChatMessageType = MessageType | EventMessageType | MindMapMessageType | ChartMessageType | NoteMessageType | ExplanationMessageType | TranslationMessageType;
+export type ChatMessageType = MessageType | EventMessageType | MindMapMessageType | ChartMessageType | NoteMessageType | ExplanationMessageType | TranslationMessageType;

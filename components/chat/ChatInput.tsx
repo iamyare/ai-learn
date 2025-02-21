@@ -1,21 +1,20 @@
 'use client'
-import React, { useCallback, useEffect, useTransition } from 'react'
+import React, { useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form'
 import { Textarea } from '@/components/ui/textarea'
 import { Loader, Send } from 'lucide-react'
-import { readStreamableValue } from 'ai/rsc'
-import { aiStream } from '@/lib/ai'
+import { useAiStream } from '@/hooks/useAiStream'
 
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { toast } from '../ui/use-toast'
 import { usePDFTextStore } from '@/stores/usePDFTextStore'
 import { useSpeechRecognitionStore } from '@/stores/useSpeechRecognitionStore'
 import { useNotebookStore } from '@/stores/useNotebookStore'
 import { usePDFStore } from '@/stores/pdfStore'
 import { usePDFCache } from '@/hooks/usePDFCache'
+import type { ChatMessageType } from '@/types/chat'
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void
@@ -23,43 +22,41 @@ interface ChatInputProps {
   onStreamComplete: (finalContent: string) => void
   apiKeyGemini?: string
   messages: ChatMessageType[]
-  onThinking: (isThinking: boolean) => void
 }
 
 const formSchema = z.object({
   message: z.string()
 })
+
 const ChatInput: React.FC<ChatInputProps> = ({
   onSendMessage,
   onStreamUpdate,
   onStreamComplete,
   apiKeyGemini,
-  messages,
-  onThinking
+  messages
 }) => {
   const { history } = useSpeechRecognitionStore()
-  const [isThinking, startTransition] = useTransition()
-
-  useEffect(() => {
-    onThinking(isThinking)
-  }, [isThinking, onThinking])
-
-
-  const { updateNotebookInfo, notebookInfo, updatePDFDocument } = useNotebookStore()
+  const { notebookInfo, updatePDFDocument } = useNotebookStore()
   const { pdfBuffer } = usePDFStore()
   const { cache, setHash, updateCache } = usePDFCache(notebookInfo.notebook_id)
-
-  useEffect(() => {
-    if (pdfBuffer) {
-      const hash = Buffer.from(pdfBuffer).slice(0, 32).toString('hex')
-      setHash(hash)
-    }
-  }, [pdfBuffer, setHash])
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: { message: '' }
   })
+
+  const { stream, isStreaming } = useAiStream({
+    apiKey: apiKeyGemini ?? '',
+    onStreamUpdate,
+    onStreamComplete
+  })
+
+  useCallback(() => {
+    if (pdfBuffer) {
+      const hash = Buffer.from(pdfBuffer).slice(0, 32).toString('hex')
+      setHash(hash)
+    }
+  }, [pdfBuffer, setHash])
 
   const onSubmit = useCallback(
     async (values: z.infer<typeof formSchema>) => {
@@ -68,71 +65,26 @@ const ChatInput: React.FC<ChatInputProps> = ({
       onSendMessage(values.message)
       const transcript = history.map((entry) => entry.text).join(' ')
 
-      const messageHistory = messages
-        .filter((msg): msg is MessageType => 'content' in msg)
-        .map((msg) => ({
-          role: msg.isUser ? ('user' as const) : ('assistant' as const),
-          content: msg.content
-        }))
-
-      startTransition(async () => {
-        try {
-
-                    // Desactivar estado de "pensando" cuando comienza el stream
-                    onThinking(false)
-
-          // Iniciar configuración
-          const { textStream, newCacheId } = await aiStream({
-            prompt: values.message,
-            transcription: transcript,
-            messageHistory: messageHistory,
-            pdfBuffer: pdfBuffer,
-            apiKey: apiKeyGemini ?? '',
-            existingCacheId: cache?.cache_id ? cache.cache_id.replace(/^caches\//, '') : undefined
-          })
-
-
-          //Si newCacheId es distinto a notebookInfo.cache_id, estara pensando
-          if (newCacheId && newCacheId !== notebookInfo.pdf_document.cache_id) {
-            onThinking(true)
-
-              await updateCache({ cache_id: newCacheId })
-              updatePDFDocument({ 
-                cache_id: `caches/${newCacheId}`,
-                cache_expiration: //expira en 1 hora
-                  new Date(Date.now() + 60 * 60 * 1000).toISOString()
-              })
+      stream({
+        prompt: values.message,
+        transcription: transcript,
+        messages,
+        pdfBuffer,
+        existingCacheId: cache?.cache_id ? cache.cache_id.replace(/^caches\//, '') : undefined
+      }, {
+        onSuccess: ({ newCacheId }) => {
+          if (newCacheId && cache?.cache_id !== `caches/${newCacheId}`) {
+            updateCache({ cache_id: newCacheId })
+            updatePDFDocument({
+              cache_id: `caches/${newCacheId}`,
+              cache_expiration: new Date(Date.now() + 3600000).toISOString()
+            })
           }
-
-          onThinking(false)
-            
-
-
-          let accumulatedText = ''
-          for await (const delta of readStreamableValue(textStream)) {
-            accumulatedText += delta
-            onStreamUpdate(accumulatedText)
-          }
-
-
-          onStreamComplete(accumulatedText)
-
-
-        } catch (err) {
-          console.error('Error en el flujo de AI:', err)
-          // Asegurarse de resetear el estado de "pensando" en caso de error
-          onThinking(false)
-          toast({
-            title: 'Error',
-            description:
-              'Hubo un problema al procesar tu mensaje. Por favor, inténtalo de nuevo.',
-            variant: 'destructive'
-          })
+          form.reset()
         }
       })
-      form.reset()
     },
-    [onSendMessage, history, messages, form, onThinking, pdfBuffer, apiKeyGemini, cache?.cache_id, notebookInfo.pdf_document.cache_id, onStreamComplete, updateCache, updatePDFDocument, onStreamUpdate]
+    [onSendMessage, history, messages, stream, pdfBuffer, cache?.cache_id, updateCache, updatePDFDocument, form]
   )
 
   return (
@@ -170,9 +122,9 @@ const ChatInput: React.FC<ChatInputProps> = ({
               size={'icon'}
               variant={'ghost'}
               className='absolute top-1/2 -translate-y-1/2 right-1.5 backdrop-blur-sm bg-background/0 p-2 size-8'
-              disabled={isThinking}
+              disabled={isStreaming}
             >
-              {isThinking ? (
+              {isStreaming ? (
                 <Loader className='size-4 animate-spin' />
               ) : (
                 <Send className='size-4' />

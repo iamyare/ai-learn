@@ -8,6 +8,7 @@ import Explanation from './messages/Explanation'
 import Translation from './messages/Translation'
 import Note from './messages/Note'
 import { Card } from '../ui/card'
+import { ChartMessageType, ChatMessageType, EventMessageType, ExplanationMessageType, MessageType, MindMapMessageType, NoteMessageType, TranslationMessageType } from '@/types/chat'
 
 interface BubbleChatProps {
   message: ChatMessageType
