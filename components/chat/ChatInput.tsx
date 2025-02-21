@@ -9,12 +9,12 @@ import { useAiStream } from '@/hooks/useAiStream'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { usePDFTextStore } from '@/stores/usePDFTextStore'
 import { useSpeechRecognitionStore } from '@/stores/useSpeechRecognitionStore'
 import { useNotebookStore } from '@/stores/useNotebookStore'
 import { usePDFStore } from '@/stores/pdfStore'
 import { usePDFCache } from '@/hooks/usePDFCache'
 import type { ChatMessageType } from '@/types/chat'
+import { useToast } from '../ui/use-toast'
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void
@@ -41,6 +41,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const { notebookInfo, updatePDFDocument } = useNotebookStore()
   const { pdfBuffer } = usePDFStore()
   const { cache, setHash, updateCache } = usePDFCache(notebookInfo.notebook_id)
+  const toast = useToast()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -67,10 +68,17 @@ const ChatInput: React.FC<ChatInputProps> = ({
       onSendMessage(values.message)
       const transcript = history.map((entry) => entry.text).join(' ')
 
+
+      if (!cache?.cache_id){
+
+        onThinking(true)
+      }
+
       if (cache?.cache_expiration) {
         const expiration = new Date(cache.cache_expiration)
         if (expiration < new Date()) {
-          updateCache({ cache_id: null })
+          console.log('Cache expired')
+          updateCache({ cache_id: null, cache_expiration: null })
           updatePDFDocument({
             cache_id: null,
             cache_expiration: null
@@ -96,12 +104,13 @@ const ChatInput: React.FC<ChatInputProps> = ({
             })
             onThinking(false)
           }
+          onThinking(false)
           // Limpiar el formulario
           form.reset()
         }
       })
     },
-    [onSendMessage, history, cache?.cache_expiration, cache?.cache_id, stream, messages, pdfBuffer, updateCache, updatePDFDocument, onThinking, form]
+    [onSendMessage, history, cache, stream, messages, pdfBuffer, updateCache, updatePDFDocument, onThinking, form]
   )
 
   return (
