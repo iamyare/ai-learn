@@ -1,5 +1,5 @@
 'use client'
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form'
 import { Textarea } from '@/components/ui/textarea'
@@ -23,13 +23,13 @@ interface ChatInputProps {
   apiKeyGemini?: string
   messages: ChatMessageType[]
   onThinking: (state: boolean) => void
+  onStreaming?: (state: boolean) => void
   isPending: boolean
 }
 
 const formSchema = z.object({
   message: z.string()
 })
-
 const ChatInput: React.FC<ChatInputProps> = ({
   onSendMessage,
   onStreamUpdate,
@@ -37,8 +37,10 @@ const ChatInput: React.FC<ChatInputProps> = ({
   apiKeyGemini,
   messages,
   onThinking,
-  isPending 
+  onStreaming,
+  isPending
 }) => {
+
   const { history } = useSpeechRecognitionStore()
   const { notebookInfo, updatePDFDocument } = useNotebookStore()
   const { pdfBuffer } = usePDFStore()
@@ -55,6 +57,10 @@ const ChatInput: React.FC<ChatInputProps> = ({
     onStreamUpdate,
     onStreamComplete
   })
+
+  useEffect(() => {
+    onStreaming?.(isStreaming)
+  }, [isStreaming, onStreaming])
 
   useCallback(() => {
     if (pdfBuffer) {

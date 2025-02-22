@@ -20,8 +20,8 @@ export default function Chat({ notebookId, className }: ChatProps) {
   const geminiKey = useApiKey('gemini_key')
   const { text } = usePDFTextStore()
   const { history } = useSpeechRecognitionStore()
-
-  const [isThinking, setIsThinking] = useState(false)
+const [isThinking, setIsThinking] = useState(false)
+const [isStreaming, setIsStreaming] = useState(false)
 
   const {
     messages,
@@ -55,6 +55,7 @@ export default function Chat({ notebookId, className }: ChatProps) {
             className={className}
             isPending={isPending}
             thinking={isThinking}
+            isWriting={isStreaming}
           />
           <div className='flex flex-col space-y-2 p-2 absolute bottom-0 left-0 w-full'>
             <AIFunctions
@@ -68,7 +69,8 @@ export default function Chat({ notebookId, className }: ChatProps) {
               onStreamUpdate={handleStreamUpdate}
               onStreamComplete={handleStreamComplete}
               apiKeyGemini={geminiKey}
-              onThinking = {setIsThinking}
+              onThinking={setIsThinking}
+              onStreaming={setIsStreaming}
               isPending={isPending}
             />
           </div>

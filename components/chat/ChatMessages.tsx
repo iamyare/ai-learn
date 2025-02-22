@@ -9,19 +9,22 @@ import React, {
 import { cn, formatRelativeDate } from '@/lib/utils'
 import BubbleChat from './BubbleChat'
 import MessageLoading from './messages/MessageLoading'
-import { usePresence } from 'framer-motion'
+import { motion, usePresence, AnimatePresence } from 'framer-motion'
 import { ChatMessageType } from '@/types/chat'
+import { Card } from '@/components/ui/card'
+import { AnimatedShinyText } from '@/components/ui/animated-shiny-text'
 
 interface ChatMessagesProps {
   isPending?: boolean
   messages: ChatMessageType[]
   className?: string
   thinking?: boolean
+  isWriting?: boolean
 }
-
 interface AnimatedMessageProps {
   message: ChatMessageType
   isThinking?: boolean
+  isWriting?: boolean
   isLastAssistantMessage?: boolean
 }
 
@@ -29,10 +32,11 @@ interface MessageGroupProps {
   date: string
   messages: ChatMessageType[]
   thinking?: boolean
+  isWriting?: boolean
   lastAssistantMessageId?: string
 }
 
-const AnimatedMessage = memo(({ message, isThinking, isLastAssistantMessage }: AnimatedMessageProps) => {
+const AnimatedMessage = memo(({ message, isThinking, isWriting, isLastAssistantMessage }: AnimatedMessageProps) => {
   const [isPresent, safeToRemove] = usePresence()
 
   useEffect(() => {
@@ -48,9 +52,9 @@ const AnimatedMessage = memo(({ message, isThinking, isLastAssistantMessage }: A
         animation: isPresent ? 'slideIn 0.3s ease-out' : 'slideOut 0.3s ease-in'
       }}
     >
-      <BubbleChat 
-        isThinking={isThinking} 
-        message={message} 
+      <BubbleChat
+        isThinking={isThinking}
+        message={message}
         isLastAssistantMessage={isLastAssistantMessage}
       />
     </div>
@@ -85,8 +89,10 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
   messages,
   className,
   isPending,
-  thinking
+  thinking,
+  isWriting
 }) => {
+
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true)
@@ -146,11 +152,12 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
     >
       {Object.keys(groupedMessages).length > 0 ? (
         Object.entries(groupedMessages).map(([date, dateMessages]) => (
-          <MessageGroup 
-            key={date} 
-            date={date} 
+          <MessageGroup
+            key={date}
+            date={date}
             messages={dateMessages}
             thinking={thinking}
+            isWriting={isWriting}
             lastAssistantMessageId={lastAssistantMessageId}
           />
         ))
@@ -168,6 +175,33 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
                            'chartData' in lastMessage;
         return isSpecialType ? <MessageLoading text="Generando..." /> : null;
       })()}
+
+      <AnimatePresence>
+        {isWriting && (
+          <motion.div
+            className="flex flex-col w-full"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{
+              type: "spring",
+              stiffness: 100,
+              damping: 12,
+              mass: 0.8
+            }}
+          >
+            <div className="flex flex-col w-full md:max-w-[80%] items-start">
+              <Card className="p-3 relative rounded-2xl bg-muted rounded-bl-[4px] border-none">
+                <div className="text-sm">
+                  <AnimatedShinyText speed={4} className="text-xs w-fit select-none">
+                    <span>Escribiendo...</span>
+                  </AnimatedShinyText>
+                </div>
+              </Card>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <div ref={messagesEndRef} />
     </div>
   )

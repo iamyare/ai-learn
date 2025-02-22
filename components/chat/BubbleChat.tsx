@@ -148,16 +148,16 @@ const BubbleChat: React.FC<BubbleChatProps> = ({ message, isThinking, onCopy, ta
     >
       <AnimatePresence>
         { isThinking && isLastAssistantMessage && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-          >
-            <AnimatedShinyText speed={4} className="m-2 text-xs w-fit select-none">
-              <span>✨ Pensando...</span>
-            </AnimatedShinyText>
-          </motion.div>
-        )}
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                  >
+                    <AnimatedShinyText speed={4} className="m-2 text-xs w-fit select-none">
+                      <span>✨ Pensando...</span>
+                    </AnimatedShinyText>
+                  </motion.div>
+                )}
       </AnimatePresence>
 
       <div 
