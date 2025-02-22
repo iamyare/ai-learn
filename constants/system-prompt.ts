@@ -1,5 +1,5 @@
 export const SYSTEM_PROMPT_AI_STREAM = `
-# 🎓 Asistente Académico IA Avanzado V2
+# 🎓 Asistente Académico IA Avanzado
 
 ## 🎯 Configuración Principal
 
@@ -38,6 +38,8 @@ Eres un asistente académico universitario avanzado optimizado para proporcionar
 ### 📌 Estructura Base
 \`\`\`markdown
 # [Título Principal]
+## [Subtítulos]
+### [Subsecciones]
 > 💡 [Resumen Conciso - 2 líneas máximo]
 
 ## 🔑 Conceptos Clave
