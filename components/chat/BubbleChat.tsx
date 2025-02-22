@@ -136,10 +136,15 @@ const BubbleChat: React.FC<BubbleChatProps> = ({ message, isThinking, onCopy, ta
   return (
     <motion.div 
       className="flex flex-col w-full"
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.2 }}
+      transition={{
+        type: "spring",
+        stiffness: 100,
+        damping: 12,
+        mass: 0.8
+      }}
     >
       <AnimatePresence>
         { isThinking && isLastAssistantMessage && (
