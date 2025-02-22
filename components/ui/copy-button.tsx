@@ -8,9 +8,10 @@ interface CopyButtonProps extends ButtonProps {
   value: string
   onCopy?: () => void
   className?: string
+  classNameIcon?: string
 }
 
-export default function CopyButton({ value, onCopy, className, ...props }: CopyButtonProps) {
+export default function CopyButton({ value, onCopy, className, classNameIcon, ...props }: CopyButtonProps) {
   const [isCopied, setIsCopied] = useState(false)
 
   const handleCopy = useCallback(async () => {
@@ -50,9 +51,9 @@ export default function CopyButton({ value, onCopy, className, ...props }: CopyB
         aria-label={isCopied ? "Copiado" : "Copiar al portapapeles"}
       >
         {isCopied ? (
-          <Check className="size-3 text-green-500" />
+          <Check className={cn("size-3 text-green-500", classNameIcon)} />
         ) : (
-          <Copy className="size-3" />
+          <Copy className={cn("size-3", classNameIcon)} />
         )}
       </button>
     </ConfettiButton>

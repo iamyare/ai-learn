@@ -18,6 +18,7 @@ interface BubbleChatProps {
   isThinking?: boolean
   onCopy?: () => void
   tabIndex?: number
+  isLastAssistantMessage?: boolean | null
 }
 
 // Type guards para los diferentes tipos de mensajes
@@ -49,7 +50,7 @@ function isTranslationMessageType(message: ChatMessageType): message is Translat
   return 'translation' in message
 }
 
-const BubbleChat: React.FC<BubbleChatProps> = ({ message, isThinking, onCopy, tabIndex = 0 }) => {
+const BubbleChat: React.FC<BubbleChatProps> = ({ message, isThinking, onCopy, tabIndex = 0, isLastAssistantMessage }) => {
   const contentRef = useRef<HTMLDivElement>(null)
   
   const messageClass = useMemo(
@@ -63,12 +64,12 @@ const BubbleChat: React.FC<BubbleChatProps> = ({ message, isThinking, onCopy, ta
   const bubbleClass = useMemo(
     () =>
       cn(
-        'p-4 relative rounded-2xl transition-colors',
+        'p-3 relative rounded-2xl transition-colors',
         'focus-within:ring-2 focus-within:ring-primary/50',
         'group flex flex-col gap-2',
         message.isUser
-          ? 'bg-primary selection-primary rounded-br-[4px] text-primary-foreground border'
-          : 'bg-muted rounded-bl-[4px] border'
+          ? 'bg-primary selection-primary rounded-br-[4px] text-primary-foreground'
+          : 'bg-muted rounded-bl-[4px]'
       ),
     [message.isUser]
   )
@@ -134,20 +135,20 @@ const BubbleChat: React.FC<BubbleChatProps> = ({ message, isThinking, onCopy, ta
 
   return (
     <motion.div 
-      className="flex flex-col w-full "
+      className="flex flex-col w-full"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
     >
       <AnimatePresence>
-        {isThinking && (
+        { isThinking && isLastAssistantMessage && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
           >
-            <AnimatedShinyText speed={4} className="m-2 text-xs w-fit">
+            <AnimatedShinyText speed={4} className="m-2 text-xs w-fit select-none">
               <span>✨ Pensando...</span>
             </AnimatedShinyText>
           </motion.div>
@@ -158,10 +159,9 @@ const BubbleChat: React.FC<BubbleChatProps> = ({ message, isThinking, onCopy, ta
         className={messageClass}
         role="listitem"
         aria-label={`Mensaje de ${message.isUser ? 'usuario' : 'asistente'}`}
-
-      >
+        >
         <Card 
-          className={cn(bubbleClass, 'relative')}
+          className={cn(bubbleClass, 'relative border-none')}
           tabIndex={tabIndex}
           ref={contentRef}
         >
@@ -172,7 +172,7 @@ const BubbleChat: React.FC<BubbleChatProps> = ({ message, isThinking, onCopy, ta
 
           <div 
               className={cn(
-                'absolute -bottom-2',
+                'absolute bottom-0 translate-y-1/2 ',
                 message.isUser ? 'left-2 hidden' : 'right-2'
               )}
             >
@@ -180,6 +180,8 @@ const BubbleChat: React.FC<BubbleChatProps> = ({ message, isThinking, onCopy, ta
                 value={getMessageText()}
                 onCopy={onCopy}
                 aria-label="Copiar mensaje"
+                className=' size-fit'
+                classNameIcon=' !size-3.5'
               />
             </div>
         </Card>

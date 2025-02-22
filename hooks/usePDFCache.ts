@@ -34,8 +34,8 @@ export function usePDFCache(notebook_id: string) {
 
       return updatePDFCache({
         notebook_id,
-        cache_id: cache_id && cache_id.startsWith('caches/') ? cache_id : `caches/${cache_id}`,
-        cache_expiration: cache_expiration ?? expirationDate.toISOString()
+        cache_id: cache_id ? (cache_id.startsWith('caches/') ? cache_id : `caches/${cache_id}`) : null,
+        cache_expiration: cache_expiration ?? (cache_id ? expirationDate.toISOString() : null)
       })
     },
     onSuccess: () => {

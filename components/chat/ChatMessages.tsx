@@ -11,7 +11,6 @@ import BubbleChat from './BubbleChat'
 import MessageLoading from './messages/MessageLoading'
 import { usePresence } from 'framer-motion'
 import { ChatMessageType } from '@/types/chat'
-import { AnimatedShinyText } from '../ui/animated-shiny-text'
 
 interface ChatMessagesProps {
   isPending?: boolean
@@ -23,15 +22,17 @@ interface ChatMessagesProps {
 interface AnimatedMessageProps {
   message: ChatMessageType
   isThinking?: boolean
+  isLastAssistantMessage?: boolean
 }
 
 interface MessageGroupProps {
   date: string
   messages: ChatMessageType[]
-  isThinking?: boolean
+  thinking?: boolean
+  lastAssistantMessageId?: string
 }
 
-const AnimatedMessage = memo(({ message, isThinking }: AnimatedMessageProps) => {
+const AnimatedMessage = memo(({ message, isThinking, isLastAssistantMessage }: AnimatedMessageProps) => {
   const [isPresent, safeToRemove] = usePresence()
 
   useEffect(() => {
@@ -41,33 +42,37 @@ const AnimatedMessage = memo(({ message, isThinking }: AnimatedMessageProps) => 
   }, [isPresent, safeToRemove])
 
   return (
-
-
     <div
       className='animated-message'
       style={{
         animation: isPresent ? 'slideIn 0.3s ease-out' : 'slideOut 0.3s ease-in'
       }}
     >
-      <BubbleChat isThinking={isThinking} message={message} />
+      <BubbleChat 
+        isThinking={isThinking} 
+        message={message} 
+        isLastAssistantMessage={isLastAssistantMessage}
+      />
     </div>
-
   )
 })
 
 AnimatedMessage.displayName = 'AnimatedMessage'
 
-const MessageGroup = memo(({ date, messages, isThinking }: MessageGroupProps) => (
+const MessageGroup = memo(({ date, messages, thinking, lastAssistantMessageId }: MessageGroupProps) => (
   <div key={date}>
     <p className='text-sm font-medium mx-auto bg-muted rounded-lg size-fit px-6 py-1 shadow-sm my-4'>
       {formatRelativeDate(date)}
     </p>
     <div className='flex flex-col gap-4'>
       {messages.map((message, index) => (
+
+
         <AnimatedMessage
           key={`${message.timestamp}-${index}`}
           message={message}
-          isThinking={isThinking}
+          isThinking={thinking}
+          isLastAssistantMessage={!message.isUser && `${message.timestamp}-${index}` === lastAssistantMessageId}
         />
       ))}
     </div>
@@ -119,6 +124,16 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
     [messages]
   )
 
+  // Encontrar el ID del último mensaje del asistente
+  const lastAssistantMessageId = useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (!messages[i].isUser) {
+        return `${messages[i].timestamp}-${i}`
+      }
+    }
+    return undefined
+  }, [messages])
+
   return (
     <div
       id='chat-messages'
@@ -131,7 +146,13 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
     >
       {Object.keys(groupedMessages).length > 0 ? (
         Object.entries(groupedMessages).map(([date, dateMessages]) => (
-          <MessageGroup isThinking={thinking} key={date} date={date} messages={dateMessages} />
+          <MessageGroup 
+            key={date} 
+            date={date} 
+            messages={dateMessages}
+            thinking={thinking}
+            lastAssistantMessageId={lastAssistantMessageId}
+          />
         ))
       ) : (
         <p className='text-center text-muted-foreground'>
@@ -142,9 +163,9 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
       {isPending && messages.length > 0 && (() => {
         const lastMessage = messages[messages.length - 1];
         const isSpecialType = 'events' in lastMessage ||
-                            'mindMap' in lastMessage ||
-                            'translation' in lastMessage ||
-                            'chartData' in lastMessage;
+                           'mindMap' in lastMessage ||
+                           'translation' in lastMessage ||
+                           'chartData' in lastMessage;
         return isSpecialType ? <MessageLoading text="Generando..." /> : null;
       })()}
       <div ref={messagesEndRef} />
