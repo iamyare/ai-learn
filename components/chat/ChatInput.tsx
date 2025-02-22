@@ -23,6 +23,7 @@ interface ChatInputProps {
   apiKeyGemini?: string
   messages: ChatMessageType[]
   onThinking: (state: boolean) => void
+  isPending: boolean
 }
 
 const formSchema = z.object({
@@ -35,7 +36,8 @@ const ChatInput: React.FC<ChatInputProps> = ({
   onStreamComplete,
   apiKeyGemini,
   messages,
-  onThinking
+  onThinking,
+  isPending 
 }) => {
   const { history } = useSpeechRecognitionStore()
   const { notebookInfo, updatePDFDocument } = useNotebookStore()
@@ -131,6 +133,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
                     <Textarea
                       className='backdrop-blur-sm bg-background/70 resize-none textarea'
                       placeholder='Escribe tu mensaje'
+                      disabled={isStreaming || isPending}
                       {...field}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && !e.shiftKey) {
@@ -149,7 +152,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
               size={'icon'}
               variant={'ghost'}
               className='absolute top-1/2 -translate-y-1/2 right-1.5 backdrop-blur-sm bg-background/0 p-2 size-8'
-              disabled={isStreaming}
+              disabled={isStreaming || isPending}
             >
               {isStreaming ? (
                 <Loader className='size-4 animate-spin' />

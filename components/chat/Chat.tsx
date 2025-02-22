@@ -69,6 +69,7 @@ export default function Chat({ notebookId, className }: ChatProps) {
               onStreamComplete={handleStreamComplete}
               apiKeyGemini={geminiKey}
               onThinking = {setIsThinking}
+              isPending={isPending}
             />
           </div>
         </>

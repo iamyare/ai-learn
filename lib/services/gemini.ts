@@ -1,5 +1,5 @@
 import { createGoogleGenerativeAI } from '@ai-sdk/google'
-import { streamText, CoreUserMessage } from 'ai'
+import { streamText, CoreUserMessage, ToolSet } from 'ai'
 import { logger } from '@/lib/utils/logger'
 import { GoogleAICacheManager, GoogleAIFileManager, FileState } from '@google/generative-ai/server'
 import { writeFileSync, unlinkSync } from 'fs'
