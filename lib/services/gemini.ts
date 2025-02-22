@@ -135,6 +135,7 @@ export class GeminiService {
             }
           }]
         }],
+        systemInstruction: systemPrompt,
         ttlSeconds: 3600 // 1 hora
       })
 
@@ -242,7 +243,6 @@ export class GeminiService {
           temperature,
           maxTokens,
           stopSequences,
-          system: systemPrompt
         }
       }
 
@@ -250,8 +250,9 @@ export class GeminiService {
 
       // Modificamos la llamada a streamText para capturar el uso de tokens
       const { textStream } = await streamText({
-        ...streamOptions,
-        onFinish: ({ usage }: { usage: any }) => {
+       ...streamOptions,
+       ...(cachedContent ? {} : { system: systemPrompt }),
+       onFinish: ({ usage }: { usage: any }) => {
           if (usage) {
             tokenUsage = {
               promptTokens: usage.promptTokens || 0,

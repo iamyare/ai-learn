@@ -66,7 +66,7 @@ export async function aiStream(params: AiStreamParams) {
 
     const { stream: textStream, getTokenUsage, newCacheId } = await service.generateStreamingContent({
       prompt: buildPrompt(params),
-      systemPrompt: params.existingCacheId ? undefined : SYSTEM_PROMPT_AI_STREAM,
+      systemPrompt: SYSTEM_PROMPT_AI_STREAM,
       temperature: 0.7,
       pdfBuffer: params.pdfBuffer,
       existingCacheId: params.existingCacheId
