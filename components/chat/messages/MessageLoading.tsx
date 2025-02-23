@@ -1,33 +1,45 @@
-import FlickeringGrid from '@/components/ui/flickering-grid'
+import { WordRotate } from '@/components/ui/word-rotate'
 import { cn } from '@/lib/utils'
+import { motion } from 'framer-motion'
 import React from 'react'
 
 export default function MessageLoading({
   className,
-  text = 'Generando'
 }: {
   className?: string
-  text?: string
 }) {
   return (
-    <div
+    
+    <motion.div
       className={cn(
-        'relative h-[200px] w-full flex items-center justify-center rounded-2xl overflow-hidden border mt-4',
+        'relative h-[200px] w-full  mt-4',
         className
       )}
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0 }}
+      transition={{
+        type: 'spring',
+        stiffness: 100,
+        damping: 12,
+        mass: 0.8
+      }}
     >
-      <FlickeringGrid
-        className='z-0 absolute top-0 left-0 bottom-0 right-0 inset-0 size-full'
-        squareSize={4}
-        gridGap={6}
-        color='#6B7280'
-        maxOpacity={0.4}
-        flickerChance={0.1}
-        height={200}
-      />
-      <div className=' text-center text-muted-foreground text-2xl font-semibold animate-pulse'>
-        {text}
-      </div>
+    <div className=' absolute inset-0 bg-background z-10 flex items-center justify-center'>
+    <WordRotate
+      className='text-2xl font-semibold text-white'
+      words={[
+        'Generando...',
+        'Analizando datos',
+        'Procesando...',
+        'Casi listo'
+      ]}
+      duration={2000}
+    />
+    <div className=' gradient' style={{
+      '--speed': '5s',
+    } as React.CSSProperties}></div>
     </div>
+    </motion.div>
   )
 }

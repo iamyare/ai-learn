@@ -136,6 +136,8 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
         </p>
       )}
 
+<AnimatePresence>
+
       {isPending &&
         messages.length > 0 &&
         (() => {
@@ -145,8 +147,9 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
             'mindMap' in lastMessage ||
             'translation' in lastMessage ||
             'chartData' in lastMessage
-          return isSpecialType ? <MessageLoading text='Generando...' /> : null
+          return isSpecialType ? <MessageLoading  /> : null
         })()}
+</AnimatePresence>
 
       <AnimatePresence>
         {thinking && (
