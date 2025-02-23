@@ -67,6 +67,12 @@ const ChatInput: React.FC<ChatInputProps> = ({
     }
   }, [pdfBuffer, setHash])
 
+  const isCacheExpired = useCallback((cache: any) => {
+    if (!cache?.cache_expiration) return false
+    const expiration = new Date(cache.cache_expiration)
+    return expiration < new Date()
+  }, [])
+
   const onSubmit = useCallback(
     async (values: z.infer<typeof formSchema>) => {
       if (!values.message.trim()) return
@@ -74,33 +80,32 @@ const ChatInput: React.FC<ChatInputProps> = ({
       onSendMessage(values.message)
       const transcript = history.map((entry) => entry.text).join(' ')
 
+      // Verificar expiración del caché primero
+      const isExpired = isCacheExpired(cache)
+      if (isExpired) {
+        updateCache({ cache_id: null, cache_expiration: null })
+        updatePDFDocument({
+          cache_id: null,
+          cache_expiration: null
+        })
+      }
 
-      if (!cache?.cache_id){
-
+      // Activar thinking state si no hay caché o está expirado
+      if (!cache?.cache_id || isExpired) {
         onThinking(true)
       }
 
-      if (cache?.cache_expiration) {
-        const expiration = new Date(cache.cache_expiration)
-        if (expiration < new Date()) {
-          console.log('Cache expired')
-          updateCache({ cache_id: null, cache_expiration: null })
-          updatePDFDocument({
-            cache_id: null,
-            cache_expiration: null
-          })
-          onThinking(true)
-        }
-      }
-
-      console.log('El cache es:', cache?.cache_id ? cache.cache_id.replace(/^caches\//, '') : undefined)
+      // Solo usar el cache_id si existe y no está expirado
+      const effectiveCacheId = (!isExpired && cache?.cache_id)
+        ? cache.cache_id.replace(/^caches\//, '')
+        : undefined
 
       stream({
         prompt: values.message,
         transcription: transcript,
         messages,
         pdfBuffer,
-        existingCacheId: cache?.cache_id ? cache.cache_id.replace(/^caches\//, '') : undefined
+        existingCacheId: effectiveCacheId
       }, {
         onSuccess: ({ newCacheId }) => {
           if (newCacheId && cache?.cache_id !== `caches/${newCacheId}`) {
