@@ -1,58 +1,160 @@
+import { useMutation } from '@tanstack/react-query'
 import { generateImportantEvents } from '@/lib/ai/ai-events'
 import { generateChartFromHighlight, explainText, translateText } from '@/lib/ai/ai-highlighter'
 import { generateMindMap } from '../ai/ai-map-mental'
+import { 
+  EventMessageType, 
+  MindMapMessageType, 
+  NoteMessageType, 
+  ExplanationMessageType, 
+  ChartMessageType,
+  TranslationMessageType
+} from '@/types/chat'
 
-export const createEventMessage = async ({ 
-  history, 
-  text, 
-  apiKey 
-}: { 
-  history: any[], 
-  text: string, 
-  apiKey: string 
-}) => {
-  const { object } = await generateImportantEvents({
-    prompt: 'Lista de eventos importantes para la próxima semana',
-    transcription: history,
-    textPdf: text,
-    apiKey
+// Mutación para eventos importantes
+export const useGenerateEventsMutation = () => {
+  return useMutation({
+    mutationFn: async ({ 
+      history, 
+      text, 
+      apiKey 
+    }: { 
+      history: any[], 
+      text: string, 
+      apiKey: string 
+    }): Promise<EventMessageType> => {
+      const { object } = await generateImportantEvents({
+        prompt: 'Lista de eventos importantes para la próxima semana',
+        transcription: history,
+        textPdf: text,
+        apiKey
+      })
+
+      if (!object) throw new Error('No se pudieron generar los eventos importantes')
+      
+      return {
+        events: object,
+        isUser: false,
+        timestamp: new Date().toISOString()
+      }
+    }
   })
-
-  if (!object) throw new Error('No se pudieron generar los eventos importantes')
-  
-  return {
-    events: object,
-    isUser: false,
-    timestamp: new Date().toISOString()
-  }
 }
 
-export const createMindMapMessage = async ({
-  history,
-  text,
-  apiKey
-}: {
-  history: any[],
-  text: string,
-  apiKey: string
-}) => {
-  const transcript = history.map((entry) => entry.text).join(' ')
-  const { mindMap } = await generateMindMap({
-    prompt: 'Crea un mapa mental del contenido de la clase',
-    transcription: transcript,
-    textPdf: text,
-    apiKey
+// Mutación para mapa mental
+export const useGenerateMindMapMutation = () => {
+  return useMutation({
+    mutationFn: async ({
+      history,
+      text,
+      apiKey
+    }: {
+      history: any[],
+      text: string,
+      apiKey: string
+    }): Promise<MindMapMessageType> => {
+      const transcript = history.map((entry) => entry.text).join(' ')
+      const { mindMap } = await generateMindMap({
+        prompt: 'Crea un mapa mental del contenido de la clase',
+        transcription: transcript,
+        textPdf: text,
+        apiKey
+      })
+
+      if (!mindMap) throw new Error('No se pudo generar el mapa mental')
+
+      return {
+        mindMap,
+        isUser: false,
+        timestamp: new Date().toISOString()
+      }
+    }
   })
-
-  if (!mindMap) throw new Error('No se pudo generar el mapa mental')
-
-  return {
-    mindMap,
-    isUser: false,
-    timestamp: new Date().toISOString()
-  }
 }
 
+// Mutaciones para texto resaltado
+export const useChartFromHighlightMutation = () => {
+  return useMutation({
+    mutationFn: async ({ 
+      text, 
+      apiKey, 
+      chartType 
+    }: {
+      text: string,
+      apiKey: string,
+      chartType?: string
+    }): Promise<ChartMessageType> => {
+      const result = await generateChartFromHighlight({ 
+        highlightedText: text, 
+        apiKey,
+        chartType: chartType as 'bar' | 'line' | 'pie' | 'scatter' | 'area' | undefined
+      })
+      
+      if (!result?.chartData) throw new Error('No se pudo generar el gráfico')
+      
+      return { 
+        chartData: result.chartData, 
+        isUser: false, 
+        timestamp: new Date().toISOString() 
+      }
+    }
+  })
+}
+
+export const useExplainTextMutation = () => {
+  return useMutation({
+    mutationFn: async ({ 
+      text, 
+      apiKey 
+    }: {
+      text: string,
+      apiKey: string
+    }): Promise<ExplanationMessageType> => {
+      const result = await explainText({ 
+        highlightedText: text, 
+        apiKey 
+      })
+      
+      if (!result?.explanation) throw new Error('No se pudo generar la explicación')
+      
+      return { 
+        explanation: result.explanation, 
+        isUser: false, 
+        timestamp: new Date().toISOString() 
+      }
+    }
+  })
+}
+
+export const useTranslateTextMutation = () => {
+  return useMutation({
+    mutationFn: async ({ 
+      text, 
+      apiKey, 
+      targetLanguage 
+    }: {
+      text: string,
+      apiKey: string,
+      targetLanguage?: string
+    }): Promise<TranslationMessageType> => {
+      const result = await translateText({ 
+        highlightedText: text, 
+        apiKey,
+        targetLanguage
+      })
+      
+      if (!result?.translation) throw new Error('No se pudo generar la traducción')
+      
+      return { 
+        translation: result.translation, 
+        isUser: false, 
+        timestamp: new Date().toISOString() 
+      }
+    }
+  })
+}
+
+// Función auxiliar para procesar texto resaltado
 export const processHighlightedText = async ({
   action,
   text,
@@ -63,14 +165,22 @@ export const processHighlightedText = async ({
   text: string,
   apiKey: string,
   options?: { chartType?: string, targetLanguage?: string }
-}) => {
+}): Promise<NoteMessageType | ExplanationMessageType | ChartMessageType | TranslationMessageType> => {
   switch (action) {
     case 'note':
-      return { noteText: text, isUser: false, timestamp: new Date().toISOString() }
+      return { 
+        noteText: text, 
+        isUser: false, 
+        timestamp: new Date().toISOString() 
+      }
     case 'explain': {
       const result = await explainText({ highlightedText: text, apiKey })
       if (!result?.explanation) throw new Error('No se pudo generar la explicación')
-      return { explanation: result.explanation, isUser: false, timestamp: new Date().toISOString() }
+      return { 
+        explanation: result.explanation, 
+        isUser: false, 
+        timestamp: new Date().toISOString() 
+      }
     }
     case 'chart': {
       const result = await generateChartFromHighlight({ 
@@ -79,7 +189,11 @@ export const processHighlightedText = async ({
         chartType: options?.chartType as 'bar' | 'line' | 'pie' | 'scatter' | 'area' | undefined
       })
       if (!result?.chartData) throw new Error('No se pudo generar el gráfico')
-      return { chartData: result.chartData, isUser: false, timestamp: new Date().toISOString() }
+      return { 
+        chartData: result.chartData, 
+        isUser: false, 
+        timestamp: new Date().toISOString() 
+      }
     }
     case 'translate': {
       const result = await translateText({ 
@@ -88,7 +202,11 @@ export const processHighlightedText = async ({
         targetLanguage: options?.targetLanguage
       })
       if (!result?.translation) throw new Error('No se pudo generar la traducción')
-      return { translation: result.translation, isUser: false, timestamp: new Date().toISOString() }
+      return { 
+        translation: result.translation, 
+        isUser: false, 
+        timestamp: new Date().toISOString() 
+      }
     }
     default:
       throw new Error('Acción no soportada')

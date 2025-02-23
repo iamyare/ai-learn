@@ -3,7 +3,10 @@
 import { useCallback, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { chatKeys, fetchChat, updateChat } from '@/lib/queries/chat'
-import { createEventMessage, createMindMapMessage } from '@/lib/mutations/chat'
+import { 
+  useGenerateEventsMutation,
+  useGenerateMindMapMutation
+} from '@/lib/mutations/chat'
 import { toast } from '@/components/ui/use-toast'
 import type { ChatMessageType, MessageType } from '@/types/chat'
 
@@ -22,6 +25,10 @@ export function useChat({ notebookId, apiKey }: UseChatProps) {
     queryFn: () => fetchChat(notebookId),
     enabled: !!notebookId
   })
+
+  // Mutaciones AI
+  const eventsMutation = useGenerateEventsMutation()
+  const mindMapMutation = useGenerateMindMapMutation()
 
   // Mutación para actualizar mensajes
   const messageMutation = useMutation({
@@ -119,46 +126,52 @@ export function useChat({ notebookId, apiKey }: UseChatProps) {
       toast({ title: 'Error', description: 'API key not found' })
       return
     }
-    try {
-      const message = await createEventMessage({ 
+
+    eventsMutation.mutate(
+      { 
         ...params, 
         apiKey 
-      })
-      messageMutation.mutate({
-        ...message,
-        timestamp: new Date().toISOString()
-      })
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Error al generar eventos',
-        variant: 'destructive'
-      })
-    }
-  }, [apiKey, messageMutation])
+      },
+      {
+        onSuccess: (message) => {
+          messageMutation.mutate(message)
+        },
+        onError: (error) => {
+          toast({
+            title: 'Error',
+            description: error instanceof Error ? error.message : 'Error al generar eventos',
+            variant: 'destructive'
+          })
+        }
+      }
+    )
+  }, [apiKey, eventsMutation, messageMutation])
 
   const handleGenerateMindMap = useCallback(async (params: { history: string[], text: string }) => {
     if (!apiKey) {
       toast({ title: 'Error', description: 'API key not found' })
       return
     }
-    try {
-      const message = await createMindMapMessage({ 
+
+    mindMapMutation.mutate(
+      { 
         ...params, 
         apiKey 
-      })
-      messageMutation.mutate({
-        ...message,
-        timestamp: new Date().toISOString()
-      })
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'Error al generar mapa mental',
-        variant: 'destructive'
-      })
-    }
-  }, [apiKey, messageMutation])
+      },
+      {
+        onSuccess: (message) => {
+          messageMutation.mutate(message)
+        },
+        onError: (error) => {
+          toast({
+            title: 'Error',
+            description: error instanceof Error ? error.message : 'Error al generar mapa mental',
+            variant: 'destructive'
+          })
+        }
+      }
+    )
+  }, [apiKey, mindMapMutation, messageMutation])
 
   const allMessages = streamingMessage?.content
     ? [...messages, streamingMessage]
@@ -167,7 +180,9 @@ export function useChat({ notebookId, apiKey }: UseChatProps) {
   return {
     messages: allMessages,
     isLoading,
-    isPending: messageMutation.isPending,
+    isPending: messageMutation.isPending || 
+               eventsMutation.isPending || 
+               mindMapMutation.isPending,
     handleSendMessage,
     handleStreamUpdate,
     handleStreamComplete,
