@@ -133,6 +133,8 @@ const BubbleChat: React.FC<BubbleChatProps> = ({ message, isThinking, onCopy, ta
     return 'Contenido no copiable'
   }
 
+  console.log('BubbleChat render', { isThinking, isLastAssistantMessage })
+
   return (
     <motion.div 
       className="flex flex-col w-full"
@@ -147,7 +149,7 @@ const BubbleChat: React.FC<BubbleChatProps> = ({ message, isThinking, onCopy, ta
       }}
     >
       <AnimatePresence>
-        { isThinking && isLastAssistantMessage && (
+        {isThinking && isLastAssistantMessage && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}

@@ -124,7 +124,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
         }
       })
     },
-    [onSendMessage, history, cache, stream, messages, pdfBuffer, updateCache, updatePDFDocument, onThinking, form]
+    [onSendMessage, history, isCacheExpired, cache, stream, messages, pdfBuffer, updateCache, updatePDFDocument, onThinking, form]
   )
 
   return (

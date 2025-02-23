@@ -54,7 +54,7 @@ const [isStreaming, setIsStreaming] = useState(false)
             messages={messages}
             className={className}
             isPending={isPending}
-            thinking={isThinking}
+            isThinking={isThinking}
             isWriting={isStreaming}
           />
           <div className='flex flex-col space-y-2 p-2 absolute bottom-0 left-0 w-full'>

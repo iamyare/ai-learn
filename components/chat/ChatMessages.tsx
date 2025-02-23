@@ -18,7 +18,7 @@ interface ChatMessagesProps {
   isPending?: boolean
   messages: ChatMessageType[]
   className?: string
-  thinking?: boolean
+  isThinking?: boolean
   isWriting?: boolean
 }
 interface AnimatedMessageProps {
@@ -30,13 +30,12 @@ interface AnimatedMessageProps {
 
 interface MessageGroupProps {
   date: string
-  messages: ChatMessageType[]
-  thinking?: boolean
-  isWriting?: boolean
+  messages: { message: ChatMessageType; originalIndex: number }[]
+  isThinking?: boolean
   lastAssistantMessageId?: string
 }
 
-const AnimatedMessage = memo(({ message, isThinking, isWriting, isLastAssistantMessage }: AnimatedMessageProps) => {
+const AnimatedMessage = memo(({ message, isThinking, isLastAssistantMessage }: AnimatedMessageProps) => {
   const [isPresent, safeToRemove] = usePresence()
 
   useEffect(() => {
@@ -63,20 +62,18 @@ const AnimatedMessage = memo(({ message, isThinking, isWriting, isLastAssistantM
 
 AnimatedMessage.displayName = 'AnimatedMessage'
 
-const MessageGroup = memo(({ date, messages, thinking, lastAssistantMessageId }: MessageGroupProps) => (
+const MessageGroup = memo(({ date, messages, isThinking: thinking, lastAssistantMessageId }: MessageGroupProps) => (
   <div key={date}>
     <p className='text-sm font-medium mx-auto bg-muted rounded-lg size-fit px-6 py-1 shadow-sm my-4'>
       {formatRelativeDate(date)}
     </p>
     <div className='flex flex-col gap-4'>
-      {messages.map((message, index) => (
-
-
+      {messages.map(({ message, originalIndex }) => (
         <AnimatedMessage
-          key={`${message.timestamp}-${index}`}
+          key={`${message.timestamp}-${originalIndex}`}
           message={message}
           isThinking={thinking}
-          isLastAssistantMessage={!message.isUser && `${message.timestamp}-${index}` === lastAssistantMessageId}
+          isLastAssistantMessage={!message.isUser && `${message.timestamp}-${originalIndex}` === lastAssistantMessageId}
         />
       ))}
     </div>
@@ -89,7 +86,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
   messages,
   className,
   isPending,
-  thinking,
+  isThinking: thinking,
   isWriting
 }) => {
 
@@ -115,14 +112,14 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
   }
 
   const groupMessagesByDate = (messages: ChatMessageType[]) => {
-    return messages.reduce((groups, message) => {
+    return messages.reduce((groups, message, originalIndex) => {
       const date = new Date(message.timestamp).toDateString()
       if (!groups[date]) {
         groups[date] = []
       }
-      groups[date].push(message)
+      groups[date].push({ message, originalIndex })
       return groups
-    }, {} as Record<string, ChatMessageType[]>)
+    }, {} as Record<string, { message: ChatMessageType; originalIndex: number }[]>)
   }
 
   const groupedMessages = useMemo(
@@ -140,6 +137,12 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
     return undefined
   }, [messages])
 
+  console.log('ChatMessages render',{
+    thinking,
+    isWriting
+
+  })
+
   return (
     <div
       id='chat-messages'
@@ -151,16 +154,17 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
       onScroll={handleScroll}
     >
       {Object.keys(groupedMessages).length > 0 ? (
-        Object.entries(groupedMessages).map(([date, dateMessages]) => (
-          <MessageGroup
-            key={date}
-            date={date}
-            messages={dateMessages}
-            thinking={thinking}
-            isWriting={isWriting}
-            lastAssistantMessageId={lastAssistantMessageId}
-          />
-        ))
+        Object.entries(groupedMessages).map(([date, dateMessages]) => {
+          return (
+            <MessageGroup
+              key={date}
+              date={date}
+              messages={dateMessages}
+              isThinking={thinking}
+              lastAssistantMessageId={lastAssistantMessageId}
+            />
+          );
+        })
       ) : (
         <p className='text-center text-muted-foreground'>
           No hay mensajes aún. Comienza la conversación.
@@ -177,7 +181,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
       })()}
 
       <AnimatePresence>
-        {isWriting && (
+        { !thinking && isWriting && (
           <motion.div
             className="flex flex-col w-full"
             initial={{ opacity: 0, y: 30 }}
