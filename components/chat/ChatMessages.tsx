@@ -69,6 +69,7 @@ const MessageGroup = memo(({ date, messages, isThinking: thinking, lastAssistant
     </p>
     <div className='flex flex-col gap-4'>
       {messages.map(({ message, originalIndex }) => (
+
         <AnimatedMessage
           key={`${message.timestamp}-${originalIndex}`}
           message={message}
@@ -154,17 +155,15 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
       onScroll={handleScroll}
     >
       {Object.keys(groupedMessages).length > 0 ? (
-        Object.entries(groupedMessages).map(([date, dateMessages]) => {
-          return (
-            <MessageGroup
-              key={date}
-              date={date}
-              messages={dateMessages}
-              isThinking={thinking}
-              lastAssistantMessageId={lastAssistantMessageId}
-            />
-          );
-        })
+        Object.entries(groupedMessages).map(([date, dateMessages]) => (
+          <MessageGroup
+            key={date}
+            date={date}
+            messages={dateMessages}
+            isThinking={thinking}
+            lastAssistantMessageId={lastAssistantMessageId}
+          />
+        ))
       ) : (
         <p className='text-center text-muted-foreground'>
           No hay mensajes aún. Comienza la conversación.
@@ -212,3 +211,4 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
 }
 
 export default memo(ChatMessages)
+
