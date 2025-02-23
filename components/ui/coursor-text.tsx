@@ -1,5 +1,7 @@
 'use client'
 
+import { cn } from "@/lib/utils"
+
 export function CoursorText() {
   return (
     <div className='relative inline-block h-4 w-3 ml-1'>
@@ -11,9 +13,14 @@ export function CoursorText() {
   )
 }
 
-export function CoursorBouncy() {
+export function CoursorBouncy({ className, style }: { className?: string, style?: React.CSSProperties }) {
   return (
-    <div className='container-cursor'>
+    <div className={cn('container-cursor', className)} style={{
+      '--uib-color': `hsla(var(--muted-foreground)/0.2)`,
+      '--uib-size': `1.5rem`,
+      '--uib-speed': `1.5s`,
+      ...style
+    } as React.CSSProperties}>
       <div className='cube'>
         <div className='cube__inner'></div>
       </div>

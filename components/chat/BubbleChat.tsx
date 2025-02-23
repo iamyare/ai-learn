@@ -9,9 +9,8 @@ import Translation from './messages/Translation'
 import Note from './messages/Note'
 import { Card } from '../ui/card'
 import CopyButton from '../ui/copy-button'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { ChartMessageType, ChatMessageType, EventMessageType, ExplanationMessageType, MessageType, MindMapMessageType, NoteMessageType, TranslationMessageType } from '@/types/chat'
-import { AnimatedShinyText } from '../ui/animated-shiny-text'
 
 interface BubbleChatProps {
   message: ChatMessageType
@@ -50,7 +49,7 @@ function isTranslationMessageType(message: ChatMessageType): message is Translat
   return 'translation' in message
 }
 
-const BubbleChat: React.FC<BubbleChatProps> = ({ message, isThinking, onCopy, tabIndex = 0, isLastAssistantMessage }) => {
+const BubbleChat: React.FC<BubbleChatProps> = ({ message, onCopy, tabIndex = 0 }) => {
   const contentRef = useRef<HTMLDivElement>(null)
   
   const messageClass = useMemo(
@@ -133,8 +132,6 @@ const BubbleChat: React.FC<BubbleChatProps> = ({ message, isThinking, onCopy, ta
     return 'Contenido no copiable'
   }
 
-  console.log('BubbleChat render', { isThinking, isLastAssistantMessage })
-
   return (
     <motion.div 
       className="flex flex-col w-full"
@@ -148,20 +145,6 @@ const BubbleChat: React.FC<BubbleChatProps> = ({ message, isThinking, onCopy, ta
         mass: 0.8
       }}
     >
-      <AnimatePresence>
-        {isThinking && isLastAssistantMessage && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                  >
-                    <AnimatedShinyText speed={4} className="m-2 text-xs w-fit select-none">
-                      <span>✨ Pensando...</span>
-                    </AnimatedShinyText>
-                  </motion.div>
-                )}
-      </AnimatePresence>
-
       <div 
         className={messageClass}
         role="listitem"
@@ -174,7 +157,6 @@ const BubbleChat: React.FC<BubbleChatProps> = ({ message, isThinking, onCopy, ta
         >
           <div className="text-sm" role="region">
             {renderMessageContent()}
-            
           </div>
 
           <div 

@@ -13,6 +13,7 @@ import { motion, usePresence, AnimatePresence } from 'framer-motion'
 import { ChatMessageType } from '@/types/chat'
 import { Card } from '@/components/ui/card'
 import { AnimatedShinyText } from '@/components/ui/animated-shiny-text'
+import { CoursorBouncy } from '../ui/coursor-text'
 
 interface ChatMessagesProps {
   isPending?: boolean
@@ -23,19 +24,14 @@ interface ChatMessagesProps {
 }
 interface AnimatedMessageProps {
   message: ChatMessageType
-  isThinking?: boolean
-  isWriting?: boolean
-  isLastAssistantMessage?: boolean
 }
 
 interface MessageGroupProps {
   date: string
   messages: { message: ChatMessageType; originalIndex: number }[]
-  isThinking?: boolean
-  lastAssistantMessageId?: string
 }
 
-const AnimatedMessage = memo(({ message, isThinking, isLastAssistantMessage }: AnimatedMessageProps) => {
+const AnimatedMessage = memo(({ message }: AnimatedMessageProps) => {
   const [isPresent, safeToRemove] = usePresence()
 
   useEffect(() => {
@@ -51,30 +47,23 @@ const AnimatedMessage = memo(({ message, isThinking, isLastAssistantMessage }: A
         animation: isPresent ? 'slideIn 0.3s ease-out' : 'slideOut 0.3s ease-in'
       }}
     >
-      <BubbleChat
-        isThinking={isThinking}
-        message={message}
-        isLastAssistantMessage={isLastAssistantMessage}
-      />
+      <BubbleChat message={message} />
     </div>
   )
 })
 
 AnimatedMessage.displayName = 'AnimatedMessage'
 
-const MessageGroup = memo(({ date, messages, isThinking: thinking, lastAssistantMessageId }: MessageGroupProps) => (
+const MessageGroup = memo(({ date, messages }: MessageGroupProps) => (
   <div key={date}>
     <p className='text-sm font-medium mx-auto bg-muted rounded-lg size-fit px-6 py-1 shadow-sm my-4'>
       {formatRelativeDate(date)}
     </p>
     <div className='flex flex-col gap-4'>
       {messages.map(({ message, originalIndex }) => (
-
         <AnimatedMessage
           key={`${message.timestamp}-${originalIndex}`}
           message={message}
-          isThinking={thinking}
-          isLastAssistantMessage={!message.isUser && `${message.timestamp}-${originalIndex}` === lastAssistantMessageId}
         />
       ))}
     </div>
@@ -90,7 +79,6 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
   isThinking: thinking,
   isWriting
 }) => {
-
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true)
@@ -128,22 +116,6 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
     [messages]
   )
 
-  // Encontrar el ID del último mensaje del asistente
-  const lastAssistantMessageId = useMemo(() => {
-    for (let i = messages.length - 1; i >= 0; i--) {
-      if (!messages[i].isUser) {
-        return `${messages[i].timestamp}-${i}`
-      }
-    }
-    return undefined
-  }, [messages])
-
-  console.log('ChatMessages render',{
-    thinking,
-    isWriting
-
-  })
-
   return (
     <div
       id='chat-messages'
@@ -160,8 +132,6 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
             key={date}
             date={date}
             messages={dateMessages}
-            isThinking={thinking}
-            lastAssistantMessageId={lastAssistantMessageId}
           />
         ))
       ) : (
@@ -180,7 +150,54 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
       })()}
 
       <AnimatePresence>
-        { !thinking && isWriting && (
+        {thinking && (
+<motion.div
+ className="flex flex-col"
+ initial={{ opacity: 0, y: 30 }}
+ animate={{ opacity: 1, y: 0 }}
+ exit={{ opacity: 0 }}
+ transition={{
+   type: "spring",
+   stiffness: 100,
+   damping: 12,
+   mass: 0.8
+ }}
+>
+<motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mt-4"
+          >
+            <AnimatedShinyText speed={4} className="m-2 text-xs w-fit select-none">
+              <span>✨ Pensando...</span>
+            </AnimatedShinyText>
+          </motion.div>
+
+          <motion.div
+            className="flex flex-col w-full"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{
+              type: "spring",
+              stiffness: 100,
+              damping: 12,
+              mass: 0.8
+            }}
+          >
+            <div className="flex flex-col w-full md:max-w-[80%] items-start">
+              <Card className="p-4 relative rounded-2xl bg-muted rounded-bl-[4px] border-none">
+              <CoursorBouncy className=' opacity-80' />
+              </Card>
+            </div>
+          </motion.div>
+</motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {!thinking && isWriting && (
           <motion.div
             className="flex flex-col w-full"
             initial={{ opacity: 0, y: 30 }}
@@ -205,10 +222,10 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
           </motion.div>
         )}
       </AnimatePresence>
+      
       <div ref={messagesEndRef} />
     </div>
   )
 }
 
 export default memo(ChatMessages)
-

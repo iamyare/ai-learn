@@ -226,6 +226,7 @@
   --uib-size: 45px;
   --uib-color: black;
   --uib-speed: 1.75s;
+  --uib-radius: 50%;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
@@ -244,7 +245,7 @@
   display: block;
   height: 100%;
   width: 100%;
-  border-radius: 25%;
+  border-radius: var(--uib-radius);
   background-color: var(--uib-color);
   transform-origin: center bottom;
   animation: morph var(--uib-speed) ease-in-out infinite;
