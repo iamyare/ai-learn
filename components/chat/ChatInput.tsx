@@ -14,7 +14,6 @@ import { useNotebookStore } from '@/stores/useNotebookStore'
 import { usePDFStore } from '@/stores/pdfStore'
 import { usePDFCache } from '@/hooks/usePDFCache'
 import type { ChatMessageType } from '@/types/chat'
-import { useToast } from '../ui/use-toast'
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void
@@ -45,7 +44,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const { notebookInfo, updatePDFDocument } = useNotebookStore()
   const { pdfBuffer } = usePDFStore()
   const { cache, setHash, updateCache } = usePDFCache(notebookInfo.notebook_id)
-  const toast = useToast()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -94,6 +92,8 @@ const ChatInput: React.FC<ChatInputProps> = ({
           onThinking(true)
         }
       }
+
+      console.log('El cache es:', cache?.cache_id ? cache.cache_id.replace(/^caches\//, '') : undefined)
 
       stream({
         prompt: values.message,
