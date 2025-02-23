@@ -128,11 +128,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
     >
       {Object.keys(groupedMessages).length > 0 ? (
         Object.entries(groupedMessages).map(([date, dateMessages]) => (
-          <MessageGroup
-            key={date}
-            date={date}
-            messages={dateMessages}
-          />
+          <MessageGroup key={date} date={date} messages={dateMessages} />
         ))
       ) : (
         <p className='text-center text-muted-foreground'>
@@ -140,80 +136,89 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
         </p>
       )}
 
-      {isPending && messages.length > 0 && (() => {
-        const lastMessage = messages[messages.length - 1];
-        const isSpecialType = 'events' in lastMessage ||
-                           'mindMap' in lastMessage ||
-                           'translation' in lastMessage ||
-                           'chartData' in lastMessage;
-        return isSpecialType ? <MessageLoading text="Generando..." /> : null;
-      })()}
+      {isPending &&
+        messages.length > 0 &&
+        (() => {
+          const lastMessage = messages[messages.length - 1]
+          const isSpecialType =
+            'events' in lastMessage ||
+            'mindMap' in lastMessage ||
+            'translation' in lastMessage ||
+            'chartData' in lastMessage
+          return isSpecialType ? <MessageLoading text='Generando...' /> : null
+        })()}
 
       <AnimatePresence>
         {thinking && (
-<motion.div
- className="flex flex-col"
- initial={{ opacity: 0, y: 30 }}
- animate={{ opacity: 1, y: 0 }}
- exit={{ opacity: 0 }}
- transition={{
-   type: "spring",
-   stiffness: 100,
-   damping: 12,
-   mass: 0.8
- }}
->
-<motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="mt-4"
-          >
-            <AnimatedShinyText speed={4} className="m-2 text-xs w-fit select-none">
-              <span>✨ Pensando...</span>
-            </AnimatedShinyText>
-          </motion.div>
-
           <motion.div
-            className="flex flex-col w-full"
+            className='flex flex-col'
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             transition={{
-              type: "spring",
+              type: 'spring',
               stiffness: 100,
               damping: 12,
               mass: 0.8
             }}
           >
-            <div className="flex flex-col w-full md:max-w-[80%] items-start">
-              <Card className="p-4 relative rounded-2xl bg-muted rounded-bl-[4px] border-none">
-              <CoursorBouncy className=' opacity-80' />
-              </Card>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className='mt-4'
+            >
+              <AnimatedShinyText
+                speed={4}
+                className='m-2 text-xs w-fit select-none'
+              >
+                <span>✨ Pensando...</span>
+              </AnimatedShinyText>
+            </motion.div>
+
+            <motion.div
+              className='flex flex-col w-full'
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{
+                type: 'spring',
+                stiffness: 100,
+                damping: 12,
+                mass: 0.8
+              }}
+            >
+              <div className='flex flex-col w-full md:max-w-[80%] items-start'>
+                <Card className='p-4 relative rounded-2xl bg-muted rounded-bl-[4px] border-none'>
+                  <CoursorBouncy className=' opacity-80' />
+                </Card>
+              </div>
+            </motion.div>
           </motion.div>
-</motion.div>
         )}
       </AnimatePresence>
 
       <AnimatePresence>
         {!thinking && isWriting && (
           <motion.div
-            className="flex flex-col w-full"
+            className='flex flex-col w-full'
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             transition={{
-              type: "spring",
+              type: 'spring',
               stiffness: 100,
               damping: 12,
               mass: 0.8
             }}
           >
-            <div className="flex flex-col w-full md:max-w-[80%] items-start">
-              <Card className="p-3 relative rounded-2xl bg-muted rounded-bl-[4px] border-none">
-                <div className="text-sm">
-                  <AnimatedShinyText speed={4} className="text-xs w-fit select-none">
+            <div className='flex flex-col w-full md:max-w-[80%] items-start'>
+              <Card className='p-3 relative rounded-2xl bg-muted rounded-bl-[4px] border-none'>
+                <div className='text-sm'>
+                  <AnimatedShinyText
+                    speed={4}
+                    className='text-xs w-fit select-none'
+                  >
                     <span>Escribiendo...</span>
                   </AnimatedShinyText>
                 </div>
@@ -222,7 +227,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
           </motion.div>
         )}
       </AnimatePresence>
-      
+
       <div ref={messagesEndRef} />
     </div>
   )
