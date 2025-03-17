@@ -86,7 +86,7 @@ export function Toolbar({ pagesRef, containerRef, className }: ToolbarProps) {
 
     window.addEventListener('keydown', handleKeyPress)
     return () => window.removeEventListener('keydown', handleKeyPress)
-  }, [scale])
+  }, [handleZoom, scale])
 
   useEffect(() => {
     setPageInput(currentPage.toString())

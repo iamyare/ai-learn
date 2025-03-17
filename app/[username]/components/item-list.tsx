@@ -88,7 +88,7 @@ const ItemList: React.FC<ItemListProps> = ({ items, isLoading }) => {
     if (currentFolder?.id !== folderId) {
       navigateToFolder(folderId, folderName)
     }
-  }, [params])
+  }, [currentPath, navigateToFolder, params])
 
   const handleItemClick = (item: GetFoldersAndNotebooksFunction) => {
     if (item.item_type === 'folder') {

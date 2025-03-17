@@ -28,7 +28,7 @@ export default function UsernameLayoutClient({
     if (username && typeof username === 'string') {
       setUsername(username)
     }
-  }, [username]) // Removed setUsername from dependencies
+  }, [setUsername, username]) // Removed setUsername from dependencies
 
   useEffect(() => {
     useUserStore.setState({ user, countPdf: countPdf ?? 5 })
